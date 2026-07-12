@@ -45,5 +45,6 @@
 	<nav>
 	  <h6 class="footer-title">Legal</h6>
 	  <a class="link link-hover" href="/privacypolicy">Privacy policy</a>
+	  <a href="/legalnotice" class="link link-hover">Legal Notice</a>
 	</nav>
   </footer>
