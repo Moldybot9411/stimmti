@@ -26,7 +26,9 @@
 
 <footer class="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
 	<aside>
-		<img src="stimmti-logo-light.svg" alt="Stimmti Logo" class="w-120">
+		<a href="/" aria-label="Go to homepage"> 
+			<img src="stimmti-logo-light.svg" alt="Stimmti Logo" class="w-120" /> 
+		</a>
 	  <p>
 		<br />
 		Creating surveys for everyone, whether professional, 
