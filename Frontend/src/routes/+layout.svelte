@@ -23,3 +23,27 @@
 {@render children()}
 
 <Toast />
+
+<footer class="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
+	<aside>
+		<img src="stimmti-logo-light.svg" alt="Stimmti Logo" class="w-120">
+	  <p>
+		<br />
+		Creating surveys for everyone, whether professional, 
+		<br />
+		for fun, or to gather opinions.
+	  </p>
+	</aside>
+	<nav>
+	  <h6 class="footer-title">Services</h6>
+	  <a class="link link-hover">Help</a>
+	</nav>
+	<nav>
+	  <h6 class="footer-title">Company</h6>
+	  <a class="link link-hover">About us</a>
+	</nav>
+	<nav>
+	  <h6 class="footer-title">Legal</h6>
+	  <a class="link link-hover" href="/privacypolicy">Privacy policy</a>
+	</nav>
+  </footer>
