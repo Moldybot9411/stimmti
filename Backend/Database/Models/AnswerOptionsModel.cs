@@ -15,6 +15,6 @@ public class AnswerOption
     public required Guid QuestionTemplateId { get; set; }
     public ChoiceQuestionTemplate? QuestionTemplate { get; set; }
 
-    public Answer? Answer { get; set; }
     public bool IsArchived { get; set; } = false;
+    public List<ChoiceAnswer> Answers { get; set; } = new List<ChoiceAnswer>();
 }

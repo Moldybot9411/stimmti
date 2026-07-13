@@ -30,3 +30,20 @@ Frontend environment values are documented in `.env.example`.
 |http://localhost:8080|http://localhost:5202/swagger/index.html|http://localhost:5173|
 
 The development DB user is `root` with the password `root`.
+
+## Deploying
+
+Copy and fill out necessary files accordingly
+```bash
+cp .env.example .env
+cp Caddyfile.example Caddyfile
+```
+
+Starting everything:
+```bash
+docker compose --env-file .env -f prod.compose.yaml up -d
+```
+
+## Prod Structure
+
+![Diagram](images/StimmtiDiag.png)

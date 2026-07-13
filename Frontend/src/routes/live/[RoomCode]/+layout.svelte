@@ -7,30 +7,26 @@
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import {
-		ParticipantRole,
-		QuestionTypeEnum,
-		SessionState,
-	} from '$lib/wsClient/Backend.Models.Enums.js';
-	import { LoaderCircle, Trophy, User } from '@lucide/svelte';
+	import { ParticipantRole, SessionState } from '$lib/wsClient/Backend.Models.Enums.js';
+	import { Trophy, User } from '@lucide/svelte';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
-	import NumberScale from '$lib/components/NumberScale.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import SingleChoice from '$lib/components/SingleChoice.svelte';
 	import { type Option } from '$lib/components/MultipleChoice.svelte';
-	import MultipleChoice from '$lib/components/MultipleChoice.svelte';
+	import QuestionDisplay from '$lib/components/QuestionDisplay.svelte';
+	import type { AnswerOptionDto } from '$lib/wsClient/Backend.Dto.js';
+	import LoadingScreen from '$lib/components/LoadingScreen.svelte';
 
 	let { children, data } = $props();
 	let hub = $derived(data.hub);
 
 	let phase: SessionState = $derived(hub.state?.sessionState ?? SessionState.Lobby);
 
-	let choiceOptions: Option[] = $state([]);
+	let choiceOptions: Option[] = $state([]); // Used for both single and multiple choice
 	$effect(() => {
 		const answers = hub.state?.currentQuestion?.answerOptions ?? [];
 
 		choiceOptions = answers.map((x) => ({
-			label: x.description,
+			answerOption: x,
 			checked: false,
 		}));
 	});
@@ -109,6 +105,19 @@
 		}
 	}
 
+	async function submitAnswer(
+		answerOptions?: AnswerOptionDto[],
+		wordCloudTexts?: string[],
+		text?: string,
+		value?: number
+	) {
+		let res = await hub.submitAnswer(answerOptions, wordCloudTexts, text, value);
+
+		if (!res) {
+			addToast({ label: 'Error submitting answer', type: 'error' });
+		}
+	}
+
 	setContext<SessionContext>('session', { startSession });
 </script>
 
@@ -116,6 +125,14 @@
 	<div class="navbar border-b border-base-300 bg-base-100 px-4">
 		<div class="navbar-start gap-2">
 			<span class="text-lg font-bold">Stimmti</span>
+
+			<div class={['badge badge-outline', hub.connected ? 'badge-success' : 'badge-error']}>
+				<div
+					aria-label={hub.connected ? 'success' : 'error'}
+					class={['status', hub.connected ? 'status-success' : 'status-error']}>
+				</div>
+				{hub.connected ? 'Connected' : 'Disconnected'}
+			</div>
 		</div>
 		<div class="navbar-center font-bold opacity-80">
 			{hub.state?.sessionName}
@@ -131,64 +148,26 @@
 		{@render children()}
 	</div>
 {:else if phase === SessionState.Loading}
+	<LoadingScreen />
+{:else if phase === SessionState.Question}
 	<div
-		class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-primary"
+		class="flex flex-col items-center justify-center px-4"
 		in:fade={{ duration: 400 }}
 		out:fade={{ duration: 400 }}>
-		<div class="text-6xl font-bold text-white md:text-[10rem]">Stimmti</div>
-		<div class="mt-4 flex gap-2 text-xl font-bold text-white">
-			<LoaderCircle class="animate-spin" />
-			Loading
-		</div>
-	</div>
-{:else if phase === SessionState.Question}
-	<div in:fade={{ duration: 400 }} out:fade={{ duration: 400 }}>
-		<h1 class="mx-auto mt-8 w-fit px-4 text-center text-5xl font-bold text-balance">
-			{hub.state?.currentQuestion?.name}
-		</h1>
-
-		{#if hub.state?.currentQuestion?.description}
-			<p class="mx-auto mt-4 w-fit px-4 text-center text-3xl opacity-80">
-				{hub.state.currentQuestion.description}
-			</p>
-		{/if}
-
-		<div class="divider mb-16"></div>
-
-		{#if hub.state?.role === ParticipantRole.Participant}
-			{#if hub.state.currentQuestion?.questionType === QuestionTypeEnum.MultipleChoice}
-				<MultipleChoice class="mx-auto" bind:options={choiceOptions} />
-			{:else if hub.state.currentQuestion?.questionType === QuestionTypeEnum.NumberScale}
-				<div class="card w-full bg-base-100 md:mx-auto md:max-w-120">
-					<div class="card-body w-full p-12 md:p-6">
-						<NumberScale
-							minValue={hub.state.currentQuestion.minValue}
-							maxValue={hub.state.currentQuestion.maxValue} />
-					</div>
-				</div>
-			{:else if hub.state.currentQuestion?.questionType === QuestionTypeEnum.SingleChoice}
-				<SingleChoice class="mx-auto" options={choiceOptions} />
-			{:else if hub.state.currentQuestion?.questionType === QuestionTypeEnum.WordCloud}
-				<fieldset class="mx-auto fieldset w-[calc(100%-2rem)] md:max-w-120">
-					<legend class="fieldset-legend text-lg">Describe in one word</legend>
-					<input type="text" class="input w-full" placeholder="Exciting" />
-				</fieldset>
-			{:else if hub.state.currentQuestion?.questionType === QuestionTypeEnum.FreeText}
-				<fieldset class="mx-auto fieldset w-[calc(100%-2rem)] md:max-w-120">
-					<legend class="fieldset-legend text-lg">Enter your thoughts</legend>
-					<textarea class="textarea w-full"></textarea>
-				</fieldset>
-			{/if}
-			<div class="mt-16 flex justify-center">
-				<button class="btn btn-primary btn-xl">Submit</button>
-			</div>
-		{/if}
-
-		{#if hub.state?.role === ParticipantRole.Presenter}
-			<button class="btn absolute right-4 bottom-4 btn-primary btn-xl" onclick={nextQuestion}>
-				Continue
-			</button>
-		{/if}
+		<QuestionDisplay
+			questionName={hub.state?.currentQuestion?.name}
+			questionDescription={hub.state?.currentQuestion?.description}
+			role={hub.state?.role}
+			questionType={hub.state?.currentQuestion?.questionType}
+			bind:choiceOptions
+			scaleMinValue={hub.state?.currentQuestion?.minValue}
+			scaleMaxValue={hub.state?.currentQuestion?.maxValue}
+			finishedAnsering={hub.state?.answeredThisRound}
+			participantCount={hub.state?.participants.length}
+			numWordCloudInputs={hub.state?.currentQuestion?.wordCloudMaxWords}
+			answers={hub.participantAnswers}
+			onNextQuestion={nextQuestion}
+			onSubmitAnswer={submitAnswer} />
 	</div>
 {:else if phase === SessionState.Finished}
 	{#if hub.state?.role === ParticipantRole.Presenter}

@@ -24,11 +24,6 @@ public class StimmtiDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid
     {
         base.OnModelCreating(builder);
 
-        foreach (var entity in builder.Model.GetEntityTypes())
-            foreach (var property in entity.GetProperties()
-                .Where(p => p.ClrType == typeof(Guid) && p.IsPrimaryKey()))
-                property.SetValueGeneratorFactory((_, _) => new SequentialGuidValueGenerator());
-
         builder.Entity<Folder>()
             .HasOne(x => x.Owner)
             .WithMany(x => x.Folders)
@@ -98,6 +93,6 @@ public class StimmtiDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid
 
         builder.Entity<ChoiceAnswer>()
             .HasOne(x => x.AnswerOption)
-            .WithMany();
+            .WithMany(x => x.Answers);
     }
 }

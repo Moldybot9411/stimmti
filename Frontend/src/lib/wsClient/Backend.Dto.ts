@@ -33,11 +33,59 @@ export type AnonymousUserDto = {
 	profilePicture: AnonymousProfilePictureDto;
 };
 
+/** Transpiled from Backend.Dto.AnswerDisplayDto */
+export type AnswerDisplayDto = {
+    /** Transpiled from System.Collections.Generic.List<Backend.Dto.ChoiceResultDto> */
+    choiceResults: ChoiceResultDto[];
+    /** Transpiled from System.Collections.Generic.List<Backend.Dto.FreeTextResultDto> */
+    freeTextResults: FreeTextResultDto[];
+    /** Transpiled from System.Collections.Generic.List<Backend.Dto.WordCloudResultDto> */
+    wordCloudResults: WordCloudResultDto[];
+    /** Transpiled from System.Collections.Generic.List<Backend.Dto.NumberResultDto> */
+    numberResults: NumberResultDto[];
+    /** Transpiled from int */
+    totalParticipantsAnswered: number;
+}
+
+/** Transpiled from Backend.Dto.ChoiceResultDto */
+export type ChoiceResultDto = {
+    /** Transpiled from Backend.Dto.AnswerOptionDto */
+    answerOption: AnswerOptionDto;
+    /** Transpiled from int */
+    count: number;
+}
+
+/** Transpiled from Backend.Dto.FreeTextResultDto */
+export type FreeTextResultDto = {
+    /** Transpiled from System.Guid */
+    id: string;
+    /** Transpiled from string */
+    text: string;
+}
+
+/** Transpiled from Backend.Dto.WordCloudResultDto */
+export type WordCloudResultDto = {
+    /** Transpiled from string */
+    text: string;
+    /** Transpiled from int */
+    count: number;
+}
+
+/** Transpiled from Backend.Dto.NumberResultDto */
+export type NumberResultDto = {
+    /** Transpiled from int */
+    value: number;
+    /** Transpiled from int */
+    count: number;
+}
+
 /** Transpiled from Backend.Dto.AnswerOptionDto */
 export type AnswerOptionDto = {
-	/** Transpiled from string */
-	description: string;
-};
+    /** Transpiled from System.Guid */
+    id: string;
+    /** Transpiled from string */
+    description: string;
+}
 
 /** Transpiled from Backend.Dto.JoinSessionDto */
 export type JoinSessionDto = {
@@ -87,38 +135,61 @@ export type PresenterDto = {
 
 /** Transpiled from Backend.Dto.QuestionTemplateDto */
 export type QuestionTemplateDto = {
-	/** Transpiled from string */
-	name: string;
-	/** Transpiled from string? */
-	description?: string;
-	/** Transpiled from Backend.Models.Enums.QuestionTypeEnum */
-	questionType: QuestionTypeEnum;
-	/** Transpiled from System.Collections.Generic.List<Backend.Dto.AnswerOptionDto> */
-	answerOptions: AnswerOptionDto[];
-	/** Transpiled from int */
-	minValue?: number;
-	/** Transpiled from int */
-	maxValue?: number;
-};
+    /** Transpiled from System.Guid */
+    id: string;
+    /** Transpiled from string */
+    name: string;
+    /** Transpiled from string? */
+    description?: string;
+    /** Transpiled from Backend.Models.Enums.QuestionTypeEnum */
+    questionType: QuestionTypeEnum;
+    /** Transpiled from System.Collections.Generic.List<Backend.Dto.AnswerOptionDto> */
+    answerOptions: AnswerOptionDto[];
+    /** Transpiled from int */
+    minValue?: number;
+    /** Transpiled from int */
+    maxValue?: number;
+    /** Transpiled from int */
+    wordCloudMaxWords?: number;
+}
 
 /** Transpiled from Backend.Dto.RestoreStateDto */
 export type RestoreStateDto = {
-	/** Transpiled from System.Guid */
-	sessionId?: string;
-	/** Transpiled from string */
-	sessionName: string;
-	/** Transpiled from string? */
-	sessionDescription?: string;
-	/** Transpiled from Backend.Models.Enums.ParticipantRole */
-	role: ParticipantRole;
-	/** Transpiled from Backend.Models.Enums.SessionState */
-	sessionState: SessionState;
-	/** Transpiled from Backend.Dto.AnonymousUserDto? */
-	userInformation?: AnonymousUserDto;
-	/** Transpiled from Backend.Dto.PresenterDto */
-	presenter: PresenterDto;
-	/** Transpiled from System.Collections.Generic.List<Backend.Dto.ParticipantDto> */
-	participants: ParticipantDto[];
-	/** Transpiled from Backend.Dto.QuestionTemplateDto? */
-	currentQuestion?: QuestionTemplateDto;
-};
+    /** Transpiled from System.Guid */
+    sessionId?: string;
+    /** Transpiled from string */
+    sessionName: string;
+    /** Transpiled from string? */
+    sessionDescription?: string;
+    /** Transpiled from Backend.Models.Enums.ParticipantRole */
+    role: ParticipantRole;
+    /** Transpiled from Backend.Models.Enums.SessionState */
+    sessionState: SessionState;
+    /** Transpiled from Backend.Dto.AnonymousUserDto? */
+    userInformation?: AnonymousUserDto;
+    /** Transpiled from Backend.Dto.PresenterDto */
+    presenter: PresenterDto;
+    /** Transpiled from System.Collections.Generic.List<Backend.Dto.ParticipantDto> */
+    participants: ParticipantDto[];
+    /** Transpiled from Backend.Dto.QuestionTemplateDto? */
+    currentQuestion?: QuestionTemplateDto;
+    /** Transpiled from bool */
+    answeredThisRound: boolean;
+}
+
+/** Transpiled from Backend.Dto.SubmitAnswerDto */
+export type SubmitAnswerDto = {
+    /** Transpiled from System.Guid */
+    anonymousUserId: string;
+    /** Transpiled from string */
+    roomCode: string;
+    /** Transpiled from System.Collections.Generic.List<Backend.Dto.AnswerOptionDto> */
+    answerOptions: AnswerOptionDto[];
+    /** Transpiled from string? */
+    text?: string;
+    /** Transpiled from int */
+    value?: number;
+    /** Transpiled from System.Collections.Generic.List<string> */
+    wordCloudAnswers: string[];
+}
+

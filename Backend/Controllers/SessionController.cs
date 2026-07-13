@@ -2,6 +2,7 @@ using Backend.Dto;
 using Backend.Hubs;
 using Backend.Mapper;
 using Backend.Models;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +18,23 @@ public class SessionController : ControllerBase
     private readonly ILogger<UserController> _logger;
     private readonly IApiMapper _mapper;
     private readonly IHubContext<DefaultHub> _hubContext;
+    private readonly IAnswerService _answerService;
 
-    public SessionController(StimmtiDbContext context, UserManager<User> userManager, ILogger<UserController> logger, IApiMapper mapper, IHubContext<DefaultHub> hubContext)
+    public SessionController(
+        StimmtiDbContext context,
+        UserManager<User> userManager,
+        ILogger<UserController> logger,
+        IApiMapper mapper,
+        IHubContext<DefaultHub> hubContext,
+        IAnswerService answerService
+    )
     {
         _context = context;
         _userManager = userManager;
         _logger = logger;
         _mapper = mapper;
         _hubContext = hubContext;
+        _answerService = answerService;
     }
 
     [HttpPost("createSession")]
@@ -119,5 +129,50 @@ public class SessionController : ControllerBase
         });
 
         return Ok();
+    }
+
+    [HttpGet("session")]
+    [ProducesResponseType(typeof(SessionResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Authorize]
+    public async Task<IActionResult> GetSession([FromQuery] Guid sessionId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var session = await _context.Sessions
+            .Include(x => x.Survey)
+            .Include(x => x.Questions.OrderBy(y => y.QuestionTemplate!.OrderNumber))
+                .ThenInclude(x => x.Answers)
+            .Include(x => x.Questions)
+                .ThenInclude(x => x.QuestionTemplate)
+            .Include(x => x.Questions)
+                .ThenInclude(x => (x.QuestionTemplate as ChoiceQuestionTemplate)!.AnswerOptions.OrderBy(y => y.OrderNumber))
+            .FirstOrDefaultAsync(x => x.Id == sessionId && x.Survey!.OwnerId == user.Id);
+        if (session == null) return NotFound();
+        if (session.RoomActive == true) return Conflict();
+
+        var result = new SessionResultDto
+        {
+            Name = session.Name,
+            Description = session.Description,
+            OpenedAt = session.OpenedAt,
+        };
+
+        foreach (var question in session.Questions)
+        {
+            var aggregate = await _answerService.GetAggregateResultsAsync(question.Id, question.QuestionTemplate!.QuestionType);
+            if (aggregate == null) continue;
+
+            result.Questions.Add(new QuestionDto
+            {
+                QuestionTemplateDto = _mapper.MapToQuestionTemplateDto(question.QuestionTemplate!),
+                AnswerDisplayDto = aggregate
+            });
+        }
+
+        return Ok(result);
     }
 }

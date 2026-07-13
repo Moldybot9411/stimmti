@@ -3,6 +3,7 @@ using Backend.Filters;
 using Backend.Hubs;
 using Backend.Mapper;
 using Backend.Models;
+using Backend.Services;
 using Backend.StaticHelpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,18 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+var corsString = builder.Configuration["CorsSettings:AllowedOrigins"];
+string[] allowedOrigins = [];
+
+if (!string.IsNullOrWhiteSpace(corsString))
+{
+    allowedOrigins = corsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+}
+else
+{
+    allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>() ?? [];
+}
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<StimmtiDbContext>(options =>
@@ -57,6 +69,10 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 })
 .AddEntityFrameworkStores<StimmtiDbContext>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddTransient<IAnswerService, AnswerService>();
+builder.Services.AddTransient<IParticipantService, ParticipantService>();
+builder.Services.AddTransient<ISessionService, SessionService>();
 
 var app = builder.Build();
 

@@ -11,6 +11,7 @@ import type {
 	ParticipantDto,
 	ParticipantUpdateResponseDto,
 	QuestionTemplateDto,
+  AnswerDisplayDto,
 } from '../Backend.Dto';
 import type { SessionState } from '../Backend.Models.Enums';
 
@@ -105,46 +106,49 @@ class ISessionHub_HubProxy implements ISessionHub {
 		return await this.connection.invoke('NextQuestion', roomCode);
 	};
 
-	public readonly closeSession = async (roomCode: string): Promise<boolean> => {
-		return await this.connection.invoke('CloseSession', roomCode);
-	};
+    public readonly closeSession = async (roomCode: string): Promise<boolean> => {
+        return await this.connection.invoke("CloseSession", roomCode);
+    }
+
+    public readonly submitAnswer = async (data: SubmitAnswerDto): Promise<boolean> => {
+        return await this.connection.invoke("SubmitAnswer", data);
+    }
 }
 
 // Receiver
 
 class ISessionHubClient_Binder implements ReceiverRegister<ISessionHubClient> {
-	public static Instance = new ISessionHubClient_Binder();
 
-	private constructor() {}
+    public static Instance = new ISessionHubClient_Binder();
 
-	public readonly register = (
-		connection: HubConnection,
-		receiver: ISessionHubClient
-	): Disposable => {
-		const __participantJoined = (...args: [ParticipantDto]) =>
-			receiver.participantJoined(...args);
-		const __participantUpdated = (...args: [ParticipantUpdateResponseDto]) =>
-			receiver.participantUpdated(...args);
-		const __sessionStateChanged = (...args: [SessionState]) =>
-			receiver.sessionStateChanged(...args);
-		const __questionChanged = (...args: [QuestionTemplateDto]) =>
-			receiver.questionChanged(...args);
-		const __sessionClosed = () => receiver.sessionClosed();
+    private constructor() {
+    }
 
-		connection.on('ParticipantJoined', __participantJoined);
-		connection.on('ParticipantUpdated', __participantUpdated);
-		connection.on('SessionStateChanged', __sessionStateChanged);
-		connection.on('QuestionChanged', __questionChanged);
-		connection.on('SessionClosed', __sessionClosed);
+    public readonly register = (connection: HubConnection, receiver: ISessionHubClient): Disposable => {
 
-		const methodList: ReceiverMethod[] = [
-			{ methodName: 'ParticipantJoined', method: __participantJoined },
-			{ methodName: 'ParticipantUpdated', method: __participantUpdated },
-			{ methodName: 'SessionStateChanged', method: __sessionStateChanged },
-			{ methodName: 'QuestionChanged', method: __questionChanged },
-			{ methodName: 'SessionClosed', method: __sessionClosed },
-		];
+        const __participantJoined = (...args: [ParticipantDto]) => receiver.participantJoined(...args);
+        const __participantUpdated = (...args: [ParticipantUpdateResponseDto]) => receiver.participantUpdated(...args);
+        const __sessionStateChanged = (...args: [SessionState]) => receiver.sessionStateChanged(...args);
+        const __questionChanged = (...args: [QuestionTemplateDto]) => receiver.questionChanged(...args);
+        const __answerSubmitted = (...args: [AnswerDisplayDto]) => receiver.answerSubmitted(...args);
+        const __sessionClosed = () => receiver.sessionClosed();
 
-		return new ReceiverMethodSubscription(connection, methodList);
-	};
+        connection.on("ParticipantJoined", __participantJoined);
+        connection.on("ParticipantUpdated", __participantUpdated);
+        connection.on("SessionStateChanged", __sessionStateChanged);
+        connection.on("QuestionChanged", __questionChanged);
+        connection.on("AnswerSubmitted", __answerSubmitted);
+        connection.on("SessionClosed", __sessionClosed);
+
+        const methodList: ReceiverMethod[] = [
+            { methodName: "ParticipantJoined", method: __participantJoined },
+            { methodName: "ParticipantUpdated", method: __participantUpdated },
+            { methodName: "SessionStateChanged", method: __sessionStateChanged },
+            { methodName: "QuestionChanged", method: __questionChanged },
+            { methodName: "AnswerSubmitted", method: __answerSubmitted },
+            { methodName: "SessionClosed", method: __sessionClosed }
+        ]
+
+        return new ReceiverMethodSubscription(connection, methodList);
+    }
 }

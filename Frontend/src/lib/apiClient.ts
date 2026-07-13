@@ -1,6 +1,7 @@
+import { env } from '$env/dynamic/public';
 import { Api } from './api';
 
 export const apiClient = new Api({
-	baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5202',
+	baseURL: env.PUBLIC_DOMAIN || 'http://localhost:5202',
 	withCredentials: true,
 });

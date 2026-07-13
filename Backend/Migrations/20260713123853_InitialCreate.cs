@@ -228,7 +228,8 @@ namespace Backend.Migrations
                     IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     QuestionTypeId = table.Column<int>(type: "int", nullable: false),
                     MinValue = table.Column<int>(type: "int", nullable: true),
-                    MaxValue = table.Column<int>(type: "int", nullable: true)
+                    MaxValue = table.Column<int>(type: "int", nullable: true),
+                    MaxWords = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -237,6 +238,28 @@ namespace Backend.Migrations
                         name: "FK_QuestionTemplates_Surveys_SurveyId",
                         column: x => x.SurveyId,
                         principalTable: "Surveys",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "AnswerOptions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
+                    OrderNumber = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: false),
+                    QuestionTemplateId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnswerOptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AnswerOptions_QuestionTemplates_QuestionTemplateId",
+                        column: x => x.QuestionTemplateId,
+                        principalTable: "QuestionTemplates",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -265,34 +288,12 @@ namespace Backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     Name = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false),
-                    SessionId = table.Column<Guid>(type: "char(36)", nullable: false)
+                    SessionId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    AnsweredThisRound = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AnonymousUsers", x => x.Id);
-                })
-                .Annotation("MySQL:Charset", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "AnswerOptions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false),
-                    OrderNumber = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: false),
-                    QuestionTemplateId = table.Column<Guid>(type: "char(36)", nullable: false),
-                    AnswerId = table.Column<Guid>(type: "char(36)", nullable: true),
-                    IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AnswerOptions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AnswerOptions_QuestionTemplates_QuestionTemplateId",
-                        column: x => x.QuestionTemplateId,
-                        principalTable: "QuestionTemplates",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
 
@@ -305,9 +306,10 @@ namespace Backend.Migrations
                     QuestionId = table.Column<Guid>(type: "char(36)", nullable: false),
                     QuestionTypeId = table.Column<int>(type: "int", nullable: false),
                     AnswerOptionId = table.Column<Guid>(type: "char(36)", nullable: true),
-                    Text = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: true),
+                    Text = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Value = table.Column<int>(type: "int", nullable: true),
-                    WordCloudAnswer_Text = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true)
+                    WordCloudAnswer_Text = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -357,6 +359,7 @@ namespace Backend.Migrations
                     RoomCode = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false),
                     RoomActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     CurrentState = table.Column<int>(type: "int", nullable: false),
+                    OpenedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     SurveyId = table.Column<Guid>(type: "char(36)", nullable: false),
                     CurrentQuestionId = table.Column<Guid>(type: "char(36)", nullable: true)
                 },
@@ -388,11 +391,6 @@ namespace Backend.Migrations
                 name: "IX_AnonymousUsers_SessionId",
                 table: "AnonymousUsers",
                 column: "SessionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AnswerOptions_AnswerId",
-                table: "AnswerOptions",
-                column: "AnswerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AnswerOptions_QuestionTemplateId",
@@ -508,13 +506,6 @@ namespace Backend.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_AnswerOptions_Answers_AnswerId",
-                table: "AnswerOptions",
-                column: "AnswerId",
-                principalTable: "Answers",
-                principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
                 name: "FK_Answers_Questions_QuestionId",
                 table: "Answers",
                 column: "QuestionId",
@@ -535,19 +526,14 @@ namespace Backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Answers_AnonymousUsers_AnonymousUserId",
-                table: "Answers");
-
-            migrationBuilder.DropForeignKey(
                 name: "FK_Questions_Sessions_SessionId",
                 table: "Questions");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_AnswerOptions_Answers_AnswerId",
-                table: "AnswerOptions");
-
             migrationBuilder.DropTable(
                 name: "AnonymousProfilePictures");
+
+            migrationBuilder.DropTable(
+                name: "Answers");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
@@ -565,19 +551,16 @@ namespace Backend.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
                 name: "AnonymousUsers");
 
             migrationBuilder.DropTable(
-                name: "Sessions");
-
-            migrationBuilder.DropTable(
-                name: "Answers");
-
-            migrationBuilder.DropTable(
                 name: "AnswerOptions");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "Questions");

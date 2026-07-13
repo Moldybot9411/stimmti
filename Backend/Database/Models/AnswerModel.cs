@@ -24,19 +24,18 @@ public class SingleChoiceAnswer : ChoiceAnswer { }
 
 public class MultipleChoiceAnswer : ChoiceAnswer { }
 
-public abstract class TextAnswer : Answer
-{
-    [MaxLength(2048)]
-    public required string Text { get; set; }
-}
-
 public class WordCloudAnswer : Answer
 {
-    [MaxLength(255)]
+    [MaxLength(64)]
     public required string Text { get; set; }
 }
 
-public class FreeTextAnswer : TextAnswer { }
+public class FreeTextAnswer : Answer
+{
+    [MaxLength(256)]
+    public required string Text { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
 
 public class NumberScaleAnswer : Answer
 {

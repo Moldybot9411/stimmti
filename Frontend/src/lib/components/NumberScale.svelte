@@ -12,12 +12,16 @@
 	let {
 		minValue = 0,
 		maxValue = 10,
-		value = $bindable(minValue ?? 0),
+		value = $bindable(),
 		class: classes,
 		style,
 	}: Props = $props();
 
-	let percent = $derived((value - minValue) / (maxValue - minValue));
+	$effect(() => {
+		value = minValue;
+	});
+
+	let percent = $derived((value ?? minValue - minValue) / (maxValue - minValue));
 </script>
 
 <div class={['flex w-full flex-col items-center gap-4', classes]}>

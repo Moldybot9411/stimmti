@@ -57,3 +57,6 @@ TestResult.xml
 nunit-*.xml
 
 Backend/wwwroot/
+.env
+Caddyfile
+uploads/

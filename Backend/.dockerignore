@@ -1,0 +1,9 @@
+obj/
+bin/
+wwwroot/
+appsettings.Development.json
+dotnet-tools.json
+
+.dockerignore
+Dockerfile
+.env

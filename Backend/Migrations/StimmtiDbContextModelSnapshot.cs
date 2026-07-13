@@ -53,6 +53,9 @@ namespace Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<bool>("AnsweredThisRound")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -102,9 +105,6 @@ namespace Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("AnswerId")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(2048)
@@ -120,8 +120,6 @@ namespace Backend.Migrations
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AnswerId");
 
                     b.HasIndex("QuestionTemplateId");
 
@@ -228,6 +226,9 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime>("OpenedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<bool>("RoomActive")
                         .HasColumnType("tinyint(1)");
@@ -488,10 +489,13 @@ namespace Backend.Migrations
                 {
                     b.HasBaseType("Backend.Models.Answer");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("varchar(2048)");
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
 
                     b.HasDiscriminator().HasValue(4);
                 });
@@ -512,8 +516,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
                     b.ToTable("Answers", t =>
                         {
@@ -552,6 +556,9 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Models.WordCloudQuestionTemplate", b =>
                 {
                     b.HasBaseType("Backend.Models.QuestionTemplate");
+
+                    b.Property<int>("MaxWords")
+                        .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue(3);
                 });
@@ -627,17 +634,11 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.AnswerOption", b =>
                 {
-                    b.HasOne("Backend.Models.Answer", "Answer")
-                        .WithMany()
-                        .HasForeignKey("AnswerId");
-
                     b.HasOne("Backend.Models.ChoiceQuestionTemplate", "QuestionTemplate")
                         .WithMany("AnswerOptions")
                         .HasForeignKey("QuestionTemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Answer");
 
                     b.Navigation("QuestionTemplate");
                 });
@@ -773,7 +774,7 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Models.ChoiceAnswer", b =>
                 {
                     b.HasOne("Backend.Models.AnswerOption", "AnswerOption")
-                        .WithMany()
+                        .WithMany("Answers")
                         .HasForeignKey("AnswerOptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -786,6 +787,11 @@ namespace Backend.Migrations
                     b.Navigation("Answers");
 
                     b.Navigation("ProfilePicture");
+                });
+
+            modelBuilder.Entity("Backend.Models.AnswerOption", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("Backend.Models.Folder", b =>

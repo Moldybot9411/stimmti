@@ -73,7 +73,8 @@ public static class DatabaseSeeder
                 Name = "Question 3 (WordCloud)",
                 Description = "The user can submit a specified number of words which get grouped and displayed in a cloud",
                 SurveyId = testSurvey.Id,
-                OrderNumber = 3
+                OrderNumber = 3,
+                MaxWords = 3
             },
             new FreeTextQuestionTemplate
             {

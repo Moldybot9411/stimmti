@@ -13,6 +13,7 @@ public interface ISessionHub
     Task<bool> StartSession(string roomCode);
     Task<bool> NextQuestion(string roomCode);
     Task<bool> CloseSession(string roomCode);
+    Task<bool> SubmitAnswer(SubmitAnswerDto data);
 }
 
 [Receiver]
@@ -22,5 +23,6 @@ public interface ISessionHubClient
     Task ParticipantUpdated(ParticipantUpdateResponseDto data);
     Task SessionStateChanged(SessionState newState);
     Task QuestionChanged(QuestionTemplateDto data);
+    Task AnswerSubmitted(AnswerDisplayDto data);
     Task SessionClosed();
 }

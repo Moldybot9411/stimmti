@@ -9,9 +9,16 @@
 		style?: string;
 	};
 
-	let { options = [], value = $bindable(), class: classes, style }: Props = $props();
+	let { options = $bindable([]), class: classes, style }: Props = $props();
 
 	let radioName = crypto.randomUUID();
+	let value: number = $state(-1);
+
+	$effect(() => {
+		if (value >= 0 && value < options.length) {
+			options.forEach((x, index) => (x.checked = index === value));
+		}
+	});
 </script>
 
 <div class={['flex w-full flex-col items-center gap-2 md:max-w-120', classes]} {style}>
@@ -27,7 +34,7 @@
 				name={radioName}
 				value={index}
 				bind:group={value} />
-			{option.label}
+			{option.answerOption.description}
 		</label>
 	{/each}
 </div>

@@ -13,6 +13,8 @@ public class AnonymousUser
     public required Guid SessionId { get; set; }
     public Session? Session { get; set; }
 
+    public bool AnsweredThisRound { get; set; } = false;
+
     public AnonymousProfilePicture? ProfilePicture { get; set; }
 
     public List<Answer> Answers { get; set; } = new List<Answer>();

@@ -10,6 +10,14 @@
  * ---------------------------------------------------------------
  */
 
+export enum QuestionTypeEnum {
+  SingleChoice = "SingleChoice",
+  MultipleChoice = "MultipleChoice",
+  WordCloud = "WordCloud",
+  FreeText = "FreeText",
+  NumberScale = "NumberScale",
+}
+
 export enum HatProfileEnum {
 	Hat01 = 'Hat01',
 	Hat02 = 'Hat02',
@@ -40,6 +48,27 @@ export enum BodyProfileEnum {
 	Body03 = 'Body03',
 	Body04 = 'Body04',
 	Body05 = 'Body05',
+}
+
+export interface AnswerDisplayDto {
+  choiceResults: ChoiceResultDto[];
+  freeTextResults: FreeTextResultDto[];
+  wordCloudResults: WordCloudResultDto[];
+  numberResults: NumberResultDto[];
+  /** @format int32 */
+  totalParticipantsAnswered?: number;
+}
+
+export interface AnswerOptionDto {
+  /** @format uuid */
+  id: string;
+  description: string | null;
+}
+
+export interface ChoiceResultDto {
+  answerOption: AnswerOptionDto;
+  /** @format int32 */
+  count: number;
 }
 
 export interface CreateFolderDto {
@@ -82,9 +111,22 @@ export interface CreateSurveyResponseDto {
 	folderId?: string | null;
 }
 
+export interface FreeTextResultDto {
+  /** @format uuid */
+  id: string;
+  text: string | null;
+}
+
 export interface IdentityError {
 	code?: string | null;
 	description?: string | null;
+}
+
+export interface NumberResultDto {
+  /** @format int32 */
+  value: number;
+  /** @format int32 */
+  count: number;
 }
 
 export interface ProblemDetails {
@@ -95,6 +137,32 @@ export interface ProblemDetails {
 	detail?: string | null;
 	instance?: string | null;
 	[key: string]: any;
+}
+
+export interface QuestionDto {
+  questionTemplateDto: QuestionTemplateDto;
+  answerDisplayDto: AnswerDisplayDto;
+}
+
+export interface QuestionTemplateDto {
+  name: string | null;
+  description?: string | null;
+  questionType: QuestionTypeEnum;
+  answerOptions?: AnswerOptionDto[] | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  wordCloudMaxWords?: number | null;
+}
+
+export interface SessionResultDto {
+  name: string | null;
+  description?: string | null;
+  /** @format date-time */
+  openedAt: string;
+  questions: QuestionDto[];
 }
 
 export interface UserAuthDto {
@@ -147,6 +215,13 @@ export interface ValidationProblemDetails {
 	instance?: string | null;
 	errors?: Record<string, string[]> | null;
 	[key: string]: any;
+}
+
+export interface WordCloudResultDto {
+  /** @minLength 1 */
+  text: string;
+  /** @format int32 */
+  count: number;
 }
 
 import type {
@@ -315,274 +390,310 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title Backend
  * @version 1.0
  */
-export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
-	api = {
-		/**
-		 * No description
-		 *
-		 * @tags Session
-		 * @name V1SessionCreateSessionCreate
-		 * @request POST:/api/v1/Session/createSession
-		 */
-		v1SessionCreateSessionCreate: (data: CreateSessionDto, params: RequestParams = {}) =>
-			this.request<CreateSessionResponseDto, ProblemDetails>({
-				path: `/api/v1/Session/createSession`,
-				method: 'POST',
-				body: data,
-				type: ContentType.Json,
-				format: 'json',
-				...params,
-			}),
+export class Api<
+  SecurityDataType extends unknown,
+> extends HttpClient<SecurityDataType> {
+  api = {
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionCreateSessionCreate
+     * @request POST:/api/v1/Session/createSession
+     */
+    v1SessionCreateSessionCreate: (
+      data: CreateSessionDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateSessionResponseDto, ProblemDetails>({
+        path: `/api/v1/Session/createSession`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags Session
-		 * @name V1SessionCheckSessionList
-		 * @request GET:/api/v1/Session/checkSession
-		 */
-		v1SessionCheckSessionList: (
-			query?: {
-				roomCode?: string;
-			},
-			params: RequestParams = {}
-		) =>
-			this.request<void, ProblemDetails>({
-				path: `/api/v1/Session/checkSession`,
-				method: 'GET',
-				query: query,
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionCheckSessionList
+     * @request GET:/api/v1/Session/checkSession
+     */
+    v1SessionCheckSessionList: (
+      query?: {
+        roomCode?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/v1/Session/checkSession`,
+        method: "GET",
+        query: query,
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags Survey
-		 * @name V1SurveyCreate
-		 * @request POST:/api/v1/Survey
-		 */
-		v1SurveyCreate: (data: CreateSurveyDto, params: RequestParams = {}) =>
-			this.request<CreateSurveyResponseDto, ProblemDetails>({
-				path: `/api/v1/Survey`,
-				method: 'POST',
-				body: data,
-				type: ContentType.Json,
-				format: 'json',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionSessionList
+     * @request GET:/api/v1/Session/session
+     */
+    v1SessionSessionList: (
+      query?: {
+        /** @format uuid */
+        sessionId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<SessionResultDto, ProblemDetails>({
+        path: `/api/v1/Session/session`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags Survey
-		 * @name V1SurveyFoldersCreate
-		 * @request POST:/api/v1/Survey/folders
-		 */
-		v1SurveyFoldersCreate: (data: CreateFolderDto, params: RequestParams = {}) =>
-			this.request<CreateFolderResponseDto, ProblemDetails>({
-				path: `/api/v1/Survey/folders`,
-				method: 'POST',
-				body: data,
-				type: ContentType.Json,
-				format: 'json',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name V1SurveyCreate
+     * @request POST:/api/v1/Survey
+     */
+    v1SurveyCreate: (data: CreateSurveyDto, params: RequestParams = {}) =>
+      this.request<CreateSurveyResponseDto, ProblemDetails>({
+        path: `/api/v1/Survey`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserRegisterCreate
-		 * @request POST:/api/v1/User/register
-		 */
-		v1UserRegisterCreate: (data: UserRegisterDto, params: RequestParams = {}) =>
-			this.request<void, any>({
-				path: `/api/v1/User/register`,
-				method: 'POST',
-				body: data,
-				type: ContentType.Json,
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name V1SurveyFoldersCreate
+     * @request POST:/api/v1/Survey/folders
+     */
+    v1SurveyFoldersCreate: (
+      data: CreateFolderDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateFolderResponseDto, ProblemDetails>({
+        path: `/api/v1/Survey/folders`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserLoginCreate
-		 * @request POST:/api/v1/User/login
-		 */
-		v1UserLoginCreate: (data: UserLoginDto, params: RequestParams = {}) =>
-			this.request<void, any>({
-				path: `/api/v1/User/login`,
-				method: 'POST',
-				body: data,
-				type: ContentType.Json,
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserRegisterCreate
+     * @request POST:/api/v1/User/register
+     */
+    v1UserRegisterCreate: (data: UserRegisterDto, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/v1/User/register`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserLogoutCreate
-		 * @request POST:/api/v1/User/logout
-		 */
-		v1UserLogoutCreate: (params: RequestParams = {}) =>
-			this.request<void, any>({
-				path: `/api/v1/User/logout`,
-				method: 'POST',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserLoginCreate
+     * @request POST:/api/v1/User/login
+     */
+    v1UserLoginCreate: (data: UserLoginDto, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/v1/User/login`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserCheckUsernameList
-		 * @request GET:/api/v1/User/checkUsername
-		 */
-		v1UserCheckUsernameList: (
-			query: {
-				/**
-				 * @maxLength 20
-				 * @pattern ^[A-Za-z0-9]+$
-				 */
-				Username: string;
-			},
-			params: RequestParams = {}
-		) =>
-			this.request<UserUsernameAvailabilityResponseDto, ValidationProblemDetails>({
-				path: `/api/v1/User/checkUsername`,
-				method: 'GET',
-				query: query,
-				format: 'json',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserLogoutCreate
+     * @request POST:/api/v1/User/logout
+     */
+    v1UserLogoutCreate: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/v1/User/logout`,
+        method: "POST",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserCheckEmailCreate
-		 * @request POST:/api/v1/User/checkEmail
-		 */
-		v1UserCheckEmailCreate: (
-			query?: {
-				email?: string;
-			},
-			params: RequestParams = {}
-		) =>
-			this.request<void, any>({
-				path: `/api/v1/User/checkEmail`,
-				method: 'POST',
-				query: query,
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserCheckUsernameList
+     * @request GET:/api/v1/User/checkUsername
+     */
+    v1UserCheckUsernameList: (
+      query: {
+        /**
+         * @maxLength 20
+         * @pattern ^[A-Za-z0-9]+$
+         */
+        Username: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        UserUsernameAvailabilityResponseDto,
+        ValidationProblemDetails
+      >({
+        path: `/api/v1/User/checkUsername`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserMeList
-		 * @request GET:/api/v1/User/me
-		 */
-		v1UserMeList: (params: RequestParams = {}) =>
-			this.request<UserAuthDto, any>({
-				path: `/api/v1/User/me`,
-				method: 'GET',
-				format: 'json',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserCheckEmailCreate
+     * @request POST:/api/v1/User/checkEmail
+     */
+    v1UserCheckEmailCreate: (
+      query?: {
+        email?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, any>({
+        path: `/api/v1/User/checkEmail`,
+        method: "POST",
+        query: query,
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserUsernamePartialUpdate
-		 * @request PATCH:/api/v1/User/username
-		 */
-		v1UserUsernamePartialUpdate: (
-			data: UserUsernameCheckRequestDto,
-			params: RequestParams = {}
-		) =>
-			this.request<string, IdentityError[]>({
-				path: `/api/v1/User/username`,
-				method: 'PATCH',
-				body: data,
-				type: ContentType.Json,
-				format: 'json',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserMeList
+     * @request GET:/api/v1/User/me
+     */
+    v1UserMeList: (params: RequestParams = {}) =>
+      this.request<UserAuthDto, any>({
+        path: `/api/v1/User/me`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserEmailPartialUpdate
-		 * @request PATCH:/api/v1/User/email
-		 */
-		v1UserEmailPartialUpdate: (data: string, params: RequestParams = {}) =>
-			this.request<string, IdentityError[]>({
-				path: `/api/v1/User/email`,
-				method: 'PATCH',
-				body: data,
-				type: ContentType.Json,
-				format: 'json',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserUsernamePartialUpdate
+     * @request PATCH:/api/v1/User/username
+     */
+    v1UserUsernamePartialUpdate: (
+      data: UserUsernameCheckRequestDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<string, IdentityError[]>({
+        path: `/api/v1/User/username`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserPasswordPartialUpdate
-		 * @request PATCH:/api/v1/User/password
-		 */
-		v1UserPasswordPartialUpdate: (data: UserPasswordDto, params: RequestParams = {}) =>
-			this.request<void, ValidationProblemDetails>({
-				path: `/api/v1/User/password`,
-				method: 'PATCH',
-				body: data,
-				type: ContentType.Json,
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserEmailPartialUpdate
+     * @request PATCH:/api/v1/User/email
+     */
+    v1UserEmailPartialUpdate: (data: string, params: RequestParams = {}) =>
+      this.request<string, IdentityError[]>({
+        path: `/api/v1/User/email`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserProfilePictureCreate
-		 * @request POST:/api/v1/User/profilePicture
-		 */
-		v1UserProfilePictureCreate: (
-			data: {
-				/** @format binary */
-				file?: File;
-			},
-			params: RequestParams = {}
-		) =>
-			this.request<string, ProblemDetails>({
-				path: `/api/v1/User/profilePicture`,
-				method: 'POST',
-				body: data,
-				type: ContentType.FormData,
-				format: 'json',
-				...params,
-			}),
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserPasswordPartialUpdate
+     * @request PATCH:/api/v1/User/password
+     */
+    v1UserPasswordPartialUpdate: (
+      data: UserPasswordDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ValidationProblemDetails>({
+        path: `/api/v1/User/password`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
 
-		/**
-		 * No description
-		 *
-		 * @tags User
-		 * @name V1UserDeleteUserDelete
-		 * @request DELETE:/api/v1/User/DeleteUser
-		 */
-		v1UserDeleteUserDelete: (params: RequestParams = {}) =>
-			this.request<UserAuthDto, ProblemDetails>({
-				path: `/api/v1/User/DeleteUser`,
-				method: 'DELETE',
-				format: 'json',
-				...params,
-			}),
-	};
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserProfilePictureCreate
+     * @request POST:/api/v1/User/profilePicture
+     */
+    v1UserProfilePictureCreate: (
+      data: {
+        /** @format binary */
+        file?: File;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<string, ProblemDetails>({
+        path: `/api/v1/User/profilePicture`,
+        method: "POST",
+        body: data,
+        type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name V1UserDeleteUserDelete
+     * @request DELETE:/api/v1/User/DeleteUser
+     */
+    v1UserDeleteUserDelete: (params: RequestParams = {}) =>
+      this.request<UserAuthDto, ProblemDetails>({
+        path: `/api/v1/User/DeleteUser`,
+        method: "DELETE",
+        format: "json",
+        ...params,
+      }),
+  };
 }

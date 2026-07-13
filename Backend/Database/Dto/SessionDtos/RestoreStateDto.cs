@@ -17,4 +17,5 @@ public class RestoreStateDto
     public required PresenterDto Presenter { get; set; }
     public List<ParticipantDto> Participants { get; set; } = new List<ParticipantDto>();
     public QuestionTemplateDto? CurrentQuestion { get; set; }
+    public bool AnsweredThisRound { get; set; } = false;
 }

@@ -1,6 +1,8 @@
 <script lang="ts" module>
+	import type { AnswerOptionDto } from '$lib/wsClient/Backend.Dto';
+
 	export type Option = {
-		label: string;
+		answerOption: AnswerOptionDto;
 		checked?: boolean;
 	};
 </script>
@@ -28,7 +30,7 @@
 				type="checkbox"
 				class="checkbox checkbox-primary"
 				bind:checked={option.checked} />
-			{option.label}
+			{option.answerOption.description}
 		</label>
 	{/each}
 </div>

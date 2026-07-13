@@ -5,6 +5,8 @@ import type {
 } from './wsClient/TypedSignalR.Client/Backend.Hubs.Interfaces';
 import type {
 	AnonymousProfilePictureDto,
+	AnswerDisplayDto,
+	AnswerOptionDto,
 	JoinSessionDto,
 	RestoreStateDto,
 } from './wsClient/Backend.Dto';
@@ -24,6 +26,7 @@ export class SessionConnection {
 
 	connected = $state(false);
 	state = $state<RestoreStateDto | null>(null);
+	participantAnswers: AnswerDisplayDto | undefined = $state();
 
 	constructor() {
 		this.connection = new signalR.HubConnectionBuilder()
@@ -57,6 +60,8 @@ export class SessionConnection {
 			questionChanged: async (data) => {
 				if (!this.state) return;
 				this.state.currentQuestion = data;
+				this.state.answeredThisRound = false;
+				this.participantAnswers = undefined;
 			},
 			sessionClosed: async () => {
 				if (this.state?.role === ParticipantRole.Participant) {
@@ -65,6 +70,9 @@ export class SessionConnection {
 				}
 
 				goto(`/app/sessions/${this.state?.sessionId}`);
+			},
+			answerSubmitted: async (data) => {
+				this.participantAnswers = data;
 			},
 		};
 
@@ -149,6 +157,28 @@ export class SessionConnection {
 		if (!this.currentRoomCode || !this.connected) return false;
 
 		let res = await this.sessionHub.closeSession(this.currentRoomCode);
+
+		return res;
+	}
+
+	async submitAnswer(
+		answerOptions?: AnswerOptionDto[],
+		wordCloudTexts?: string[],
+		text?: string,
+		value?: number
+	) {
+		if (!this.currentRoomCode || !this.connected || !this.state?.userInformation) return false;
+
+		let res = await this.sessionHub.submitAnswer({
+			anonymousUserId: this.state.userInformation.id,
+			roomCode: this.currentRoomCode,
+			answerOptions: answerOptions ?? [],
+			text,
+			value,
+			wordCloudAnswers: wordCloudTexts ?? [],
+		});
+
+		if (res) this.state.answeredThisRound = true;
 
 		return res;
 	}

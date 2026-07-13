@@ -44,7 +44,10 @@ public class SingleChoiceQuestionTemplate : ChoiceQuestionTemplate { }
 
 public class MultipleChoiceQuestionTemplate : ChoiceQuestionTemplate { }
 
-public class WordCloudQuestionTemplate : QuestionTemplate { }
+public class WordCloudQuestionTemplate : QuestionTemplate
+{
+    public required int MaxWords { get; set; } = 3;
+}
 
 public class FreeTextQuestionTemplate : QuestionTemplate { }
 
