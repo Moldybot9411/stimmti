@@ -8,6 +8,9 @@
 # Setting up a development SQL Database
 docker compose -f devdb.compose.yaml up -d
 
+# Copy and adjust environment variables for the frontend
+cp .env.example Frontend/.env
+
 # Starting the Backend
 cd Backend
 dotnet restore
@@ -18,6 +21,8 @@ cd ../Frontend
 npm i
 npm run dev
 ```
+
+Frontend environment values are documented in `.env.example`.
 
 **Where to access what**
 |PhpMyAdmin|Swagger Docs|Frontend|

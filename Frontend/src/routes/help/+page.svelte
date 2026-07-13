@@ -46,7 +46,7 @@
 </div>
 
 <div class="mx-auto flex w-full flex-col gap-4 p-4 md:w-200">
-	<div class="join join-vertical h-fit w-full rounded-box bg-base-100">
+	<div class="join h-fit w-full join-vertical rounded-box bg-base-100">
 		{#if tabs === 'participant'}
 			{@render tile(
 				HatGlasses,

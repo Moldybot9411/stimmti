@@ -4,141 +4,147 @@
 // @ts-nocheck
 import type { HubConnection, IStreamResult, Subject } from '@microsoft/signalr';
 import type { ISessionHub, ISessionHubClient } from './Backend.Hubs.Interfaces';
-import type { JoinSessionDto, RestoreStateDto, ParticipantUpdateDto, ParticipantDto, ParticipantUpdateResponseDto, QuestionTemplateDto } from '../Backend.Dto';
+import type {
+	JoinSessionDto,
+	RestoreStateDto,
+	ParticipantUpdateDto,
+	ParticipantDto,
+	ParticipantUpdateResponseDto,
+	QuestionTemplateDto,
+} from '../Backend.Dto';
 import type { SessionState } from '../Backend.Models.Enums';
-
 
 // components
 
 export type Disposable = {
-    dispose(): void;
-}
+	dispose(): void;
+};
 
 export type HubProxyFactory<T> = {
-    createHubProxy(connection: HubConnection): T;
-}
+	createHubProxy(connection: HubConnection): T;
+};
 
 export type ReceiverRegister<T> = {
-    register(connection: HubConnection, receiver: T): Disposable;
-}
+	register(connection: HubConnection, receiver: T): Disposable;
+};
 
 type ReceiverMethod = {
-    methodName: string,
-    method: (...args: any[]) => void
-}
+	methodName: string;
+	method: (...args: any[]) => void;
+};
 
 class ReceiverMethodSubscription implements Disposable {
+	public constructor(
+		private connection: HubConnection,
+		private receiverMethod: ReceiverMethod[]
+	) {}
 
-    public constructor(
-        private connection: HubConnection,
-        private receiverMethod: ReceiverMethod[]) {
-    }
-
-    public readonly dispose = () => {
-        for (const it of this.receiverMethod) {
-            this.connection.off(it.methodName, it.method);
-        }
-    }
+	public readonly dispose = () => {
+		for (const it of this.receiverMethod) {
+			this.connection.off(it.methodName, it.method);
+		}
+	};
 }
 
 // API
 
 export type HubProxyFactoryProvider = {
-    (hubType: "ISessionHub"): HubProxyFactory<ISessionHub>;
-}
+	(hubType: 'ISessionHub'): HubProxyFactory<ISessionHub>;
+};
 
 export const getHubProxyFactory = ((hubType: string) => {
-    if(hubType === "ISessionHub") {
-        return ISessionHub_HubProxyFactory.Instance;
-    }
+	if (hubType === 'ISessionHub') {
+		return ISessionHub_HubProxyFactory.Instance;
+	}
 }) as HubProxyFactoryProvider;
 
 export type ReceiverRegisterProvider = {
-    (receiverType: "ISessionHubClient"): ReceiverRegister<ISessionHubClient>;
-}
+	(receiverType: 'ISessionHubClient'): ReceiverRegister<ISessionHubClient>;
+};
 
 export const getReceiverRegister = ((receiverType: string) => {
-    if(receiverType === "ISessionHubClient") {
-        return ISessionHubClient_Binder.Instance;
-    }
+	if (receiverType === 'ISessionHubClient') {
+		return ISessionHubClient_Binder.Instance;
+	}
 }) as ReceiverRegisterProvider;
 
 // HubProxy
 
 class ISessionHub_HubProxyFactory implements HubProxyFactory<ISessionHub> {
-    public static Instance = new ISessionHub_HubProxyFactory();
+	public static Instance = new ISessionHub_HubProxyFactory();
 
-    private constructor() {
-    }
+	private constructor() {}
 
-    public readonly createHubProxy = (connection: HubConnection): ISessionHub => {
-        return new ISessionHub_HubProxy(connection);
-    }
+	public readonly createHubProxy = (connection: HubConnection): ISessionHub => {
+		return new ISessionHub_HubProxy(connection);
+	};
 }
 
 class ISessionHub_HubProxy implements ISessionHub {
+	public constructor(private connection: HubConnection) {}
 
-    public constructor(private connection: HubConnection) {
-    }
+	public readonly joinSession = async (data: JoinSessionDto): Promise<RestoreStateDto> => {
+		return await this.connection.invoke('JoinSession', data);
+	};
 
-    public readonly joinSession = async (data: JoinSessionDto): Promise<RestoreStateDto> => {
-        return await this.connection.invoke("JoinSession", data);
-    }
+	public readonly leaveRoom = async (roomCode: string): Promise<void> => {
+		return await this.connection.invoke('LeaveRoom', roomCode);
+	};
 
-    public readonly leaveRoom = async (roomCode: string): Promise<void> => {
-        return await this.connection.invoke("LeaveRoom", roomCode);
-    }
+	public readonly updateParticipantData = async (
+		data: ParticipantUpdateDto
+	): Promise<boolean> => {
+		return await this.connection.invoke('UpdateParticipantData', data);
+	};
 
-    public readonly updateParticipantData = async (data: ParticipantUpdateDto): Promise<boolean> => {
-        return await this.connection.invoke("UpdateParticipantData", data);
-    }
+	public readonly startSession = async (roomCode: string): Promise<boolean> => {
+		return await this.connection.invoke('StartSession', roomCode);
+	};
 
-    public readonly startSession = async (roomCode: string): Promise<boolean> => {
-        return await this.connection.invoke("StartSession", roomCode);
-    }
+	public readonly nextQuestion = async (roomCode: string): Promise<boolean> => {
+		return await this.connection.invoke('NextQuestion', roomCode);
+	};
 
-    public readonly nextQuestion = async (roomCode: string): Promise<boolean> => {
-        return await this.connection.invoke("NextQuestion", roomCode);
-    }
-
-    public readonly closeSession = async (roomCode: string): Promise<boolean> => {
-        return await this.connection.invoke("CloseSession", roomCode);
-    }
+	public readonly closeSession = async (roomCode: string): Promise<boolean> => {
+		return await this.connection.invoke('CloseSession', roomCode);
+	};
 }
-
 
 // Receiver
 
 class ISessionHubClient_Binder implements ReceiverRegister<ISessionHubClient> {
+	public static Instance = new ISessionHubClient_Binder();
 
-    public static Instance = new ISessionHubClient_Binder();
+	private constructor() {}
 
-    private constructor() {
-    }
+	public readonly register = (
+		connection: HubConnection,
+		receiver: ISessionHubClient
+	): Disposable => {
+		const __participantJoined = (...args: [ParticipantDto]) =>
+			receiver.participantJoined(...args);
+		const __participantUpdated = (...args: [ParticipantUpdateResponseDto]) =>
+			receiver.participantUpdated(...args);
+		const __sessionStateChanged = (...args: [SessionState]) =>
+			receiver.sessionStateChanged(...args);
+		const __questionChanged = (...args: [QuestionTemplateDto]) =>
+			receiver.questionChanged(...args);
+		const __sessionClosed = () => receiver.sessionClosed();
 
-    public readonly register = (connection: HubConnection, receiver: ISessionHubClient): Disposable => {
+		connection.on('ParticipantJoined', __participantJoined);
+		connection.on('ParticipantUpdated', __participantUpdated);
+		connection.on('SessionStateChanged', __sessionStateChanged);
+		connection.on('QuestionChanged', __questionChanged);
+		connection.on('SessionClosed', __sessionClosed);
 
-        const __participantJoined = (...args: [ParticipantDto]) => receiver.participantJoined(...args);
-        const __participantUpdated = (...args: [ParticipantUpdateResponseDto]) => receiver.participantUpdated(...args);
-        const __sessionStateChanged = (...args: [SessionState]) => receiver.sessionStateChanged(...args);
-        const __questionChanged = (...args: [QuestionTemplateDto]) => receiver.questionChanged(...args);
-        const __sessionClosed = () => receiver.sessionClosed();
+		const methodList: ReceiverMethod[] = [
+			{ methodName: 'ParticipantJoined', method: __participantJoined },
+			{ methodName: 'ParticipantUpdated', method: __participantUpdated },
+			{ methodName: 'SessionStateChanged', method: __sessionStateChanged },
+			{ methodName: 'QuestionChanged', method: __questionChanged },
+			{ methodName: 'SessionClosed', method: __sessionClosed },
+		];
 
-        connection.on("ParticipantJoined", __participantJoined);
-        connection.on("ParticipantUpdated", __participantUpdated);
-        connection.on("SessionStateChanged", __sessionStateChanged);
-        connection.on("QuestionChanged", __questionChanged);
-        connection.on("SessionClosed", __sessionClosed);
-
-        const methodList: ReceiverMethod[] = [
-            { methodName: "ParticipantJoined", method: __participantJoined },
-            { methodName: "ParticipantUpdated", method: __participantUpdated },
-            { methodName: "SessionStateChanged", method: __sessionStateChanged },
-            { methodName: "QuestionChanged", method: __questionChanged },
-            { methodName: "SessionClosed", method: __sessionClosed }
-        ]
-
-        return new ReceiverMethodSubscription(connection, methodList);
-    }
+		return new ReceiverMethodSubscription(connection, methodList);
+	};
 }
-

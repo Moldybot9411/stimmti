@@ -1,52 +1,39 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import { themeManager } from '$lib/Theme.svelte';
 	import { loginUser } from '$lib/authStore.svelte';
 	import Toast from '$lib/components/Toast/Toast.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import { page } from '$app/state';
 
 	let { children, data } = $props();
+	const isMinimalFooter = $derived(page.url.pathname.startsWith('/app'));
+	const faviconHref = $derived(
+		themeManager.theme === 'light' ? '/stimmti-logo.svg' : '/stimmti-logo-light.svg'
+	);
 
 	onMount(() => {
 		themeManager.init();
 	});
 
-	$effect.pre(() => {
+	$effect(() => {
 		if (!data.user) return;
 
 		loginUser(data.user);
 	});
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
-{@render children()}
+<svelte:head>
+	<link rel="icon" type="image/svg+xml" href={faviconHref} />
+</svelte:head>
+
+<div class="flex min-h-screen flex-col">
+	<div class="flex-1">
+		{@render children()}
+	</div>
+
+	<Footer size={isMinimalFooter ? 'small' : 'default'} />
+</div>
 
 <Toast />
-
-<footer class="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
-	<aside>
-		<a href="/" aria-label="Go to homepage"> 
-			<img src="stimmti-logo-light.svg" alt="Stimmti Logo" class="w-120" /> 
-		</a>
-	  <p>
-		<br />
-		Creating surveys for everyone, whether professional, 
-		<br />
-		for fun, or to gather opinions.
-	  </p>
-	</aside>
-	<nav>
-	  <h6 class="footer-title">Services</h6>
-	  <a class="link link-hover">Help</a>
-	</nav>
-	<nav>
-	  <h6 class="footer-title">Company</h6>
-	  <a class="link link-hover">About us</a>
-	</nav>
-	<nav>
-	  <h6 class="footer-title">Legal</h6>
-	  <a class="link link-hover" href="/privacypolicy">Privacy policy</a>
-	  <a href="/legalnotice" class="link link-hover">Legal Notice</a>
-	</nav>
-  </footer>

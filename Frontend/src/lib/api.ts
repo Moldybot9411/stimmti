@@ -11,605 +11,578 @@
  */
 
 export enum HatProfileEnum {
-  Hat01 = "Hat01",
-  Hat02 = "Hat02",
-  Hat03 = "Hat03",
-  Hat04 = "Hat04",
-  Hat05 = "Hat05",
+	Hat01 = 'Hat01',
+	Hat02 = 'Hat02',
+	Hat03 = 'Hat03',
+	Hat04 = 'Hat04',
+	Hat05 = 'Hat05',
 }
 
 export enum FaceProfileEnum {
-  Face01 = "Face01",
-  Face02 = "Face02",
-  Face03 = "Face03",
-  Face04 = "Face04",
-  Face05 = "Face05",
+	Face01 = 'Face01',
+	Face02 = 'Face02',
+	Face03 = 'Face03',
+	Face04 = 'Face04',
+	Face05 = 'Face05',
 }
 
 export enum ColorProfileEnum {
-  Green = "Green",
-  Blue = "Blue",
-  Red = "Red",
-  Purple = "Purple",
-  Yellow = "Yellow",
+	Green = 'Green',
+	Blue = 'Blue',
+	Red = 'Red',
+	Purple = 'Purple',
+	Yellow = 'Yellow',
 }
 
 export enum BodyProfileEnum {
-  Body01 = "Body01",
-  Body02 = "Body02",
-  Body03 = "Body03",
-  Body04 = "Body04",
-  Body05 = "Body05",
+	Body01 = 'Body01',
+	Body02 = 'Body02',
+	Body03 = 'Body03',
+	Body04 = 'Body04',
+	Body05 = 'Body05',
 }
 
 export interface CreateFolderDto {
-  /** @maxLength 255 */
-  name?: string | null;
+	/** @maxLength 255 */
+	name?: string | null;
 }
 
 export interface CreateFolderResponseDto {
-  /** @format uuid */
-  folderId: string;
+	/** @format uuid */
+	folderId: string;
 }
 
 export interface CreateSessionDto {
-  /** @maxLength 255 */
-  name: string | null;
-  description?: string | null;
-  /** @format uuid */
-  surveyId: string;
+	/** @maxLength 255 */
+	name: string | null;
+	description?: string | null;
+	/** @format uuid */
+	surveyId: string;
 }
 
 export interface CreateSessionResponseDto {
-  name: string | null;
-  description?: string | null;
-  roomCode: string | null;
+	name: string | null;
+	description?: string | null;
+	roomCode: string | null;
 }
 
 export interface CreateSurveyDto {
-  /** @maxLength 255 */
-  title?: string | null;
-  /** @maxLength 2048 */
-  description?: string | null;
-  /** @format uuid */
-  folderId?: string | null;
+	/** @maxLength 255 */
+	title?: string | null;
+	/** @maxLength 2048 */
+	description?: string | null;
+	/** @format uuid */
+	folderId?: string | null;
 }
 
 export interface CreateSurveyResponseDto {
-  /** @format uuid */
-  surveyId: string;
-  /** @format uuid */
-  folderId?: string | null;
+	/** @format uuid */
+	surveyId: string;
+	/** @format uuid */
+	folderId?: string | null;
 }
 
 export interface IdentityError {
-  code?: string | null;
-  description?: string | null;
+	code?: string | null;
+	description?: string | null;
 }
 
 export interface ProblemDetails {
-  type?: string | null;
-  title?: string | null;
-  /** @format int32 */
-  status?: number | null;
-  detail?: string | null;
-  instance?: string | null;
-  [key: string]: any;
+	type?: string | null;
+	title?: string | null;
+	/** @format int32 */
+	status?: number | null;
+	detail?: string | null;
+	instance?: string | null;
+	[key: string]: any;
 }
 
 export interface UserAuthDto {
-  /** @format uuid */
-  id?: string;
-  username?: string | null;
-  email?: string | null;
-  profilePictureUrl?: string | null;
+	/** @format uuid */
+	id?: string;
+	username?: string | null;
+	email?: string | null;
+	profilePictureUrl?: string | null;
 }
 
 export interface UserLoginDto {
-  password?: string | null;
-  email?: string | null;
-  staySignedIn?: boolean;
+	password?: string | null;
+	email?: string | null;
+	staySignedIn?: boolean;
 }
 
 export interface UserPasswordDto {
-  /** @minLength 1 */
-  oldPassword: string;
-  /** @minLength 1 */
-  newPassword: string;
+	/** @minLength 1 */
+	oldPassword: string;
+	/** @minLength 1 */
+	newPassword: string;
 }
 
 export interface UserRegisterDto {
-  username?: string | null;
-  password?: string | null;
-  email?: string | null;
+	username?: string | null;
+	password?: string | null;
+	email?: string | null;
 }
 
 export interface UserUsernameAvailabilityResponseDto {
-  isAvailable?: boolean;
-  message?: string | null;
+	isAvailable?: boolean;
+	message?: string | null;
 }
 
 export interface UserUsernameCheckRequestDto {
-  /**
-   * @minLength 1
-   * @maxLength 20
-   * @pattern ^[A-Za-z0-9]+$
-   */
-  username: string;
+	/**
+	 * @minLength 1
+	 * @maxLength 20
+	 * @pattern ^[A-Za-z0-9]+$
+	 */
+	username: string;
 }
 
 export interface ValidationProblemDetails {
-  type?: string | null;
-  title?: string | null;
-  /** @format int32 */
-  status?: number | null;
-  detail?: string | null;
-  instance?: string | null;
-  errors?: Record<string, string[]> | null;
-  [key: string]: any;
+	type?: string | null;
+	title?: string | null;
+	/** @format int32 */
+	status?: number | null;
+	detail?: string | null;
+	instance?: string | null;
+	errors?: Record<string, string[]> | null;
+	[key: string]: any;
 }
 
 import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  HeadersDefaults,
-  ResponseType,
-} from "axios";
-import axios from "axios";
+	AxiosInstance,
+	AxiosRequestConfig,
+	AxiosResponse,
+	HeadersDefaults,
+	ResponseType,
+} from 'axios';
+import axios from 'axios';
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
-  /** set parameter to `true` for call `securityWorker` for this request */
-  secure?: boolean;
-  /** request path */
-  path: string;
-  /** content type of request body */
-  type?: ContentType;
-  /** query params */
-  query?: QueryParamsType;
-  /** format of response (i.e. response.json() -> format: "json") */
-  format?: ResponseType;
-  /** request body */
-  body?: unknown;
+export interface FullRequestParams extends Omit<
+	AxiosRequestConfig,
+	'data' | 'params' | 'url' | 'responseType'
+> {
+	/** set parameter to `true` for call `securityWorker` for this request */
+	secure?: boolean;
+	/** request path */
+	path: string;
+	/** content type of request body */
+	type?: ContentType;
+	/** query params */
+	query?: QueryParamsType;
+	/** format of response (i.e. response.json() -> format: "json") */
+	format?: ResponseType;
+	/** request body */
+	body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, 'body' | 'method' | 'query' | 'path'>;
 
-export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
-  securityWorker?: (
-    securityData: SecurityDataType | null,
-  ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
-  secure?: boolean;
-  format?: ResponseType;
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<
+	AxiosRequestConfig,
+	'data' | 'cancelToken'
+> {
+	securityWorker?: (
+		securityData: SecurityDataType | null
+	) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
+	secure?: boolean;
+	format?: ResponseType;
 }
 
 export enum ContentType {
-  Json = "application/json",
-  JsonApi = "application/vnd.api+json",
-  FormData = "multipart/form-data",
-  UrlEncoded = "application/x-www-form-urlencoded",
-  Text = "text/plain",
+	Json = 'application/json',
+	JsonApi = 'application/vnd.api+json',
+	FormData = 'multipart/form-data',
+	UrlEncoded = 'application/x-www-form-urlencoded',
+	Text = 'text/plain',
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public instance: AxiosInstance;
-  private securityData: SecurityDataType | null = null;
-  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
-  private secure?: boolean;
-  private format?: ResponseType;
+	public instance: AxiosInstance;
+	private securityData: SecurityDataType | null = null;
+	private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
+	private secure?: boolean;
+	private format?: ResponseType;
 
-  constructor({
-    securityWorker,
-    secure,
-    format,
-    ...axiosConfig
-  }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({
-      ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "",
-    });
-    this.secure = secure;
-    this.format = format;
-    this.securityWorker = securityWorker;
-  }
+	constructor({
+		securityWorker,
+		secure,
+		format,
+		...axiosConfig
+	}: ApiConfig<SecurityDataType> = {}) {
+		this.instance = axios.create({
+			...axiosConfig,
+			baseURL: axiosConfig.baseURL || '',
+		});
+		this.secure = secure;
+		this.format = format;
+		this.securityWorker = securityWorker;
+	}
 
-  public setSecurityData = (data: SecurityDataType | null) => {
-    this.securityData = data;
-  };
+	public setSecurityData = (data: SecurityDataType | null) => {
+		this.securityData = data;
+	};
 
-  protected mergeRequestParams(
-    params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig,
-  ): AxiosRequestConfig {
-    const method = params1.method || (params2 && params2.method);
+	protected mergeRequestParams(
+		params1: AxiosRequestConfig,
+		params2?: AxiosRequestConfig
+	): AxiosRequestConfig {
+		const method = params1.method || (params2 && params2.method);
 
-    return {
-      ...this.instance.defaults,
-      ...params1,
-      ...(params2 || {}),
-      headers: {
-        ...((method &&
-          this.instance.defaults.headers[
-            method.toLowerCase() as keyof HeadersDefaults
-          ]) ||
-          {}),
-        ...(params1.headers || {}),
-        ...((params2 && params2.headers) || {}),
-      },
-    };
-  }
+		return {
+			...this.instance.defaults,
+			...params1,
+			...(params2 || {}),
+			headers: {
+				...((method &&
+					this.instance.defaults.headers[
+						method.toLowerCase() as keyof HeadersDefaults
+					]) ||
+					{}),
+				...(params1.headers || {}),
+				...((params2 && params2.headers) || {}),
+			},
+		};
+	}
 
-  protected stringifyFormItem(formItem: unknown) {
-    if (typeof formItem === "object" && formItem !== null) {
-      return JSON.stringify(formItem);
-    } else {
-      return `${formItem}`;
-    }
-  }
+	protected stringifyFormItem(formItem: unknown) {
+		if (typeof formItem === 'object' && formItem !== null) {
+			return JSON.stringify(formItem);
+		} else {
+			return `${formItem}`;
+		}
+	}
 
-  protected createFormData(input: Record<string, unknown>): FormData {
-    if (input instanceof FormData) {
-      return input;
-    }
-    return Object.keys(input || {}).reduce((formData, key) => {
-      const property = input[key];
-      const propertyContent: any[] =
-        property instanceof Array ? property : [property];
+	protected createFormData(input: Record<string, unknown>): FormData {
+		if (input instanceof FormData) {
+			return input;
+		}
+		return Object.keys(input || {}).reduce((formData, key) => {
+			const property = input[key];
+			const propertyContent: any[] = property instanceof Array ? property : [property];
 
-      for (const formItem of propertyContent) {
-        const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(
-          key,
-          isFileType ? formItem : this.stringifyFormItem(formItem),
-        );
-      }
+			for (const formItem of propertyContent) {
+				const isFileType = formItem instanceof Blob || formItem instanceof File;
+				formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
+			}
 
-      return formData;
-    }, new FormData());
-  }
+			return formData;
+		}, new FormData());
+	}
 
-  public request = async <T = any, _E = any>({
-    secure,
-    path,
-    type,
-    query,
-    format,
-    body,
-    ...params
-  }: FullRequestParams): Promise<AxiosResponse<T>> => {
-    const secureParams =
-      ((typeof secure === "boolean" ? secure : this.secure) &&
-        this.securityWorker &&
-        (await this.securityWorker(this.securityData))) ||
-      {};
-    const requestParams = this.mergeRequestParams(params, secureParams);
-    const responseFormat = format || this.format || undefined;
+	public request = async <T = any, _E = any>({
+		secure,
+		path,
+		type,
+		query,
+		format,
+		body,
+		...params
+	}: FullRequestParams): Promise<AxiosResponse<T>> => {
+		const secureParams =
+			((typeof secure === 'boolean' ? secure : this.secure) &&
+				this.securityWorker &&
+				(await this.securityWorker(this.securityData))) ||
+			{};
+		const requestParams = this.mergeRequestParams(params, secureParams);
+		const responseFormat = format || this.format || undefined;
 
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === "object"
-    ) {
-      body = this.createFormData(body as Record<string, unknown>);
-    }
+		if (type === ContentType.FormData && body && body !== null && typeof body === 'object') {
+			body = this.createFormData(body as Record<string, unknown>);
+		}
 
-    if (
-      type === ContentType.Text &&
-      body &&
-      body !== null &&
-      typeof body !== "string"
-    ) {
-      body = JSON.stringify(body);
-    }
+		if (type === ContentType.Text && body && body !== null && typeof body !== 'string') {
+			body = JSON.stringify(body);
+		}
 
-    return this.instance.request({
-      ...requestParams,
-      headers: {
-        ...(requestParams.headers || {}),
-        ...(type ? { "Content-Type": type } : {}),
-      },
-      params: query,
-      responseType: responseFormat,
-      data: body,
-      url: path,
-    });
-  };
+		return this.instance.request({
+			...requestParams,
+			headers: {
+				...(requestParams.headers || {}),
+				...(type ? { 'Content-Type': type } : {}),
+			},
+			params: query,
+			responseType: responseFormat,
+			data: body,
+			url: path,
+		});
+	};
 }
 
 /**
  * @title Backend
  * @version 1.0
  */
-export class Api<
-  SecurityDataType extends unknown,
-> extends HttpClient<SecurityDataType> {
-  api = {
-    /**
-     * No description
-     *
-     * @tags Session
-     * @name V1SessionCreateSessionCreate
-     * @request POST:/api/v1/Session/createSession
-     */
-    v1SessionCreateSessionCreate: (
-      data: CreateSessionDto,
-      params: RequestParams = {},
-    ) =>
-      this.request<CreateSessionResponseDto, ProblemDetails>({
-        path: `/api/v1/Session/createSession`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+	api = {
+		/**
+		 * No description
+		 *
+		 * @tags Session
+		 * @name V1SessionCreateSessionCreate
+		 * @request POST:/api/v1/Session/createSession
+		 */
+		v1SessionCreateSessionCreate: (data: CreateSessionDto, params: RequestParams = {}) =>
+			this.request<CreateSessionResponseDto, ProblemDetails>({
+				path: `/api/v1/Session/createSession`,
+				method: 'POST',
+				body: data,
+				type: ContentType.Json,
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags Session
-     * @name V1SessionCheckSessionList
-     * @request GET:/api/v1/Session/checkSession
-     */
-    v1SessionCheckSessionList: (
-      query?: {
-        roomCode?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<void, ProblemDetails>({
-        path: `/api/v1/Session/checkSession`,
-        method: "GET",
-        query: query,
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags Session
+		 * @name V1SessionCheckSessionList
+		 * @request GET:/api/v1/Session/checkSession
+		 */
+		v1SessionCheckSessionList: (
+			query?: {
+				roomCode?: string;
+			},
+			params: RequestParams = {}
+		) =>
+			this.request<void, ProblemDetails>({
+				path: `/api/v1/Session/checkSession`,
+				method: 'GET',
+				query: query,
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags Survey
-     * @name V1SurveyCreate
-     * @request POST:/api/v1/Survey
-     */
-    v1SurveyCreate: (data: CreateSurveyDto, params: RequestParams = {}) =>
-      this.request<CreateSurveyResponseDto, ProblemDetails>({
-        path: `/api/v1/Survey`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags Survey
+		 * @name V1SurveyCreate
+		 * @request POST:/api/v1/Survey
+		 */
+		v1SurveyCreate: (data: CreateSurveyDto, params: RequestParams = {}) =>
+			this.request<CreateSurveyResponseDto, ProblemDetails>({
+				path: `/api/v1/Survey`,
+				method: 'POST',
+				body: data,
+				type: ContentType.Json,
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags Survey
-     * @name V1SurveyFoldersCreate
-     * @request POST:/api/v1/Survey/folders
-     */
-    v1SurveyFoldersCreate: (
-      data: CreateFolderDto,
-      params: RequestParams = {},
-    ) =>
-      this.request<CreateFolderResponseDto, ProblemDetails>({
-        path: `/api/v1/Survey/folders`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags Survey
+		 * @name V1SurveyFoldersCreate
+		 * @request POST:/api/v1/Survey/folders
+		 */
+		v1SurveyFoldersCreate: (data: CreateFolderDto, params: RequestParams = {}) =>
+			this.request<CreateFolderResponseDto, ProblemDetails>({
+				path: `/api/v1/Survey/folders`,
+				method: 'POST',
+				body: data,
+				type: ContentType.Json,
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserRegisterCreate
-     * @request POST:/api/v1/User/register
-     */
-    v1UserRegisterCreate: (data: UserRegisterDto, params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/api/v1/User/register`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserRegisterCreate
+		 * @request POST:/api/v1/User/register
+		 */
+		v1UserRegisterCreate: (data: UserRegisterDto, params: RequestParams = {}) =>
+			this.request<void, any>({
+				path: `/api/v1/User/register`,
+				method: 'POST',
+				body: data,
+				type: ContentType.Json,
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserLoginCreate
-     * @request POST:/api/v1/User/login
-     */
-    v1UserLoginCreate: (data: UserLoginDto, params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/api/v1/User/login`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserLoginCreate
+		 * @request POST:/api/v1/User/login
+		 */
+		v1UserLoginCreate: (data: UserLoginDto, params: RequestParams = {}) =>
+			this.request<void, any>({
+				path: `/api/v1/User/login`,
+				method: 'POST',
+				body: data,
+				type: ContentType.Json,
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserLogoutCreate
-     * @request POST:/api/v1/User/logout
-     */
-    v1UserLogoutCreate: (params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/api/v1/User/logout`,
-        method: "POST",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserLogoutCreate
+		 * @request POST:/api/v1/User/logout
+		 */
+		v1UserLogoutCreate: (params: RequestParams = {}) =>
+			this.request<void, any>({
+				path: `/api/v1/User/logout`,
+				method: 'POST',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserCheckUsernameList
-     * @request GET:/api/v1/User/checkUsername
-     */
-    v1UserCheckUsernameList: (
-      query: {
-        /**
-         * @maxLength 20
-         * @pattern ^[A-Za-z0-9]+$
-         */
-        Username: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        UserUsernameAvailabilityResponseDto,
-        ValidationProblemDetails
-      >({
-        path: `/api/v1/User/checkUsername`,
-        method: "GET",
-        query: query,
-        format: "json",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserCheckUsernameList
+		 * @request GET:/api/v1/User/checkUsername
+		 */
+		v1UserCheckUsernameList: (
+			query: {
+				/**
+				 * @maxLength 20
+				 * @pattern ^[A-Za-z0-9]+$
+				 */
+				Username: string;
+			},
+			params: RequestParams = {}
+		) =>
+			this.request<UserUsernameAvailabilityResponseDto, ValidationProblemDetails>({
+				path: `/api/v1/User/checkUsername`,
+				method: 'GET',
+				query: query,
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserCheckEmailCreate
-     * @request POST:/api/v1/User/checkEmail
-     */
-    v1UserCheckEmailCreate: (
-      query?: {
-        email?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<void, any>({
-        path: `/api/v1/User/checkEmail`,
-        method: "POST",
-        query: query,
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserCheckEmailCreate
+		 * @request POST:/api/v1/User/checkEmail
+		 */
+		v1UserCheckEmailCreate: (
+			query?: {
+				email?: string;
+			},
+			params: RequestParams = {}
+		) =>
+			this.request<void, any>({
+				path: `/api/v1/User/checkEmail`,
+				method: 'POST',
+				query: query,
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserMeList
-     * @request GET:/api/v1/User/me
-     */
-    v1UserMeList: (params: RequestParams = {}) =>
-      this.request<UserAuthDto, any>({
-        path: `/api/v1/User/me`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserMeList
+		 * @request GET:/api/v1/User/me
+		 */
+		v1UserMeList: (params: RequestParams = {}) =>
+			this.request<UserAuthDto, any>({
+				path: `/api/v1/User/me`,
+				method: 'GET',
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserUsernamePartialUpdate
-     * @request PATCH:/api/v1/User/username
-     */
-    v1UserUsernamePartialUpdate: (
-      data: UserUsernameCheckRequestDto,
-      params: RequestParams = {},
-    ) =>
-      this.request<string, IdentityError[]>({
-        path: `/api/v1/User/username`,
-        method: "PATCH",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserUsernamePartialUpdate
+		 * @request PATCH:/api/v1/User/username
+		 */
+		v1UserUsernamePartialUpdate: (
+			data: UserUsernameCheckRequestDto,
+			params: RequestParams = {}
+		) =>
+			this.request<string, IdentityError[]>({
+				path: `/api/v1/User/username`,
+				method: 'PATCH',
+				body: data,
+				type: ContentType.Json,
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserEmailPartialUpdate
-     * @request PATCH:/api/v1/User/email
-     */
-    v1UserEmailPartialUpdate: (data: string, params: RequestParams = {}) =>
-      this.request<string, IdentityError[]>({
-        path: `/api/v1/User/email`,
-        method: "PATCH",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserEmailPartialUpdate
+		 * @request PATCH:/api/v1/User/email
+		 */
+		v1UserEmailPartialUpdate: (data: string, params: RequestParams = {}) =>
+			this.request<string, IdentityError[]>({
+				path: `/api/v1/User/email`,
+				method: 'PATCH',
+				body: data,
+				type: ContentType.Json,
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserPasswordPartialUpdate
-     * @request PATCH:/api/v1/User/password
-     */
-    v1UserPasswordPartialUpdate: (
-      data: UserPasswordDto,
-      params: RequestParams = {},
-    ) =>
-      this.request<void, ValidationProblemDetails>({
-        path: `/api/v1/User/password`,
-        method: "PATCH",
-        body: data,
-        type: ContentType.Json,
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserPasswordPartialUpdate
+		 * @request PATCH:/api/v1/User/password
+		 */
+		v1UserPasswordPartialUpdate: (data: UserPasswordDto, params: RequestParams = {}) =>
+			this.request<void, ValidationProblemDetails>({
+				path: `/api/v1/User/password`,
+				method: 'PATCH',
+				body: data,
+				type: ContentType.Json,
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserProfilePictureCreate
-     * @request POST:/api/v1/User/profilePicture
-     */
-    v1UserProfilePictureCreate: (
-      data: {
-        /** @format binary */
-        file?: File;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<string, ProblemDetails>({
-        path: `/api/v1/User/profilePicture`,
-        method: "POST",
-        body: data,
-        type: ContentType.FormData,
-        format: "json",
-        ...params,
-      }),
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserProfilePictureCreate
+		 * @request POST:/api/v1/User/profilePicture
+		 */
+		v1UserProfilePictureCreate: (
+			data: {
+				/** @format binary */
+				file?: File;
+			},
+			params: RequestParams = {}
+		) =>
+			this.request<string, ProblemDetails>({
+				path: `/api/v1/User/profilePicture`,
+				method: 'POST',
+				body: data,
+				type: ContentType.FormData,
+				format: 'json',
+				...params,
+			}),
 
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserDeleteUserDelete
-     * @request DELETE:/api/v1/User/DeleteUser
-     */
-    v1UserDeleteUserDelete: (params: RequestParams = {}) =>
-      this.request<UserAuthDto, ProblemDetails>({
-        path: `/api/v1/User/DeleteUser`,
-        method: "DELETE",
-        format: "json",
-        ...params,
-      }),
-  };
+		/**
+		 * No description
+		 *
+		 * @tags User
+		 * @name V1UserDeleteUserDelete
+		 * @request DELETE:/api/v1/User/DeleteUser
+		 */
+		v1UserDeleteUserDelete: (params: RequestParams = {}) =>
+			this.request<UserAuthDto, ProblemDetails>({
+				path: `/api/v1/User/DeleteUser`,
+				method: 'DELETE',
+				format: 'json',
+				...params,
+			}),
+	};
 }

@@ -180,7 +180,7 @@
 						{editingItem}
 					</h2>
 					<button
-						class="btn btn-ghost btn-sm btn-neutral"
+						class="btn btn-ghost btn-neutral btn-sm"
 						onclick={() => (editingItem = null)}
 						aria-label="Close">
 						<X size={16} />
@@ -207,7 +207,7 @@
 
 				<div class="card-actions flex-col">
 					<button
-						class="btn btn-block btn-outline btn-sm btn-secondary"
+						class="btn btn-block btn-outline btn-secondary btn-sm"
 						onclick={() => goto(`/app/surveys/${crypto.randomUUID()}`)}
 						><Cog size={20} /> Full Settings</button>
 					<button class="btn btn-block btn-primary"><Play /> Start Session </button>

@@ -15,6 +15,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import UserAvatar from './UserAvatar.svelte';
+	import { themeManager } from '$lib/Theme.svelte';
+
+	const logoSrc = $derived(
+		themeManager.theme === 'light' ? '/stimmti-logo.svg' : '/stimmti-logo-light.svg'
+	);
 
 	let menuTabs = [
 		{ label: 'Home', icon: House, href: '/app' },
@@ -34,7 +39,7 @@
 
 {#snippet profileDropdown()}
 	<div class="dropdown dropdown-end">
-		<button class="btn bg-base-300 py-6 btn-ghost">
+		<button class="btn bg-base-300 btn-ghost py-6">
 			<UserAvatar />
 
 			<span class="hidden max-w-40 truncate md:inline">
@@ -79,25 +84,26 @@
 	<a href="/help" class="btn btn-circle btn-ghost" aria-label="Help" title="Open Help Page">
 		<CircleQuestionMark />
 	</a>
+	<ThemeToggle />
 
 	{#if !small}
 		<div class="divider mx-0 divider-horizontal"></div>
 	{/if}
-
-	<ThemeToggle />
 {/snippet}
 
 <div class="navbar bg-base-100 shadow-sm">
 	<div class="mx-auto navbar-start flex-col md:flex-row">
 		<div class="mr-0 flex md:mr-2">
-			<a href="/app" class="btn text-2xl font-extrabold btn-ghost">Stimmti</a>
+			<a href="/app" class="btn btn-ghost px-0" aria-label="Go to homepage">
+				<img src={logoSrc} alt="Stimmti Logo" class="h-15 w-auto object-contain" />
+			</a>
 
 			<div class="flex items-center gap-2 md:hidden">
 				{@render utils(true)}
 			</div>
 		</div>
 
-		<div class="flex gap-2">
+		<div class="hidden gap-2 md:flex">
 			<div role="tablist" class="tabs-box tabs flex-nowrap">
 				{#each menuTabs as tab}
 					{@const Icon = tab.icon}
@@ -114,9 +120,6 @@
 						{tab.label}
 					</a>
 				{/each}
-			</div>
-			<div class="block md:hidden">
-				{@render profileDropdown()}
 			</div>
 		</div>
 	</div>
