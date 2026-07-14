@@ -195,6 +195,7 @@ namespace Backend.Migrations
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     Title = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     FolderId = table.Column<Guid>(type: "char(36)", nullable: true),
                     OwnerId = table.Column<Guid>(type: "char(36)", nullable: false)
                 },

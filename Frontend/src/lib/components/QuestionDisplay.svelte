@@ -78,7 +78,10 @@
 					return;
 				}
 
-				onSubmitAnswer?.(undefined, wordCloudValues);
+				onSubmitAnswer?.(
+					undefined,
+					wordCloudValues.filter((x) => x)
+				);
 				break;
 			case QuestionTypeEnum.FreeText:
 				onSubmitAnswer?.(undefined, undefined, freeTextValue);

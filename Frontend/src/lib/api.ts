@@ -116,6 +116,23 @@ export interface FreeTextResultDto {
   text: string | null;
 }
 
+export interface GetStatisticsDto {
+  /** @format int32 */
+  surveyCount: number;
+  /** @format int32 */
+  surveyDelta: number;
+  /** @format int32 */
+  sessionCount: number;
+  /** @format int32 */
+  sessionDelta: number;
+  /** @format int32 */
+  participantCount: number;
+  /** @format int32 */
+  participantDelta: number;
+  surveyStatistics?: SurveyStatisticsDto[] | null;
+  sessionStatistics?: SessionStatisticsDto[] | null;
+}
+
 export interface GetFolderResponseDto {
   /** @format uuid */
   folderId: string;
@@ -467,6 +484,41 @@ export class Api<
     ) =>
       this.request<SessionResultDto, ProblemDetails>({
         path: `/api/v1/Session/session`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Statistics
+     * @name V1StatisticsStatisticsList
+     * @request GET:/api/v1/Statistics/statistics
+     */
+    v1StatisticsStatisticsList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 10
+         */
+        pageSize?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentSurveyPage?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentSessionPage?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetStatisticsDto, ProblemDetails>({
+        path: `/api/v1/Statistics/statistics`,
         method: "GET",
         query: query,
         format: "json",

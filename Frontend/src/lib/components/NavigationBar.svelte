@@ -19,7 +19,7 @@
 	let menuTabs = [
 		{ label: 'Home', icon: House, href: '/app' },
 		{ label: 'Library', icon: LibraryBig, href: '/app/library' },
-		{ label: 'Overview', icon: ChartPie, href: '/app/overview' },
+		{ label: 'Statistics', icon: ChartPie, href: '/app/statistics' },
 	];
 
 	async function logout() {
@@ -34,7 +34,7 @@
 
 {#snippet profileDropdown()}
 	<div class="dropdown dropdown-end">
-		<button class="btn bg-base-300 py-6 btn-ghost">
+		<button class="btn bg-base-300 btn-ghost py-6">
 			<UserAvatar />
 
 			<span class="hidden max-w-40 truncate md:inline">
@@ -90,7 +90,7 @@
 <div class="navbar bg-base-100 shadow-sm">
 	<div class="mx-auto navbar-start flex-col md:flex-row">
 		<div class="mr-0 flex md:mr-2">
-			<a href="/app" class="btn text-2xl font-extrabold btn-ghost">Stimmti</a>
+			<a href="/app" class="btn btn-ghost text-2xl font-extrabold">Stimmti</a>
 
 			<div class="flex items-center gap-2 md:hidden">
 				{@render utils(true)}
