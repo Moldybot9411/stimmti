@@ -1,15 +1,14 @@
 <script>
 	import { authStore } from '$lib/authStore.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import {
 		BookDashed,
-		Check,
 		CircleCheck,
 		CircleQuestionMark,
 		Flashlight,
 		MessageSquareQuote,
 		NotepadText,
 		Presentation,
-		Rocket,
 	} from '@lucide/svelte';
 
 	const features = [
@@ -38,24 +37,25 @@
 	<div class="flex-1">
 		<span class="px-2 text-xl font-extrabold">Stimmti</span>
 	</div>
-	<div class="flex-none">
+	<div class="flex items-center">
+		<ThemeToggle />
+
+		<div class="divider mr-0 ml-2 divider-horizontal py-2"></div>
+
 		<ul class="menu menu-horizontal gap-2">
 			<li>
 				<a class="btn btn-outline btn-neutral" href="/register">Register</a>
 			</li>
 
 			<li>
-				{#if authStore.isLoggedIn}
-					<a class="btn btn-primary" href="/app">To Dashboard</a>
-				{:else}
-					<a class="btn btn-primary" href="/login">Login</a>
-				{/if}
+				<a class="btn btn-primary" href="/login">Login</a>
 			</li>
 		</ul>
 	</div>
 </div>
 
-<div class="flex w-full flex-col items-center justify-center gap-8 bg-primary/20 py-16">
+<div
+	class="flex w-full flex-col items-center justify-center gap-8 bg-primary/20 px-4 py-16 text-center">
 	<div class="flex flex-col items-center gap-3 md:flex-row">
 		<h1 class="text-6xl font-extrabold">Open Source</h1>
 		<span class="text-rotate w-fit text-6xl text-primary">
@@ -69,7 +69,7 @@
 	</div>
 
 	<span class="max-w-120 text-center text-base-content/80">
-		Community-driven insights for non-profit projects. Empower your organization with accessible
+		Community-driven insights for everything you need. Engage your audience with accessible
 		polling and feedback tools.
 	</span>
 
@@ -79,7 +79,17 @@
 	</div>
 </div>
 
-<div class="mx-auto mt-16 w-fit text-center">
+{#if authStore.isLoggedIn}
+	<div class="rounded-t-0 card mx-auto mt-16 w-full rounded-b-md bg-base-100 card-md md:max-w-96">
+		<div class="card-body">
+			<h2 class="card-title">You are already logged in</h2>
+
+			<a class="btn btn-primary" href="/app">To Dashboard</a>
+		</div>
+	</div>
+{/if}
+
+<div class="mx-auto mt-16 w-fit px-4 text-center">
 	<h2 class="text-2xl font-bold">Core Functionalities</h2>
 	<div class="mt-2 max-w-120 text-base-content/80">
 		Whether you need a quick consensus or detailed qualitative data, our tools are built to
@@ -93,15 +103,24 @@
 		<div
 			class="card flex w-full max-w-90 min-w-70 flex-col overflow-hidden bg-base-100 shadow-sm card-md">
 			<div
-				class="min-h-2 w-full rounded-b-sm bg-info"
-				class:bg-success={feature.color === 'success'}
-				class:bg-warning={feature.color === 'warning'}
-				class:bg-info={feature.color === 'info'}>
+				class={[
+					'min-h-2 w-full rounded-b-sm bg-info',
+					feature.color === 'success' && 'bg-success',
+					feature.color === 'warning' && 'bg-warning',
+					feature.color === 'info' && 'bg-info',
+				]}>
 			</div>
 
 			<div class="card-body flex h-full flex-col justify-between">
 				<div>
-					<Icon class="rounded-box bg-info p-2 text-xl text-info-content" size={40} />
+					<Icon
+						class={[
+							'rounded-box p-2 text-xl',
+							feature.color === 'success' && 'bg-success text-success-content',
+							feature.color === 'warning' && 'bg-warning text-warning-content',
+							feature.color === 'info' && 'bg-info text-info-content',
+						]}
+						size={40} />
 					<h3 class="mt-4 card-title">{feature.title}</h3>
 				</div>
 
