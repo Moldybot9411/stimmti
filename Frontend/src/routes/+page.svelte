@@ -9,7 +9,14 @@
 		MessageSquareQuote,
 		NotepadText,
 		Presentation,
+		Users,
 	} from '@lucide/svelte';
+	import singlechoice from '$lib/assets/SingleChoice.svg';
+	import multiplechoice from '$lib/assets/MultipleChoice.svg';
+	import wordcloud from '$lib/assets/WordCloud.svg';
+	import numberscale from '$lib/assets/NumberScale.svg';
+	import freetext from '$lib/assets/FreeText.svg';
+	import { descending } from 'd3';
 
 	const features = [
 		{
@@ -29,6 +36,39 @@
 			icon: BookDashed,
 			title: 'Quick Templates',
 			body: 'Choose from our library of handcrafted templates to gauge quick results.',
+		},
+	];
+
+	const questionTypes = [
+		{
+			src: singlechoice,
+			alt: 'SingleChoice Display',
+			title: 'Single Choice',
+			description: 'A participant chan choose one of multiple answer options',
+		},
+		{
+			src: multiplechoice,
+			alt: 'MultipleChoice Display',
+			title: 'Multiple Choice',
+			description: 'A participant chan choose multiple answer options',
+		},
+		{
+			src: wordcloud,
+			alt: 'WordCloud Display',
+			title: 'Word Cloud',
+			description: 'Singular words get grouped and displayed in a visual word cloud',
+		},
+		{
+			src: numberscale,
+			alt: 'NumberScale Display',
+			title: 'Number Scale',
+			description: 'Display numerical votes as a distributional graph',
+		},
+		{
+			src: freetext,
+			alt: 'FreeText Display',
+			title: 'Freetext',
+			description: 'Participants submit text providing detailed feedback',
 		},
 	];
 </script>
@@ -55,7 +95,7 @@
 </div>
 
 <div
-	class="flex w-full flex-col items-center justify-center gap-8 bg-primary/20 px-4 py-16 text-center">
+	class="mx-auto mt-4 flex max-w-[calc(100%-2rem)] flex-col items-center justify-center gap-8 rounded-lg bg-primary/20 px-4 py-16 text-center shadow-md">
 	<div class="flex flex-col items-center gap-3 md:flex-row">
 		<h1 class="text-6xl font-extrabold">Open Source</h1>
 		<span class="text-rotate w-fit text-6xl text-primary">
@@ -79,15 +119,34 @@
 	</div>
 </div>
 
-{#if authStore.isLoggedIn}
-	<div class="rounded-t-0 card mx-auto mt-16 w-full rounded-b-md bg-base-100 card-md md:max-w-96">
-		<div class="card-body">
-			<h2 class="card-title">You are already logged in</h2>
+<div
+	class="mx-auto mt-4 flex max-w-[calc(100%-2rem)] flex-col gap-4 has-[>*:only-child]:max-w-120 md:flex-row">
+	{#if authStore.isLoggedIn}
+		<div class="card mx-auto w-full rounded-lg bg-success/20 shadow-md card-md">
+			<div class="card-body">
+				<h2 class="card-title"><CircleCheck /> You are already logged in</h2>
 
-			<a class="btn btn-primary" href="/app">To Dashboard</a>
+				<span>Welcome back!</span>
+
+				<div class="card-actions">
+					<a class="btn btn-block btn-success" href="/app">To Dashboard</a>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<div class="card mx-auto w-full rounded-lg bg-accent/20 shadow-md card-md">
+		<div class="card-body">
+			<h2 class="card-title"><Users /> Join a Room!</h2>
+
+			<span>Have a room code to join? Continue here</span>
+
+			<div class="card-actions">
+				<a class="btn btn-block btn-accent" href="/app">Join Now</a>
+			</div>
 		</div>
 	</div>
-{/if}
+</div>
 
 <div class="mx-auto mt-16 w-fit px-4 text-center">
 	<h2 class="text-2xl font-bold">Core Functionalities</h2>
@@ -130,6 +189,31 @@
 			</div>
 		</div>
 	{/each}
+</div>
+
+<div class="mx-auto mt-16 w-fit px-4 text-center">
+	<h2 class="text-2xl font-bold">Question Types</h2>
+	<div class="mt-2 max-w-120 text-base-content/80">
+		Different types to ask your audience what they think.
+	</div>
+</div>
+
+<div class="flex w-full items-center">
+	<div
+		class="mx-auto mt-8 carousel w-full carousel-center space-x-4 rounded-box bg-base-300 p-4 shadow-md md:max-w-200">
+		{#each questionTypes as questionType}
+			<div
+				class="bg-brounded-box carousel-item flex max-w-60 flex-col gap-8 rounded-box bg-base-100 p-4 shadow-md md:min-w-120">
+				<h3 class="text-center text-xl font-bold">{questionType.title}</h3>
+
+				<span class="text-center text-base-content/80">
+					{questionType.description}
+				</span>
+
+				<img src={questionType.src} class="mt-auto" alt={questionType.alt} />
+			</div>
+		{/each}
+	</div>
 </div>
 
 <div class="mt-16 flex w-full flex-col items-center justify-center gap-8 bg-primary/20 px-4 py-16">
