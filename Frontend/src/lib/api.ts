@@ -81,6 +81,24 @@ export interface CreateFolderResponseDto {
   folderId: string;
 }
 
+export interface CreateQuestionTemplateDto {
+  name: string | null;
+  description: string | null;
+  /** @format uuid */
+  surveyId: string;
+  /** @format int32 */
+  orderNumber: number;
+  isArchived: boolean;
+  questionType: QuestionTypeEnum;
+  answers?: string[] | null;
+  /** @format int32 */
+  minValue?: number;
+  /** @format int32 */
+  maxValue?: number;
+  /** @format int32 */
+  maxWords?: number;
+}
+
 export interface CreateSessionDto {
   /** @maxLength 255 */
   name: string | null;
@@ -110,10 +128,38 @@ export interface CreateSurveyResponseDto {
   /** @format uuid */
   folderId?: string | null;
 }
+
 export interface FreeTextResultDto {
   /** @format uuid */
   id: string;
   text: string | null;
+}
+
+export interface GetFolderResponseDto {
+  /** @format uuid */
+  folderId: string;
+  name: string | null;
+  surveys: GetSurveyResponseDto[] | null;
+}
+
+export interface GetQuestionTemplateResponseDto {
+  /** @format uuid */
+  id?: string;
+  name?: string | null;
+  description?: string | null;
+  /** @format int32 */
+  orderNumber?: number | null;
+  isArchived?: boolean | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  maxWords?: number | null;
+  /** @format uuid */
+  surveyId?: string;
+  questionType?: QuestionTypeEnum;
+  answers?: string[] | null;
 }
 
 export interface GetStatisticsDto {
@@ -131,13 +177,6 @@ export interface GetStatisticsDto {
   participantDelta: number;
   surveyStatistics?: SurveyStatisticsDto[] | null;
   sessionStatistics?: SessionStatisticsDto[] | null;
-}
-
-export interface GetFolderResponseDto {
-  /** @format uuid */
-  folderId: string;
-  name: string | null;
-  surveys: GetSurveyResponseDto[] | null;
 }
 
 export interface GetSurveyResponseDto {
@@ -171,9 +210,63 @@ export interface ProblemDetails {
   [key: string]: any;
 }
 
+export interface QuestionDto {
+  questionTemplateDto: QuestionTemplateDto;
+  answerDisplayDto: AnswerDisplayDto;
+}
+
+export interface QuestionTemplateDto {
+  name: string | null;
+  description?: string | null;
+  questionType: QuestionTypeEnum;
+  answerOptions?: AnswerOptionDto[] | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  wordCloudMaxWords?: number | null;
+}
+
+export interface SessionResultDto {
+  name: string | null;
+  description?: string | null;
+  /** @format date-time */
+  openedAt: string;
+  questions: QuestionDto[];
+}
+
+export interface SessionStatisticsDto {
+  name: string | null;
+  /** @format int32 */
+  participantCount: number;
+  /** @format date-time */
+  openedAt: string;
+}
+
+export interface SurveyStatisticsDto {
+  name: string | null;
+  /** @format int32 */
+  numSessions: number;
+}
+
 export interface UpdateFolderDto {
   /** @maxLength 255 */
   name?: string | null;
+}
+
+export interface UpdateQuestionTemplateResponseDto {
+  name?: string | null;
+  description?: string | null;
+  /** @format int32 */
+  orderNumber?: number | null;
+  isArchived?: boolean | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  maxWords?: number | null;
 }
 
 export interface UpdateSurveyDto {
@@ -431,6 +524,75 @@ export class Api<
     /**
      * No description
      *
+     * @tags Questions
+     * @name V1QuestionsDetail
+     * @request GET:/api/v1/Questions/{questionId}
+     */
+    v1QuestionsDetail: (questionId: string, params: RequestParams = {}) =>
+      this.request<GetQuestionTemplateResponseDto, ProblemDetails>({
+        path: `/api/v1/Questions/${questionId}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsPartialUpdate
+     * @request PATCH:/api/v1/Questions/{questionId}
+     */
+    v1QuestionsPartialUpdate: (
+      questionId: string,
+      data: UpdateQuestionTemplateResponseDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Questions/${questionId}`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsDelete
+     * @request DELETE:/api/v1/Questions/{questionId}
+     */
+    v1QuestionsDelete: (questionId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Questions/${questionId}`,
+        method: "DELETE",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsCreate
+     * @request POST:/api/v1/Questions
+     */
+    v1QuestionsCreate: (
+      data: CreateQuestionTemplateDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<string, ProblemDetails>({
+        path: `/api/v1/Questions`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags Session
      * @name V1SessionCreateSessionCreate
      * @request POST:/api/v1/Session/createSession
@@ -635,6 +797,21 @@ export class Api<
     /**
      * No description
      *
+     * @tags Survey
+     * @name V1SurveyQuestionsList
+     * @request GET:/api/v1/Survey/{surveyId}/questions
+     */
+    v1SurveyQuestionsList: (surveyId: string, params: RequestParams = {}) =>
+      this.request<GetQuestionTemplateResponseDto[], ProblemDetails>({
+        path: `/api/v1/Survey/${surveyId}/questions`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags User
      * @name V1UserRegisterCreate
      * @request POST:/api/v1/User/register
@@ -831,6 +1008,22 @@ export class Api<
       this.request<UserAuthDto, ProblemDetails>({
         path: `/api/v1/User/DeleteUser`,
         method: "DELETE",
+        format: "json",
+        ...params,
+      }),
+  };
+  surveys = {
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name QuestionsList
+     * @request GET:/surveys/{surveyId}/questions
+     */
+    questionsList: (surveyId: string, params: RequestParams = {}) =>
+      this.request<GetQuestionTemplateResponseDto[], ProblemDetails>({
+        path: `/surveys/${surveyId}/questions`,
+        method: "GET",
         format: "json",
         ...params,
       }),
