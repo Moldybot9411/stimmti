@@ -13,6 +13,8 @@ public class Survey
     [MaxLength(2048)]
     public string? Description { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     public Guid? FolderId { get; set; }
     public Folder? Folder { get; set; }
 

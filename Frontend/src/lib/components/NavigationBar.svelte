@@ -24,7 +24,7 @@
 	let menuTabs = [
 		{ label: 'Home', icon: House, href: '/app' },
 		{ label: 'Library', icon: LibraryBig, href: '/app/library' },
-		{ label: 'Overview', icon: ChartPie, href: '/app/overview' },
+		{ label: 'Statistics', icon: ChartPie, href: '/app/statistics' },
 	];
 
 	async function logout() {

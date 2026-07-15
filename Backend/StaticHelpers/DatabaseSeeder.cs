@@ -45,57 +45,62 @@ public static class DatabaseSeeder
 
         dbContext.Users.Add(adminUser);
 
-        var testSurvey = new Survey
+        for (int i = 0; i < 30; i++)
         {
-            Title = "Test Survey",
-            OwnerId = adminUser.Id
-        };
 
-        dbContext.Surveys.Add(testSurvey);
+            var testSurvey = new Survey
+            {
+                Title = $"Test Survey {i + 1}",
+                OwnerId = adminUser.Id
+            };
 
-        var testQuestions = new List<QuestionTemplate>{
-            new SingleChoiceQuestionTemplate
-            {
-                Name = "Question 1 (SingleChoice)",
-                Description = "The user can submit one of many answer options",
-                SurveyId = testSurvey.Id,
-                OrderNumber = 1,
-            },
-            new MultipleChoiceQuestionTemplate
-            {
-                Name = "Question 2 (MultipleChoice)",
-                Description = "The user can submit multiple of many answer options",
-                SurveyId = testSurvey.Id,
-                OrderNumber = 2
-            },
-            new WordCloudQuestionTemplate
-            {
-                Name = "Question 3 (WordCloud)",
-                Description = "The user can submit a specified number of words which get grouped and displayed in a cloud",
-                SurveyId = testSurvey.Id,
-                OrderNumber = 3,
-                MaxWords = 3
-            },
-            new FreeTextQuestionTemplate
-            {
-                Name = "Question 4 (FreeText)",
-                Description = "The user can submit any text",
-                SurveyId = testSurvey.Id,
-                OrderNumber = 4
-            },
-            new NumberScaleQuestionTemplate
-            {
-                Name = "Question 5 (NumberScale)",
-                Description = "The user can vote on a scale from a specified minimum to a specified maximum value",
-                SurveyId = testSurvey.Id,
-                OrderNumber = 5
-            },
-        };
+            dbContext.Surveys.Add(testSurvey);
 
-        dbContext.QuestionTemplates.AddRange(testQuestions);
+            var testQuestions = new List<QuestionTemplate>{
+                new SingleChoiceQuestionTemplate
+                {
+                    Name = "Question 1 (SingleChoice)",
+                    Description = "The user can submit one of many answer options",
+                    SurveyId = testSurvey.Id,
+                    OrderNumber = 1,
+                },
+                new MultipleChoiceQuestionTemplate
+                {
+                    Name = "Question 2 (MultipleChoice)",
+                    Description = "The user can submit multiple of many answer options",
+                    SurveyId = testSurvey.Id,
+                    OrderNumber = 2
+                },
+                new WordCloudQuestionTemplate
+                {
+                    Name = "Question 3 (WordCloud)",
+                    Description = "The user can submit a specified number of words which get grouped and displayed in a cloud",
+                    SurveyId = testSurvey.Id,
+                    OrderNumber = 3,
+                    MaxWords = 3
+                },
+                new FreeTextQuestionTemplate
+                {
+                    Name = "Question 4 (FreeText)",
+                    Description = "The user can submit any text",
+                    SurveyId = testSurvey.Id,
+                    OrderNumber = 4
+                },
+                new NumberScaleQuestionTemplate
+                {
+                    Name = "Question 5 (NumberScale)",
+                    Description = "The user can vote on a scale from a specified minimum to a specified maximum value",
+                    SurveyId = testSurvey.Id,
+                    OrderNumber = 5
+                },
+            };
 
-        AddAnswerOptions(dbContext, testQuestions[0].Id);
-        AddAnswerOptions(dbContext, testQuestions[1].Id);
+            dbContext.QuestionTemplates.AddRange(testQuestions);
+
+            AddAnswerOptions(dbContext, testQuestions[0].Id);
+            AddAnswerOptions(dbContext, testQuestions[1].Id);
+        }
+
 
         var folder = new Folder
         {
