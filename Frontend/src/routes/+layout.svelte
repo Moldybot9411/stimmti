@@ -9,9 +9,6 @@
 
 	let { children, data } = $props();
 	const isMinimalFooter = $derived(page.url.pathname.startsWith('/app'));
-	const faviconHref = $derived(
-		themeManager.theme === 'light' ? '/stimmti-logo.svg' : '/stimmti-logo-light.svg'
-	);
 
 	onMount(() => {
 		themeManager.init();
@@ -25,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" type="image/svg+xml" href={faviconHref} />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 </svelte:head>
 
 <div class="flex min-h-screen flex-col">
