@@ -142,7 +142,7 @@
 			<span>Have a room code to join? Continue here</span>
 
 			<div class="card-actions">
-				<a class="btn btn-block btn-accent" href="/app">Join Now</a>
+				<a class="btn btn-block btn-accent" href="/live">Join Now</a>
 			</div>
 		</div>
 	</div>
