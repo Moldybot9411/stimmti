@@ -14,11 +14,17 @@
 
 	let loading = $state(false);
 
-	$effect(() => {
-		surveyPage;
-		sessionPage;
+	function onSurveyPageChange(index: number) {
+		refreshData(index, sessionPage);
+	}
 
+	function onSessionPageChange(index: number) {
+		refreshData(surveyPage, index);
+	}
+
+	function refreshData(surveyPage: number, sessionPage: number) {
 		loading = true;
+
 		apiClient.api
 			.v1StatisticsStatisticsList({
 				pageSize,
@@ -36,7 +42,7 @@
 			.finally(() => {
 				loading = false;
 			});
-	});
+	}
 </script>
 
 <div class="mb-4 flex w-full justify-center">
@@ -109,7 +115,8 @@
 
 			<Pagination
 				numPages={Math.ceil(statData.surveyCount / pageSize)}
-				bind:currentPage={surveyPage} />
+				bind:currentPage={surveyPage}
+				onpagechange={onSurveyPageChange} />
 		{/if}
 	</div>
 
@@ -159,7 +166,8 @@
 
 			<Pagination
 				numPages={Math.ceil(statData.sessionCount / pageSize)}
-				bind:currentPage={sessionPage} />
+				bind:currentPage={sessionPage}
+				onpagechange={onSessionPageChange} />
 		{/if}
 	</div>
 </div>

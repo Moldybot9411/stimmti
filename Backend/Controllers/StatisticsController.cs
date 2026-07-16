@@ -27,7 +27,7 @@ public class StatisticsController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var oneMonthAgo = DateTime.Now.AddDays(-30);
+        var oneMonthAgo = DateTimeOffset.Now.AddDays(-30);
 
         // --- Survey Statistics
         var surveysQuery = _context.Surveys

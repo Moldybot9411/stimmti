@@ -175,4 +175,36 @@ public class SessionController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("getSessionList")]
+    [Authorize]
+    [ProducesResponseType(typeof(PaginatedSessionListDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetSessionList([FromQuery] int pageSize = 10, [FromQuery] int currentPage = 1)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var sessionQuery = _context.Sessions
+            .AsNoTracking()
+            .Include(x => x.AnonymousParticipants)
+            .Where(x => x.Survey!.OwnerId == user.Id && x.RoomActive == false);
+
+        var sessionCount = await sessionQuery.CountAsync();
+
+        var sessionListInfo = await sessionQuery
+            .OrderByDescending(x => x.OpenedAt)
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => _mapper.MapToSessionListInfoDto(x))
+            .ToListAsync();
+
+        var result = new PaginatedSessionListDto
+        {
+            SessionCount = sessionCount,
+            sessionListInfo = sessionListInfo
+        };
+
+        return Ok(result);
+    }
 }
