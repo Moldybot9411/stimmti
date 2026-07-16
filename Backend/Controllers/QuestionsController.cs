@@ -69,11 +69,11 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpPost]
-	[Authorize]
-	[ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [Authorize]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PostQuestionTemplate([FromBody] CreateQuestionTemplateDto data)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -260,10 +260,10 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpDelete("{questionId:guid}")]
-	[Authorize]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-	[ProducesResponseType(StatusCodes.Status403Forbidden)]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteQuestionTemplate(Guid questionId)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -288,5 +288,53 @@ public class QuestionsController : ControllerBase
 
         return Ok();
     }
-}
 
+    [HttpPatch("order/{questionId:guid}")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> PatchOrder(Guid questionId, [FromBody] PatchQuestionTemplateOrderDto data)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var questionTemplate = await _context.QuestionTemplates
+            .Include(x => x.Survey)
+            .FirstOrDefaultAsync(x => x.Id == questionId);
+
+        if (questionTemplate == null)
+            return BadRequest(new ProblemDetails { Title = "Question Template not found", Detail = $"Question Template with ID {questionId} doesn't exist" });
+
+        var survey = questionTemplate.Survey;
+        if (survey == null)
+            return BadRequest(new ProblemDetails { Title = "Survey not found", Detail = "Question template has no linked survey" });
+
+        if (survey.OwnerId != user.Id)
+            return Forbid();
+
+        var surveyTemplates = await _context.QuestionTemplates
+            .Where(x => x.SurveyId == questionTemplate.SurveyId)
+            .OrderBy(x => x.OrderNumber)
+            .ToListAsync();
+
+        if (data.OrderNumber <= 0 || data.OrderNumber > surveyTemplates.Count)
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid order number",
+                Detail = $"Order number must be between 1 and {surveyTemplates.Count}"
+            });
+
+        surveyTemplates.Remove(questionTemplate);
+        surveyTemplates.Insert(data.OrderNumber - 1, questionTemplate);
+
+        for (var i = 0; i < surveyTemplates.Count; i++)
+        {
+            surveyTemplates[i].OrderNumber = i + 1;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
+}

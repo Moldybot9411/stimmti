@@ -7,6 +7,7 @@ export const load: PageLoad = async ({ params }) => {
 		const res = await apiClient.api.v1SurveyQuestionsList(params.id);
 
 		return {
+			surveyId: params.id,
 			questions: res.data,
 		};
 	} catch (e) {

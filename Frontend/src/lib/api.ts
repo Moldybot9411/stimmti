@@ -200,6 +200,11 @@ export interface NumberResultDto {
   count: number;
 }
 
+export interface PatchQuestionTemplateOrderDto {
+  /** @format int32 */
+  orderNumber?: number;
+}
+
 export interface ProblemDetails {
   type?: string | null;
   title?: string | null;
@@ -587,6 +592,26 @@ export class Api<
         body: data,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsOrderPartialUpdate
+     * @request PATCH:/api/v1/Questions/order/{questionId}
+     */
+    v1QuestionsOrderPartialUpdate: (
+      questionId: string,
+      data: PatchQuestionTemplateOrderDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Questions/order/${questionId}`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
         ...params,
       }),
 
