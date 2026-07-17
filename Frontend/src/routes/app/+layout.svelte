@@ -9,9 +9,7 @@
 <NavigationBar />
 
 {#await data.openSessions then openSessions}
-	{#if openSessions.length > 0}
-		<OpenSessionNotice {openSessions} />
-	{/if}
+	<OpenSessionNotice {openSessions} />
 {/await}
 
 <div class="p-4">
