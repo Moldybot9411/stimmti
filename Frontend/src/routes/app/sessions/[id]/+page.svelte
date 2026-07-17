@@ -23,7 +23,7 @@
 			.then((res) => {
 				if (res.status === 200) {
 					addToast({ label: 'Session deleted', type: 'success', icon: SquareKanban });
-					goto('/app');
+					goto('/app/library?view=sessions');
 				}
 			})
 			.catch((err) => {
