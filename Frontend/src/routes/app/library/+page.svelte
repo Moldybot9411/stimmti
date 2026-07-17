@@ -12,6 +12,7 @@
 		Form,
 		Plus,
 		Scroll,
+		SquareKanban,
 		X,
 	} from '@lucide/svelte';
 	import SessionList from '$lib/components/SessionList.svelte';
