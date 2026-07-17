@@ -55,7 +55,9 @@
 					</li>
 				{/each}
 			</ul>
-			<button class="btn mt-2 btn-primary" onclick={() => newSurveyDialogRef?.showModal()}>
+			<button
+				class="btn mt-2 truncate text-nowrap btn-primary"
+				onclick={() => newSurveyDialogRef?.showModal()}>
 				<BadgePlus />
 				New Survey
 			</button>
