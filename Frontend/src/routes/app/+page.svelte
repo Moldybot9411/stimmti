@@ -11,7 +11,8 @@
 		X,
 		Zap,
 	} from '@lucide/svelte';
-	import type { ComponentProps } from 'svelte';
+
+	let { data } = $props();
 
 	let templates = [
 		{
@@ -28,65 +29,6 @@
 			label: 'AnotherTemplate',
 			description: "We are not sure what to put here, but we'll figure it out!",
 			icon: BadgeQuestionMark,
-		},
-	];
-
-	let demoSessions: ComponentProps<typeof SessionCard>[] = [
-		{
-			title: 'Svelte 5 vs. React',
-			color: 'primary',
-			subtitle: 'Frontend Preferences',
-			participantCount: 42,
-			runAt: new Date(2026, 4, 28),
-		},
-		{
-			title: 'C# & ASP.NET Architecture',
-			color: 'success',
-			subtitle: 'Live Q&A',
-			participantCount: 15,
-			runAt: new Date(),
-		},
-		{
-			title: 'Docker Deployment Quiz',
-			color: 'error',
-			subtitle: 'DevOps Module',
-			participantCount: 8,
-			runAt: new Date(2026, 3, 10),
-		},
-		{
-			title: 'Milestone 1 (M1) Check-in',
-			color: 'accent',
-			subtitle: 'Planning Phase',
-			participantCount: 3,
-			runAt: new Date(2026, 4, 16),
-		},
-		{
-			title: 'MySQL Performance Tuning',
-			color: 'info',
-			subtitle: 'Database Workshop',
-			participantCount: 27,
-			runAt: new Date(2026, 5, 2),
-		},
-		{
-			title: 'NodeJS Seminar Feedback',
-			color: 'warning',
-			subtitle: 'General Feedback',
-			participantCount: 19,
-			runAt: new Date(2026, 4, 25),
-		},
-		{
-			title: 'Mentimeter Alternatives',
-			color: 'secondary',
-			subtitle: 'Feature Voting',
-			participantCount: 34,
-			runAt: new Date(2026, 6, 12),
-		},
-		{
-			title: 'Sprint Retrospective',
-			color: 'accent',
-			subtitle: 'Team Feedback',
-			participantCount: 4,
-			runAt: new Date(2026, 5, 20),
 		},
 	];
 
@@ -148,16 +90,24 @@
 
 <div class="mt-16 mb-2 flex gap-2">
 	<h3 class="text-2xl font-bold">Recent Sessions</h3>
-	<a class="btn btn-outline btn-sm btn-secondary" href="/app/library?view=sessions">
+	<a class="btn btn-outline btn-secondary btn-sm" href="/app/library?view=sessions">
 		<ArrowRight size={16} />
 		View All
 	</a>
 </div>
 
 <div class="flex gap-4 overflow-auto">
-	{#each demoSessions as session}
-		<SessionCard id={crypto.randomUUID()} {...session} />
-	{/each}
+	{#await data.recentSessions}
+		{#each new Array(8)}{/each}
+	{:then recentSessionData}
+		{#each recentSessionData.sessionListInfo as session}
+			<SessionCard
+				sessionId={session.id}
+				title={session.name ?? undefined}
+				participantCount={session.participantCount}
+				runAt={new Date(session.openedAt)} />
+		{/each}
+	{/await}
 </div>
 
 <dialog class="modal" bind:this={templateModal}>
