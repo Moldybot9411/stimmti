@@ -9,6 +9,9 @@
 
 	let { children, data } = $props();
 	const isMinimalFooter = $derived(page.url.pathname.startsWith('/app'));
+	const faviconHref = $derived(
+		themeManager.theme === 'light' ? '/stimmti-logo-notagline.svg' : '/stimmti-logo-notagline-light.svg'
+	);
 
 	onMount(() => {
 		themeManager.init();

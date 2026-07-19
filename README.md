@@ -8,8 +8,8 @@
 # Setting up a development SQL Database
 docker compose -f devdb.compose.yaml up -d
 
-# Copy and adjust environment variables for the frontend
-cp .env.example Frontend/.env
+# Optional: load runtime public variables for local dev
+source .env
 
 # Starting the Backend
 cd Backend
@@ -22,8 +22,6 @@ npm i
 npm run dev
 ```
 
-Frontend environment values are documented in `.env.example`.
-
 **Where to access what**
 |PhpMyAdmin|Swagger Docs|Frontend|
 |:--|:--|:--|
@@ -35,7 +33,6 @@ The development DB user is `root` with the password `root`.
 
 Copy and fill out necessary files accordingly
 ```bash
-cp .env.example .env
 cp Caddyfile.example Caddyfile
 ```
 

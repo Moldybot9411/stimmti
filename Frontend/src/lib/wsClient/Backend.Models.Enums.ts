@@ -4,59 +4,59 @@
 
 /** Transpiled from Backend.Models.Enums.BodyProfileEnum */
 export enum BodyProfileEnum {
-	Body01 = 'Body01',
-	Body02 = 'Body02',
-	Body03 = 'Body03',
-	Body04 = 'Body04',
-	Body05 = 'Body05',
+    Body01 = "Body01",
+    Body02 = "Body02",
+    Body03 = "Body03",
+    Body04 = "Body04",
+    Body05 = "Body05",
 }
 
 /** Transpiled from Backend.Models.Enums.ColorProfileEnum */
 export enum ColorProfileEnum {
-	Green = 'Green',
-	Blue = 'Blue',
-	Red = 'Red',
-	Purple = 'Purple',
-	Yellow = 'Yellow',
+    Green = "Green",
+    Blue = "Blue",
+    Red = "Red",
+    Purple = "Purple",
+    Yellow = "Yellow",
 }
 
 /** Transpiled from Backend.Models.Enums.FaceProfileEnum */
 export enum FaceProfileEnum {
-	Face01 = 'Face01',
-	Face02 = 'Face02',
-	Face03 = 'Face03',
-	Face04 = 'Face04',
-	Face05 = 'Face05',
+    Face01 = "Face01",
+    Face02 = "Face02",
+    Face03 = "Face03",
+    Face04 = "Face04",
+    Face05 = "Face05",
 }
 
 /** Transpiled from Backend.Models.Enums.HatProfileEnum */
 export enum HatProfileEnum {
-	Hat01 = 'Hat01',
-	Hat02 = 'Hat02',
-	Hat03 = 'Hat03',
-	Hat04 = 'Hat04',
-	Hat05 = 'Hat05',
+    Hat01 = "Hat01",
+    Hat02 = "Hat02",
+    Hat03 = "Hat03",
+    Hat04 = "Hat04",
+    Hat05 = "Hat05",
 }
 
 /** Transpiled from Backend.Models.Enums.ParticipantRole */
 export enum ParticipantRole {
-	Participant = 'Participant',
-	Presenter = 'Presenter',
+    Participant = "Participant",
+    Presenter = "Presenter",
 }
 
 /** Transpiled from Backend.Models.Enums.QuestionTypeEnum */
 export enum QuestionTypeEnum {
-	SingleChoice = 'SingleChoice',
-	MultipleChoice = 'MultipleChoice',
-	WordCloud = 'WordCloud',
-	FreeText = 'FreeText',
-	NumberScale = 'NumberScale',
+    SingleChoice = "SingleChoice",
+    MultipleChoice = "MultipleChoice",
+    WordCloud = "WordCloud",
+    FreeText = "FreeText",
+    NumberScale = "NumberScale",
 }
 
 /** Transpiled from Backend.Models.Enums.SessionState */
 export enum SessionState {
-	Lobby = 'Lobby',
-	Loading = 'Loading',
-	Question = 'Question',
-	Finished = 'Finished',
+    Lobby = "Lobby",
+    Loading = "Loading",
+    Question = "Question",
+    Finished = "Finished",
 }

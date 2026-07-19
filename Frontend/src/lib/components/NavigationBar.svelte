@@ -121,6 +121,9 @@
 					</a>
 				{/each}
 			</div>
+			<div class="block md:hidden">
+				{@render profileDropdown()}
+			</div>
 		</div>
 	</div>
 

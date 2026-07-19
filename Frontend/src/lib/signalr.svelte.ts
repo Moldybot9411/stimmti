@@ -12,10 +12,11 @@ import type {
 } from './wsClient/Backend.Dto';
 import { getHubProxyFactory, getReceiverRegister } from './wsClient/TypedSignalR.Client';
 import { goto } from '$app/navigation';
+import { env } from '$env/dynamic/public';
 import { ParticipantRole } from './wsClient/Backend.Models.Enums';
 
 export class SessionConnection {
-	private readonly baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5202';
+	private readonly baseUrl = env.PUBLIC_API_URL || 'http://localhost:5202';
 	private readonly hubUrl = `${this.baseUrl}/defaulthub`;
 
 	private currentRoomCode: string | null = null;

@@ -148,7 +148,7 @@
 
 <div class="mt-16 mb-2 flex gap-2">
 	<h3 class="text-2xl font-bold">Recent Sessions</h3>
-	<a class="btn btn-outline btn-secondary btn-sm" href="/app/library?view=sessions">
+	<a class="btn btn-outline btn-sm btn-secondary" href="/app/library?view=sessions">
 		<ArrowRight size={16} />
 		View All
 	</a>
