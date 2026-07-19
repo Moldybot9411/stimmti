@@ -60,3 +60,5 @@ body:
     attributes:
       label: Alternatives considered (optional)
       placeholder: Manual ordering via free text, external tools, ...
+
+# Keep the trailing newline at the end of this file.

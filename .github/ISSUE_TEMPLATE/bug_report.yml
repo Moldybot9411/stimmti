@@ -75,3 +75,5 @@ body:
       options:
         - label: I checked existing issues and did not find the same report.
           required: true
+
+# Keep the trailing newline at the end of this file.
