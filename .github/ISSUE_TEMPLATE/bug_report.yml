@@ -1,0 +1,77 @@
+name: Bug report
+description: Report a reproducible problem in Stimmti
+title: "[Bug]: "
+labels:
+  - bug
+  - from_user
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please provide clear steps so we can reproduce it.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Short summary
+      description: One sentence describing the problem.
+      placeholder: The session join button does not respond
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Tell us exactly what to do.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See error ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: The participant should enter the session.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: Nothing happens after clicking the button.
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: Browser and version
+      placeholder: Chrome 126, Firefox 129, Edge 126
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device / OS
+      placeholder: Windows 11, macOS 15, Android 15, iOS 18
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or logs (optional)
+      description: Add screenshots, console errors, or backend logs.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I checked existing issues and did not find the same report.
+          required: true
