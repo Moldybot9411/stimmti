@@ -1,5 +1,13 @@
 blank_issues_enabled: false
 contact_links:
+  - name: FAQ Page
+    url: https://github.com/Moldybot9411/stimmti/blob/main/Frontend/src/routes/help/+page.svelte
+    about: Check common questions and answers before opening an issue.
+
+  - name: General Support Request
+    url: https://github.com/Moldybot9411/stimmti/issues/new?template=feedback.yml
+    about: Use this for non-bug questions, suggestions, or general help.
+
   - name: Privacy Policy
     url: https://github.com/Moldybot9411/stimmti/blob/main/Frontend/src/routes/privacypolicy/+page.svelte
     about: Read how data and privacy are handled in this project.
