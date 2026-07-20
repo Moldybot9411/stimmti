@@ -10,13 +10,10 @@
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import { Eye, Key, LoaderCircle, Pen, X } from '@lucide/svelte';
 	import axios from 'axios';
-	import * as signalR from '@microsoft/signalr';
 
-	let usernameValue = $state(authStore.user?.username);
-	let emailValue = $state(authStore.user?.email);
-	let edited = $derived(
-		usernameValue !== authStore.user?.username || emailValue !== authStore.user?.email
-	);
+	let displayNameValue = $state(authStore.user?.displayName);
+	let edited = $derived(displayNameValue?.trim() !== authStore.user?.displayName);
+	let updatingDisplayName = $state(false);
 
 	let profilePicModal: HTMLDialogElement | undefined = $state();
 	let files: FileList | undefined = $state();
@@ -34,68 +31,32 @@
 	let isSubmitting = $state(false);
 
 	function updateInfo() {
-		let usernameChanged = usernameValue !== authStore.user?.username;
-		let emailChanged = emailValue !== authStore.user?.email;
+		if (displayNameValue && edited) {
+			updatingDisplayName = true;
 
-		if (usernameValue && usernameChanged) {
 			apiClient.api
-				.v1UserUsernamePartialUpdate({ username: usernameValue })
+				.v1UserDisplayNamePartialUpdate({ displayName: displayNameValue.trim() })
 				.then((res) => {
 					addToast({ label: 'Username updated', type: 'success' });
 
 					if (authStore.user) {
-						authStore.user.username = res.data;
+						authStore.user.displayName = res.data;
 					}
 
-					usernameValue = res.data;
+					displayNameValue = res.data;
 				})
 				.catch((e) => {
-					if (axios.isAxiosError(e)) {
-						if (e.response?.status == 409) {
-							const errors = e.response.data as IdentityError[];
+					if (axios.isAxiosError<ProblemDetails>(e)) {
+						const resp = e.response?.data;
 
-							errors.forEach((el) =>
-								addToast({ label: el.description ?? '', type: 'error' })
-							);
-						}
-
-						if (e.response?.status == 400) {
-							const errors = e.response.data as ValidationProblemDetails;
-
-							Object.keys(errors.errors ?? {}).forEach((el) => {
-								addToast({
-									label: errors.errors?.[el][0] ?? 'Unknown error occured',
-									type: 'error',
-								});
-							});
-						}
+						addToast({
+							label:
+								'Error updating display name: ' + (resp?.title ?? 'Unknown error'),
+							type: 'error',
+						});
 					}
-				});
-		}
-
-		if (emailValue && emailChanged) {
-			apiClient.api
-				.v1UserEmailPartialUpdate(emailValue)
-				.then((res) => {
-					addToast({ label: 'E-Mail updated', type: 'success' });
-
-					if (authStore.user) {
-						authStore.user.email = res.data;
-					}
-
-					emailValue = res.data;
 				})
-				.catch((e) => {
-					if (axios.isAxiosError<IdentityError[]>(e)) {
-						if (e.response?.status == 409) {
-							const errors = e.response.data;
-
-							errors.forEach((el) =>
-								addToast({ label: el.description ?? '', type: 'error' })
-							);
-						}
-					}
-				});
+				.finally(() => (updatingDisplayName = false));
 		}
 	}
 
@@ -114,18 +75,13 @@
 				}
 			})
 			.catch((e) => {
-				if (axios.isAxiosError(e)) {
-					if (e.response?.status === 400 || e.response?.status === 500) {
-						const error = e.response.data as ProblemDetails;
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					const detail = e.response?.data.detail ?? 'Unknown error';
 
-						addToast({
-							label: error.detail ?? 'An unknown error occurred',
-							type: 'error',
-						});
-						return;
-					}
-
-					addToast({ label: 'An unknown error occurred', type: 'error' });
+					addToast({
+						label: 'Error uploading profile picture: ' + detail,
+						type: 'error',
+					});
 				}
 			})
 			.finally(() => (uploadingImage = false));
@@ -193,36 +149,40 @@
 				</button>
 			</div>
 
-			<form>
-				<fieldset class="fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
-					<legend class="fieldset-legend">User Info</legend>
+			<div class="flex flex-col gap-2">
+				<fieldset
+					class="fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4 text-center">
+					<legend class="fieldset-legend">Username</legend>
 
-					<label class="label" for="usernameinput">Username</label>
-					<input
-						id="usernameinput"
-						type="text"
-						class="input"
-						bind:value={usernameValue}
-						oninput={() => (edited = true)} />
-
-					<label class="label" for="emailinput">Email</label>
-					<input
-						id="emailinput"
-						type="text"
-						class="input"
-						placeholder="my-awesome-page"
-						bind:value={emailValue}
-						oninput={() => (edited = true)} />
-
-					<button
-						class="btn mt-4 btn-neutral"
-						type="submit"
-						disabled={!edited}
-						onclick={updateInfo}>
-						Save Changes
-					</button>
+					<span class="text-lg font-bold">{authStore.user?.username}</span>
 				</fieldset>
-			</form>
+
+				<form>
+					<fieldset
+						class="fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
+						<legend class="fieldset-legend">User Settings</legend>
+
+						<label class="label" for="displaynameinput">Display Name</label>
+						<input
+							id="displaynameinput"
+							type="text"
+							class="input"
+							bind:value={displayNameValue}
+							oninput={() => (edited = true)} />
+
+						<button
+							class="btn mt-4 btn-neutral"
+							type="submit"
+							disabled={!edited || updatingDisplayName}
+							onclick={updateInfo}>
+							{#if updatingDisplayName}
+								<LoaderCircle class="animate-spin" />
+							{/if}
+							Save Changes
+						</button>
+					</fieldset>
+				</form>
+			</div>
 		</div>
 	</div>
 </div>
@@ -241,6 +201,16 @@
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Upload image</legend>
 					<input
+						onchange={(e) => {
+							const file = e.currentTarget.files?.[0];
+							const maxSize = 2 * 1024 * 1024; // 2MB
+
+							if (file && file.size > maxSize) {
+								e.currentTarget.value = '';
+
+								addToast({ label: 'Only images <2MB are allowed', type: 'error' });
+							}
+						}}
 						type="file"
 						class="file-input"
 						accept="image/jpg, image/jpeg, image/png, image/webp"
@@ -275,6 +245,8 @@
 						type="password"
 						placeholder="Old Password"
 						bind:value={oldPassword}
+						name="oldPassword"
+						autocomplete="current-password"
 						required />
 				</label>
 			</div>
@@ -289,6 +261,8 @@
 							minlength="8"
 							pattern={'^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$'}
 							bind:value={newPassword}
+							name="newPassword"
+							autocomplete="new-password"
 							title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
 							required />
 					</label>
@@ -315,6 +289,8 @@
 					class="w-full"
 					placeholder="Retype New Password"
 					bind:value={retypeNewPassword}
+					name="repeatNewPassword"
+					autocomplete="new-password"
 					required />
 			</label>
 

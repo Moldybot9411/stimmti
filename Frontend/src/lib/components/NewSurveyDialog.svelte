@@ -22,30 +22,6 @@
 	function reset() {
 		formRef?.reset();
 	}
-
-	async function createSurvey() {
-		console.error("Survey creation hasn't been implemented yet");
-
-		isLoading = true;
-		await apiClient.api
-			.v1SurveyCreate({
-				title,
-				description,
-			})
-			.then((result) => {
-				if (result.status === 200) {
-					goto(`/app/surveys/${result.data.surveyId}`);
-				}
-			})
-			.catch((error) => {
-				addToast({
-					type: 'error',
-					label: `Survey Creation ran Into an error: ${error.message}`,
-					icon: HeartCrack,
-				});
-			});
-
-
 		
 	function createSurvey() {
 		isLoading = true;

@@ -105,7 +105,7 @@
 	class="mt-4 flex w-full flex-col items-center justify-between gap-2 md:mt-16 md:flex-row md:px-16">
 	<div class="z-1 max-w-full md:max-w-240">
 		<h2 class="truncate text-4xl font-bold">
-			Welcome Back,<br />{authStore.user?.username}
+			Welcome Back,<br />{authStore.user?.displayName}
 		</h2>
 		<p class="text-lg text-secondary">Gather Insights like never before!</p>
 	</div>
@@ -148,7 +148,7 @@
 
 <div class="mt-16 mb-2 flex gap-2">
 	<h3 class="text-2xl font-bold">Recent Sessions</h3>
-	<a class="btn btn-outline btn-sm btn-secondary" href="/app/library?view=sessions">
+	<a class="btn btn-outline btn-secondary btn-sm" href="/app/library?view=sessions">
 		<ArrowRight size={16} />
 		View All
 	</a>
