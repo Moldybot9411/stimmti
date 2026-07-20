@@ -110,6 +110,7 @@ export interface CreateSurveyResponseDto {
   /** @format uuid */
   folderId?: string | null;
 }
+
 export interface FreeTextResultDto {
   /** @format uuid */
   id: string;
@@ -123,13 +124,6 @@ export interface GetFolderResponseDto {
   surveys: GetSurveyResponseDto[] | null;
 }
 
-export interface GetSurveyResponseDto {
-  /** @format uuid */
-  surveyId: string;
-  title: string | null;
-  description?: string | null;
-  /** @format uuid */
-  folderId?: string | null;
 export interface GetStatisticsDto {
   /** @format int32 */
   surveyCount: number;
@@ -145,6 +139,15 @@ export interface GetStatisticsDto {
   participantDelta: number;
   surveyStatistics?: SurveyStatisticsDto[] | null;
   sessionStatistics?: SessionStatisticsDto[] | null;
+}
+
+export interface GetSurveyResponseDto {
+  /** @format uuid */
+  surveyId: string;
+  title: string | null;
+  description?: string | null;
+  /** @format uuid */
+  folderId?: string | null;
 }
 
 export interface IdentityError {
@@ -169,19 +172,30 @@ export interface ProblemDetails {
   [key: string]: any;
 }
 
-export interface UpdateFolderDto {
-  /** @maxLength 255 */
-  name?: string | null;
+export interface QuestionDto {
+  questionTemplateDto: QuestionTemplateDto;
+  answerDisplayDto: AnswerDisplayDto;
 }
 
-export interface UpdateSurveyDto {
-  /** @maxLength 255 */
-  title?: string | null;
-  /** @maxLength 2048 */
+export interface QuestionTemplateDto {
+  name: string | null;
   description?: string | null;
-  /** @format uuid */
-  folderId?: string | null;
-  removeFromFolder?: boolean | null;
+  questionType: QuestionTypeEnum;
+  answerOptions?: AnswerOptionDto[] | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  wordCloudMaxWords?: number | null;
+}
+
+export interface SessionResultDto {
+  name: string | null;
+  description?: string | null;
+  /** @format date-time */
+  openedAt: string;
+  questions: QuestionDto[];
 }
 
 export interface SessionStatisticsDto {
@@ -196,6 +210,21 @@ export interface SurveyStatisticsDto {
   name: string | null;
   /** @format int32 */
   numSessions: number;
+}
+
+export interface UpdateFolderDto {
+  /** @maxLength 255 */
+  name?: string | null;
+}
+
+export interface UpdateSurveyDto {
+  /** @maxLength 255 */
+  title?: string | null;
+  /** @maxLength 2048 */
+  description?: string | null;
+  /** @format uuid */
+  folderId?: string | null;
+  removeFromFolder?: boolean | null;
 }
 
 export interface UserAuthDto {

@@ -16,7 +16,6 @@
 	import wordcloud from '$lib/assets/WordCloud.svg';
 	import numberscale from '$lib/assets/NumberScale.svg';
 	import freetext from '$lib/assets/FreeText.svg';
-	import { descending } from 'd3';
 
 	const features = [
 		{
