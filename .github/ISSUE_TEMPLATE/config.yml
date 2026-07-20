@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+# TODO: Replace your-domain.example with the final production domain before release.
+contact_links:
+  - name: FAQ Page
+    url: https://your-domain.example/help
+    about: Check common questions and answers before opening an issue.
+
+  - name: Legal Notice
+    url: https://your-domain.example/legalnotice
+    about: Read the legal notice and responsible contact information.
+
+  - name: Privacy Policy
+    url: https://your-domain.example/privacypolicy
+    about: Read how data and privacy are handled in this project.
+
+# Keep the trailing newline at the end of this file.
+    

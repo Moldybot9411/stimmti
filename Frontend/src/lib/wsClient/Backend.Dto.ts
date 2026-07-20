@@ -186,4 +186,3 @@ export type SubmitAnswerDto = {
     /** Transpiled from System.Collections.Generic.List<string> */
     wordCloudAnswers: string[];
 }
-

@@ -1,4 +1,5 @@
 {
+	"prettier.configPath": "./Frontend/.prettierrc",
 	"files.associations": {
 		"*.css": "tailwindcss"
 	}

@@ -170,6 +170,12 @@ export interface NumberResultDto {
   count: number;
 }
 
+export interface PaginatedSessionListDto {
+  /** @format int32 */
+  sessionCount: number;
+  sessionListInfo?: SessionListInfoDto[] | null;
+}
+
 export interface ProblemDetails {
   type?: string | null;
   title?: string | null;
@@ -196,6 +202,16 @@ export interface QuestionTemplateDto {
   maxValue?: number | null;
   /** @format int32 */
   wordCloudMaxWords?: number | null;
+}
+
+export interface SessionListInfoDto {
+  /** @format uuid */
+  id: string;
+  name: string | null;
+  /** @format date-time */
+  openedAt: string;
+  /** @format int32 */
+  participantCount: number;
 }
 
 export interface SessionResultDto {
@@ -527,6 +543,57 @@ export class Api<
         method: "GET",
         query: query,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionGetSessionListList
+     * @request GET:/api/v1/Session/getSessionList
+     */
+    v1SessionGetSessionListList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 10
+         */
+        pageSize?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentPage?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedSessionListDto, ProblemDetails>({
+        path: `/api/v1/Session/getSessionList`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionDeleteSessionDelete
+     * @request DELETE:/api/v1/Session/deleteSession
+     */
+    v1SessionDeleteSessionDelete: (
+      query?: {
+        /** @format uuid */
+        sessionId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/v1/Session/deleteSession`,
+        method: "DELETE",
+        query: query,
         ...params,
       }),
 
