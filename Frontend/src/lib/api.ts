@@ -110,6 +110,7 @@ export interface CreateSurveyResponseDto {
   /** @format uuid */
   folderId?: string | null;
 }
+
 export interface FreeTextResultDto {
   /** @format uuid */
   id: string;
@@ -123,13 +124,6 @@ export interface GetFolderResponseDto {
   surveys: GetSurveyResponseDto[] | null;
 }
 
-export interface GetSurveyResponseDto {
-  /** @format uuid */
-  surveyId: string;
-  title: string | null;
-  description?: string | null;
-  /** @format uuid */
-  folderId?: string | null;
 export interface GetStatisticsDto {
   /** @format int32 */
   surveyCount: number;
@@ -147,6 +141,15 @@ export interface GetStatisticsDto {
   sessionStatistics?: SessionStatisticsDto[] | null;
 }
 
+export interface GetSurveyResponseDto {
+  /** @format uuid */
+  surveyId: string;
+  title: string | null;
+  description?: string | null;
+  /** @format uuid */
+  folderId?: string | null;
+}
+
 export interface IdentityError {
   code?: string | null;
   description?: string | null;
@@ -159,6 +162,12 @@ export interface NumberResultDto {
   count: number;
 }
 
+export interface PaginatedSessionListDto {
+  /** @format int32 */
+  sessionCount: number;
+  sessionListInfo?: SessionListInfoDto[] | null;
+}
+
 export interface ProblemDetails {
   type?: string | null;
   title?: string | null;
@@ -167,6 +176,56 @@ export interface ProblemDetails {
   detail?: string | null;
   instance?: string | null;
   [key: string]: any;
+}
+
+export interface QuestionDto {
+  questionTemplateDto: QuestionTemplateDto;
+  answerDisplayDto: AnswerDisplayDto;
+}
+
+export interface QuestionTemplateDto {
+  name: string | null;
+  description?: string | null;
+  questionType: QuestionTypeEnum;
+  answerOptions?: AnswerOptionDto[] | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  wordCloudMaxWords?: number | null;
+}
+
+export interface SessionListInfoDto {
+  /** @format uuid */
+  id: string;
+  name: string | null;
+  /** @format date-time */
+  openedAt: string;
+  /** @format int32 */
+  participantCount: number;
+}
+
+export interface SessionResultDto {
+  name: string | null;
+  description?: string | null;
+  /** @format date-time */
+  openedAt: string;
+  questions: QuestionDto[];
+}
+
+export interface SessionStatisticsDto {
+  name: string | null;
+  /** @format int32 */
+  participantCount: number;
+  /** @format date-time */
+  openedAt: string;
+}
+
+export interface SurveyStatisticsDto {
+  name: string | null;
+  /** @format int32 */
+  numSessions: number;
 }
 
 export interface UpdateFolderDto {
@@ -182,20 +241,6 @@ export interface UpdateSurveyDto {
   /** @format uuid */
   folderId?: string | null;
   removeFromFolder?: boolean | null;
-}
-
-export interface SessionStatisticsDto {
-  name: string | null;
-  /** @format int32 */
-  participantCount: number;
-  /** @format date-time */
-  openedAt: string;
-}
-
-export interface SurveyStatisticsDto {
-  name: string | null;
-  /** @format int32 */
-  numSessions: number;
 }
 
 export interface UserAuthDto {
@@ -499,6 +544,57 @@ export class Api<
         method: "GET",
         query: query,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionGetSessionListList
+     * @request GET:/api/v1/Session/getSessionList
+     */
+    v1SessionGetSessionListList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 10
+         */
+        pageSize?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentPage?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedSessionListDto, ProblemDetails>({
+        path: `/api/v1/Session/getSessionList`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionDeleteSessionDelete
+     * @request DELETE:/api/v1/Session/deleteSession
+     */
+    v1SessionDeleteSessionDelete: (
+      query?: {
+        /** @format uuid */
+        sessionId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/v1/Session/deleteSession`,
+        method: "DELETE",
+        query: query,
         ...params,
       }),
 

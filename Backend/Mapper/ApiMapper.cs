@@ -55,4 +55,10 @@ public partial class ApiMapper : IApiMapper
     }
 
     public partial List<ParticipantDto> MapToParticipantDtoList(IEnumerable<AnonymousUser> source);
+
+    [MapProperty(
+        [nameof(Session.AnonymousParticipants), nameof(ICollection<object>.Count)],
+        [nameof(SessionListInfoDto.ParticipantCount)]
+    )]
+    public partial SessionListInfoDto MapToSessionListInfoDto(Session source);
 }
