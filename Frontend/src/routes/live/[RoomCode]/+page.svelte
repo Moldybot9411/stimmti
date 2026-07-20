@@ -169,8 +169,11 @@
 							profilePictureUrl={hub.state?.presenter.profilePictureUrl} />
 					</div>
 					<div class="min-w-0">
-						<p class="truncate text-lg font-bold">{hub.state?.presenter.userName}</p>
-						<div class="mt-0.5 badge badge-sm badge-info">Presenter</div>
+						<p class="truncate text-lg font-bold">{hub.state?.presenter.displayName}</p>
+						<p class="truncate text-base-content/60">
+							@{hub.state?.presenter.userName}
+						</p>
+						<div class="mt-2 badge badge-sm badge-info">Presenter</div>
 					</div>
 				</div>
 				<button class="btn w-full btn-lg btn-primary md:w-fit" onclick={startSession}>

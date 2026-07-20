@@ -1,5 +1,6 @@
 using Backend.Dto;
 using Backend.Hubs;
+using Backend.Hubs.Interfaces;
 using Backend.Mapper;
 using Backend.Models;
 using Backend.Services;
@@ -17,7 +18,7 @@ public class SessionController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly ILogger<UserController> _logger;
     private readonly IApiMapper _mapper;
-    private readonly IHubContext<DefaultHub> _hubContext;
+    private readonly IHubContext<DefaultHub, ISessionHubClient> _hubContext;
     private readonly IAnswerService _answerService;
 
     public SessionController(
@@ -25,7 +26,7 @@ public class SessionController : ControllerBase
         UserManager<User> userManager,
         ILogger<UserController> logger,
         IApiMapper mapper,
-        IHubContext<DefaultHub> hubContext,
+        IHubContext<DefaultHub, ISessionHubClient> hubContext,
         IAnswerService answerService
     )
     {
@@ -206,6 +207,55 @@ public class SessionController : ControllerBase
         };
 
         return Ok(result);
+    }
+
+    [HttpGet("openSessions")]
+    [ProducesResponseType(typeof(IEnumerable<GetOpenSessionsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetOpenSessions()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var sessions = await _context.Sessions
+            .AsNoTracking()
+            .Where(x => x.Survey!.OwnerId == user.Id && x.RoomActive == true)
+            .OrderBy(x => x.OpenedAt)
+            .Select(x => _mapper.MapToGetOpenSessionsDto(x))
+            .ToListAsync();
+
+        return Ok(sessions);
+    }
+
+    [HttpPatch("closeSessionBatch")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> CloseSessionBatch([FromBody] List<Guid> sessionIds)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var sessions = await _context.Sessions
+            .Where(x =>
+                x.Survey!.OwnerId == user.Id &&
+                x.RoomActive == true
+            )
+            .ToListAsync();
+
+        var sessionIdsHashSet = new HashSet<Guid>(sessionIds);
+        var sessionsToClose = sessions
+            .Where(x => sessionIdsHashSet.Contains(x.Id))
+            .ToList();
+
+        foreach (var session in sessionsToClose)
+        {
+            session.RoomActive = false;
+            await _hubContext.Clients.Group(session.RoomCode).SessionClosed();
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok();
     }
 
     [HttpDelete("deleteSession")]

@@ -1,36 +1,45 @@
+using System.ComponentModel;
 using Backend.Dto;
 using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("api/v1/[controller]")]
 public class UserController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
+    private readonly StimmtiDbContext _context;
     private readonly SignInManager<User> _signInManager;
     private readonly ILogger<UserController> _logger;
     private readonly IWebHostEnvironment _env;
 
     public UserController(
         UserManager<User> userManager,
+        StimmtiDbContext context,
         SignInManager<User> signInManager,
         ILogger<UserController> logger,
         IWebHostEnvironment env)
     {
         _userManager = userManager;
+        _context = context;
         _signInManager = signInManager;
         _logger = logger;
         _env = env;
     }
 
     [HttpPost("register")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<IdentityError>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RegisterUser([FromBody] UserRegisterDto data)
     {
         var user = new User
         {
             UserName = data.Username,
+            DisplayName = data.Username,
             Email = data.Email,
         };
 
@@ -44,13 +53,13 @@ public class UserController : ControllerBase
         _logger.LogInformation("New User created");
 
         await _signInManager.SignInAsync(user, isPersistent: false);
-        return Ok(new { message = "Registration Successful" });
+        return Ok();
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> LoginUser([FromBody] UserLoginDto data)
     {
-        var user = await _userManager.FindByEmailAsync(data.Email);
+        var user = await _userManager.FindByNameAsync(data.Username);
         if (user == null)
         {
             return BadRequest(new ProblemDetails { Title = "Login failed", Detail = "Incorrect Username or Password" });
@@ -66,12 +75,16 @@ public class UserController : ControllerBase
         if (result.Result.Succeeded)
         {
             await _signInManager.SignInAsync(user, data.StaySignedIn);
-            return Ok(new { message = "Login Successful" });
+            return Ok();
         }
 
         if (result.Result.IsLockedOut)
         {
-            return BadRequest("This account was temporarily locked because of too many failed Sign-In requests");
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Locked out",
+                Detail = "Account temporarily locked out because of too many failed Sign-In attempts"
+            });
         }
 
         return BadRequest(new ProblemDetails { Title = "Login failed", Detail = "Incorrect Username or Password" });
@@ -81,13 +94,13 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        return Ok(new { message = "Successfully logged out" });
+        return Ok();
     }
 
     [HttpGet("checkUsername")]
     [ProducesResponseType(typeof(UserUsernameAvailabilityResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserUsernameAvailabilityResponseDto>> CheckUsername([FromQuery] UserUsernameCheckRequestDto request)
+    public async Task<IActionResult> CheckUsername([FromQuery] UserUsernameCheckRequestDto request)
     {
         var user = await _userManager.FindByNameAsync(request.Username);
 
@@ -107,22 +120,11 @@ public class UserController : ControllerBase
         });
     }
 
-    [HttpPost("checkEmail")]
-    public async Task<IActionResult> CheckEmail(string email)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-
-        if (user != null)
-        {
-            return BadRequest("User with E-Mail already exists");
-        }
-
-        return Ok(new { message = "E-Mail is available" });
-    }
-
     [HttpGet("me")]
     [Authorize]
-    public async Task<ActionResult<UserAuthDto>> GetCurrentUser()
+    [ProducesResponseType(typeof(UserAuthDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetCurrentUser()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
@@ -131,53 +133,52 @@ public class UserController : ControllerBase
         {
             Id = user.Id,
             Username = user.UserName!,
-            Email = user.Email!,
+            DisplayName = user.DisplayName,
             ProfilePictureUrl = user.ProfilePictureUrl
         };
 
         return Ok(userData);
     }
 
-    [HttpPatch("username")]
-    [ProducesResponseType(typeof(IEnumerable<IdentityError>), StatusCodes.Status409Conflict)]
+    [HttpPatch("displayName")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [Authorize]
-    public async Task<IActionResult> ChangeUsername([FromBody] UserUsernameCheckRequestDto data)
+    public async Task<IActionResult> ChangeDisplayName([FromBody] DisplaynameCheckDto data)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        data.Username = data.Username.Trim();
+        data.DisplayName = data.DisplayName.Trim();
 
-        var res = await _userManager.SetUserNameAsync(user, data.Username);
-
-        if (!res.Succeeded)
+        if (string.IsNullOrWhiteSpace(data.DisplayName))
         {
-            return Conflict(res.Errors);
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Empty Display Name",
+                Detail = "The submitted Display Name was empty"
+            });
         }
 
-        return Ok(data.Username);
-    }
+        if (data.DisplayName == user.DisplayName) return Ok(data.DisplayName);
 
-    [HttpPatch("email")]
-    [ProducesResponseType(typeof(IEnumerable<IdentityError>), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-    [Authorize]
-    public async Task<IActionResult> ChangeEmail([FromBody] string newEmail)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(x => x.DisplayName == data.DisplayName);
 
-        newEmail = newEmail.Trim();
-
-        var res = await _userManager.SetEmailAsync(user, newEmail);
-
-        if (!res.Succeeded)
+        if (existingUser != null)
         {
-            return Conflict(res.Errors);
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Display Name already taken",
+                Detail = "The submitted Display Name is already taken by another user"
+            });
         }
 
-        return Ok(newEmail);
+        user.DisplayName = data.DisplayName;
+        await _userManager.UpdateAsync(user);
+
+        return Ok(data.DisplayName);
     }
 
     [HttpPatch("password")]
@@ -288,9 +289,9 @@ public class UserController : ControllerBase
     [HttpDelete("DeleteUser")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserAuthDto>> DeleteUser()
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IEnumerable<IdentityError>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteUser()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();

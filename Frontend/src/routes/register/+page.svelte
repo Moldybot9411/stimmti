@@ -2,7 +2,7 @@
 	import { goto, invalidateAll, replaceState } from '$app/navigation';
 	import Register from '$lib/components/Register.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { CircleCheckBig } from '@lucide/svelte';
+	import { ChevronLeft, CircleCheckBig } from '@lucide/svelte';
 
 	let registrationFinished = $state(false);
 
@@ -26,6 +26,13 @@
 </script>
 
 <ThemeToggle class="fixed top-4 right-4" />
+
+<button
+	class="btn fixed mt-4 mb-4 ml-4 btn-lg"
+	aria-label="Navigate Back"
+	onclick={() => history.back()}>
+	<ChevronLeft />
+</button>
 
 <div class="flex min-h-screen w-full items-center justify-center">
 	{#if !registrationFinished}

@@ -121,6 +121,8 @@ export type ParticipantUpdateResponseDto = {
 export type PresenterDto = {
     /** Transpiled from string */
     userName: string;
+    /** Transpiled from string */
+    displayName: string;
     /** Transpiled from string? */
     profilePictureUrl?: string;
 }

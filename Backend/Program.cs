@@ -64,8 +64,6 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;
-
-    options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<StimmtiDbContext>()
 .AddDefaultTokenProviders();

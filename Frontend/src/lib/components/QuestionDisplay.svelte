@@ -154,7 +154,7 @@
 		{participantCount} />
 
 	<button
-		class="btn fixed right-4 bottom-4 shadow btn-primary btn-xl"
+		class="btn absolute right-4 bottom-4 shadow btn-primary btn-xl"
 		onclick={() => onNextQuestion?.()}>
 		Continue
 	</button>
