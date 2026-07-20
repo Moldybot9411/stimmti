@@ -8,9 +8,8 @@
 	import { page } from '$app/state';
 
 	let { children, data } = $props();
-	const isMinimalFooter = $derived(page.url.pathname.startsWith('/app'));
-	const faviconHref = $derived(
-		themeManager.theme === 'light' ? '/stimmti-logo-notagline.svg' : '/stimmti-logo-notagline-light.svg'
+	const isMinimalFooter = $derived(
+		page.url.pathname.startsWith('/app') || page.url.pathname.startsWith('/live')
 	);
 
 	onMount(() => {

@@ -12,10 +12,11 @@
 
 <footer
 	class={[
+		'flex w-full flex-col items-center justify-center border-t text-center text-base-content sm:flex-row sm:justify-between',
 		isSmall
-			? 'flex w-full flex-col items-center justify-center gap-3 border-t border-base-300 bg-base-100 p-4 text-center text-base-content sm:flex-row sm:items-center sm:justify-between'
-			: 'flex w-full flex-col items-center justify-center gap-8 border-t border-base-100 bg-base-200 p-10 text-center text-base-content sm:flex-row sm:items-start sm:justify-between sm:text-left',
-	].join(' ')}>
+			? 'gap-3 border-base-300 bg-base-100 p-4 sm:items-center'
+			: 'gap-8 border-base-100 bg-base-200 p-10 sm:items-start sm:text-left',
+	]}>
 	{#if !isSmall}
 		<aside class="flex w-full flex-col items-center sm:w-auto sm:items-start">
 			<a href="/" aria-label="Go to homepage">
@@ -32,11 +33,13 @@
 			</p>
 		</aside>
 
-		<nav class="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left">
+		<nav
+			class="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left">
 			<h6 class="footer-title">Services</h6>
 			<a class="link link-hover" href="/help">Help</a>
 		</nav>
-		<nav class="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left">
+		<nav
+			class="flex w-full flex-col items-center text-center sm:w-auto sm:items-start sm:text-left">
 			<h6 class="footer-title">Legal</h6>
 			<a class="link link-hover" href="/privacypolicy">Privacy policy</a>
 			<a href="/legalnotice" class="link link-hover">Legal notice</a>
