@@ -120,6 +120,8 @@ export type ParticipantUpdateResponseDto = {
 /** Transpiled from Backend.Dto.PresenterDto */
 export type PresenterDto = {
     /** Transpiled from string */
+    userName: string;
+    /** Transpiled from string */
     displayName: string;
     /** Transpiled from string? */
     profilePictureUrl?: string;

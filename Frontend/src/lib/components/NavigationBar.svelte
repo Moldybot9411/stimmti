@@ -38,7 +38,7 @@
 			<UserAvatar />
 
 			<span class="hidden max-w-40 truncate md:inline">
-				{authStore.user?.username}
+				{authStore.user?.displayName}
 			</span>
 		</button>
 

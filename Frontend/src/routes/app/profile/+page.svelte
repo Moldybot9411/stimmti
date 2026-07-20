@@ -166,7 +166,9 @@
 						<input
 							id="displaynameinput"
 							type="text"
-							class="input"
+							class="input invalid:input-error"
+							maxlength="20"
+							pattern="[A-Za-z0-9]*"
 							bind:value={displayNameValue}
 							oninput={() => (edited = true)} />
 
