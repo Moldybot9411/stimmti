@@ -27,7 +27,10 @@
 
 <ThemeToggle class="fixed top-4 right-4" />
 
-<button class="btn mt-4 mb-4 ml-4 btn-lg" aria-label="Navigate Back" onclick={() => history.back()}>
+<button
+	class="btn fixed mt-4 mb-4 ml-4 btn-lg"
+	aria-label="Navigate Back"
+	onclick={() => history.back()}>
 	<ChevronLeft />
 </button>
 

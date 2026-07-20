@@ -124,6 +124,15 @@ export interface GetFolderResponseDto {
   surveys: GetSurveyResponseDto[] | null;
 }
 
+export interface GetOpenSessionsDto {
+  /** @format uuid */
+  id: string;
+  name: string | null;
+  roomCode: string | null;
+  /** @format date-time */
+  openedAt: string;
+}
+
 export interface GetStatisticsDto {
   /** @format int32 */
   surveyCount: number;
@@ -574,6 +583,40 @@ export class Api<
         method: "GET",
         query: query,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionOpenSessionsList
+     * @request GET:/api/v1/Session/openSessions
+     */
+    v1SessionOpenSessionsList: (params: RequestParams = {}) =>
+      this.request<GetOpenSessionsDto[], ProblemDetails>({
+        path: `/api/v1/Session/openSessions`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Session
+     * @name V1SessionCloseSessionBatchPartialUpdate
+     * @request PATCH:/api/v1/Session/closeSessionBatch
+     */
+    v1SessionCloseSessionBatchPartialUpdate: (
+      data: string[],
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/v1/Session/closeSessionBatch`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
         ...params,
       }),
 

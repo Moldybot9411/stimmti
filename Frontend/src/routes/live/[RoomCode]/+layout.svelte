@@ -5,7 +5,7 @@
 </script>
 
 <script lang="ts">
-	import { onMount, setContext } from 'svelte';
+	import { onDestroy, onMount, setContext } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { ParticipantRole, SessionState } from '$lib/wsClient/Backend.Models.Enums.js';
 	import { Trophy, User } from '@lucide/svelte';
@@ -31,13 +31,8 @@
 		}));
 	});
 
-	onMount(() => {
-		if (phase === SessionState.Lobby) {
-			setFullscreen(false);
-			return;
-		}
-
-		setFullscreen(true);
+	onDestroy(() => {
+		hub.destroy();
 	});
 
 	async function startSession() {

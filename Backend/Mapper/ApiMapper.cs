@@ -61,4 +61,5 @@ public partial class ApiMapper : IApiMapper
         [nameof(SessionListInfoDto.ParticipantCount)]
     )]
     public partial SessionListInfoDto MapToSessionListInfoDto(Session source);
+    public partial GetOpenSessionsDto MapToGetOpenSessionsDto(Session source);
 }
