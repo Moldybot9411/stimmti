@@ -11,7 +11,8 @@
 		X,
 		Zap,
 	} from '@lucide/svelte';
-	import type { ComponentProps } from 'svelte';
+
+	let { data } = $props();
 
 	let templates = [
 		{
@@ -28,65 +29,6 @@
 			label: 'AnotherTemplate',
 			description: "We are not sure what to put here, but we'll figure it out!",
 			icon: BadgeQuestionMark,
-		},
-	];
-
-	let demoSessions: ComponentProps<typeof SessionCard>[] = [
-		{
-			title: 'Svelte 5 vs. React',
-			color: 'primary',
-			subtitle: 'Frontend Preferences',
-			participantCount: 42,
-			runAt: new Date(2026, 4, 28),
-		},
-		{
-			title: 'C# & ASP.NET Architecture',
-			color: 'success',
-			subtitle: 'Live Q&A',
-			participantCount: 15,
-			runAt: new Date(),
-		},
-		{
-			title: 'Docker Deployment Quiz',
-			color: 'error',
-			subtitle: 'DevOps Module',
-			participantCount: 8,
-			runAt: new Date(2026, 3, 10),
-		},
-		{
-			title: 'Milestone 1 (M1) Check-in',
-			color: 'accent',
-			subtitle: 'Planning Phase',
-			participantCount: 3,
-			runAt: new Date(2026, 4, 16),
-		},
-		{
-			title: 'MySQL Performance Tuning',
-			color: 'info',
-			subtitle: 'Database Workshop',
-			participantCount: 27,
-			runAt: new Date(2026, 5, 2),
-		},
-		{
-			title: 'NodeJS Seminar Feedback',
-			color: 'warning',
-			subtitle: 'General Feedback',
-			participantCount: 19,
-			runAt: new Date(2026, 4, 25),
-		},
-		{
-			title: 'Mentimeter Alternatives',
-			color: 'secondary',
-			subtitle: 'Feature Voting',
-			participantCount: 34,
-			runAt: new Date(2026, 6, 12),
-		},
-		{
-			title: 'Sprint Retrospective',
-			color: 'accent',
-			subtitle: 'Team Feedback',
-			participantCount: 4,
-			runAt: new Date(2026, 5, 20),
 		},
 	];
 
@@ -155,9 +97,26 @@
 </div>
 
 <div class="flex gap-4 overflow-auto">
-	{#each demoSessions as session}
-		<SessionCard id={crypto.randomUUID()} {...session} />
-	{/each}
+	{#await data.recentSessions}
+		{#each new Array(8)}
+			<div class="min-h-50 min-w-70 skeleton rounded-box md:min-w-96"></div>
+		{/each}
+	{:then recentSessionData}
+		{#if recentSessionData.sessionListInfo?.length ?? 0 > 0}
+			{#each recentSessionData.sessionListInfo as session}
+				<SessionCard
+					sessionId={session.id}
+					title={session.name ?? undefined}
+					participantCount={session.participantCount}
+					runAt={new Date(session.openedAt)} />
+			{/each}
+		{:else}
+			<div
+				class="flex min-h-50 min-w-70 items-center justify-center rounded-box bg-base-100 text-lg font-bold md:min-w-96">
+				No recent sessions yet
+			</div>
+		{/if}
+	{/await}
 </div>
 
 <dialog class="modal" bind:this={templateModal}>
