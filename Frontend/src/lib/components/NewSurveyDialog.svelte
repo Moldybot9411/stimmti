@@ -3,6 +3,7 @@
 	import { HeartCrack, LoaderCircle, X } from '@lucide/svelte';
 	import type { ClassValue } from 'svelte/elements';
 	import { addToast } from './Toast/Toast.svelte';
+	import { apiClient } from '$lib/apiClient';
 
 	type Props = {
 		class?: ClassValue;
@@ -15,6 +16,9 @@
 	let formRef: HTMLFormElement | null = $state(null);
 	let isLoading = $state(false);
 
+	let title = $state('');
+	let description = $state('');
+
 	function reset() {
 		formRef?.reset();
 	}
@@ -23,13 +27,49 @@
 		console.error("Survey creation hasn't been implemented yet");
 
 		isLoading = true;
-		await new Promise((f) => setTimeout(f, 1000));
-		isLoading = false;
-		addToast({
-			type: 'error',
-			label: 'Survey Creation has not been implemented yet',
-			icon: HeartCrack,
-		});
+		await apiClient.api
+			.v1SurveyCreate({
+				title,
+				description,
+			})
+			.then((result) => {
+				if (result.status === 200) {
+					goto(`/app/surveys/${result.data.surveyId}`);
+				}
+			})
+			.catch((error) => {
+				addToast({
+					type: 'error',
+					label: `Survey Creation ran Into an error: ${error.message}`,
+					icon: HeartCrack,
+				});
+			});
+
+
+		
+	function createSurvey() {
+		isLoading = true;
+		
+		apiClient.api
+			.v1SurveyCreate({
+				title,
+				description,
+			})
+			.then((result) => {
+				if (result.status === 200) {
+					goto(`/app/surveys/${result.data.surveyId}`);
+				}
+			})
+			.catch((error) => {
+				addToast({
+					type: 'error',
+					label: `Survey Creation ran Into an error: ${error.message}`,
+					icon: HeartCrack,
+				});
+			})
+			.finally(() => {
+			    isLoading = false;
+			});
 	}
 </script>
 
@@ -55,12 +95,12 @@
 				}}>
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Survey Title</legend>
-					<input type="text" class="input w-full" placeholder="My Survey" required />
+					<input bind:value={title} type="text" class="input w-full" placeholder="My Survey" required />
 				</fieldset>
 
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Survey Description</legend>
-					<input type="text" class="input w-full" placeholder="My Description" />
+					<input bind:value={description} type="text" class="input w-full" placeholder="My Description" />
 				</fieldset>
 
 				<div class="mt-4 flex flex-col gap-2">

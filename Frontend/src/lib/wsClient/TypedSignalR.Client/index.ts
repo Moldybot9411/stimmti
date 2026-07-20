@@ -148,4 +148,3 @@ class ISessionHubClient_Binder implements ReceiverRegister<ISessionHubClient> {
         return new ReceiverMethodSubscription(connection, methodList);
     }
 }
-

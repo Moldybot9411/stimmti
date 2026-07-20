@@ -1,13 +1,15 @@
 <script lang="ts">
+    import StartSessionButton from '$lib/components/startSessionButton.svelte';
 	import { goto } from '$app/navigation';
 	import { scrollIntoViewOnMount } from '$lib/actions/scrollaction.js';
+	import type { GetFolderResponseDto, GetSurveyResponseDto } from '$lib/api';
+	import { apiClient } from '$lib/apiClient.js';
 	import NewSurveyDialog from '$lib/components/NewSurveyDialog.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import {
 		Archive,
 		BadgePlus,
 		ChartNoAxesCombined,
-		Check,
 		ChevronRight,
 		Cog,
 		Folder,
@@ -21,57 +23,140 @@
 	let { data } = $props();
 
 	let menuTabs = [
-		{ label: 'Surveys', icon: Form },
+		{ label: 'surveys', icon: Form },
 		{ label: 'Sessions', icon: ChartNoAxesCombined },
 		{ label: 'Templates', icon: Plus },
 		{ label: 'Archive', icon: Archive },
 	];
 
-	type Survey = { type: 'survey'; title: string };
-	let mockSurveys: (
-		| Survey
-		| {
-				type: 'folder';
-				title: string;
-				color:
-					| 'warning'
-					| 'error'
-					| 'success'
-					| 'primary'
-					| 'secondary'
-					| 'info'
-					| 'accent';
-				surveys: Survey[];
-		  }
-	)[] = [
-		{
-			type: 'folder',
-			title: 'Seminars',
-			color: 'error',
-			surveys: [
-				{ type: 'survey', title: 'NodeJS Seminar Feedback' },
-				{ type: 'survey', title: 'C# & ASP.NET Architecture' },
-			],
-		},
-		{
-			type: 'folder',
-			title: 'Planning',
-			color: 'warning',
-			surveys: [
-				{ type: 'survey', title: 'Milestone 1 (M1) Check-in' },
-				{ type: 'survey', title: 'MySQL Performance Tuning' },
-				{ type: 'survey', title: 'Mentimeter Alternatives' },
-				{ type: 'survey', title: 'Sprint Retrospective' },
-			],
-		},
-		{ type: 'survey', title: 'Docker Deployment Quiz' },
-		{ type: 'survey', title: 'Svelte 5 vs. React' },
-	];
-
 	let activeViewId = $derived(data.currentView);
 
+	let surveys = $state<GetSurveyResponseDto[]>([]);
+	let folder = $state<GetFolderResponseDto[]>([]);
 	let editingItem = $state<string | null>(null);
+	let draggedSurveyId = $state<string | null>(null);
+	let hoveredFolderId = $state<string | null>(null);
+	let editingSurvey = $derived(
+		surveys.find((s) => s.surveyId === editingItem) ??
+			folder.flatMap((f) => f.surveys ?? []).find((s) => s.surveyId === editingItem) ??
+			null
+	);
 	let newSurveyDialogRef: HTMLDialogElement | undefined = $state();
+
+	$effect(() => {
+		surveys = data.surveys.map((survey) => ({ ...survey }));
+		folder = data.folder.map((item) => ({
+			...item,
+			surveys: (item.surveys ?? []).map((survey) => ({ ...survey })),
+		}));
+	});
+
+	function snapshotLibraryState() {
+		return {
+			surveys: surveys.map((survey) => ({ ...survey })),
+			folder: folder.map((item) => ({
+				...item,
+				surveys: (item.surveys ?? []).map((survey) => ({ ...survey })),
+			})),
+		};
+	}
+
+	function takeSurveyFromLibrary(surveyId: string) {
+		const rootIndex = surveys.findIndex((survey) => survey.surveyId === surveyId);
+		if (rootIndex !== -1) {
+			const [survey] = surveys.splice(rootIndex, 1);
+			return survey;
+		}
+
+		for (const item of folder) {
+			const nestedSurveys = item.surveys ?? [];
+			const nestedIndex = nestedSurveys.findIndex((survey) => survey.surveyId === surveyId);
+			if (nestedIndex !== -1) {
+				const [survey] = nestedSurveys.splice(nestedIndex, 1);
+				item.surveys = nestedSurveys;
+				return survey;
+			}
+		}
+
+		return null;
+	}
+
+	function insertSurveyIntoFolder(folderId: string, survey: GetSurveyResponseDto) {
+		const targetFolder = folder.find((item) => item.folderId === folderId);
+		if (!targetFolder) return false;
+
+		targetFolder.surveys = [...(targetFolder.surveys ?? []), { ...survey, folderId }].sort((left, right) =>
+			(left.title ?? '').localeCompare(right.title ?? '')
+		);
+		return true;
+	}
+
+	function handleDragStart(event: DragEvent, surveyId: string) {
+		draggedSurveyId = surveyId;
+		event.dataTransfer?.setData('text/plain', surveyId);
+		event.dataTransfer?.setData('application/x-survey-id', surveyId);
+		event.dataTransfer?.setDragImage(event.currentTarget as Element, 16, 16);
+		event.dataTransfer!.effectAllowed = 'move';
+	}
+
+	function handleDragEnd() {
+		draggedSurveyId = null;
+		hoveredFolderId = null;
+	}
+
+	function handleFolderDragOver(event: DragEvent, folderId: string) {
+		event.preventDefault();
+		hoveredFolderId = folderId;
+		if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+	}
+
+	function handleFolderDragLeave(folderId: string) {
+		if (hoveredFolderId === folderId) hoveredFolderId = null;
+	}
+
+	async function handleFolderDrop(event: DragEvent, folderId: string) {
+		console.log('handleFolderDrop', { folderId, draggedSurveyId, hoveredFolderId });
+		event.preventDefault();
+		const surveyId = draggedSurveyId ?? event.dataTransfer?.getData('application/x-survey-id');
+		hoveredFolderId = null;
+		draggedSurveyId = null;
+
+		if (!surveyId) return;
+
+		const existingSurvey =
+			surveys.find((survey) => survey.surveyId === surveyId) ??
+			folder.flatMap((item) => item.surveys ?? []).find((survey) => survey.surveyId === surveyId);
+		if (!existingSurvey || existingSurvey.folderId === folderId) return;
+
+		const previousState = snapshotLibraryState();
+		const removedSurvey = takeSurveyFromLibrary(surveyId);
+		if (!removedSurvey) return;
+
+		const inserted = insertSurveyIntoFolder(folderId, removedSurvey);
+		if (!inserted) {
+			surveys = previousState.surveys;
+			folder = previousState.folder;
+			return;
+		}
+
+		try {
+			await apiClient.api.v1SurveyPartialUpdate(surveyId, {
+				title: removedSurvey.title,
+				description: removedSurvey.description ?? null,
+				folderId,
+			});
+		} catch (error) {
+			console.error('Error moving survey to folder:', error);
+			surveys = previousState.surveys;
+			folder = previousState.folder;
+		}
+	}
+
+	function getFolderSummaryClass(index: number, folderId: string) {
+		return [
+			hoveredFolderId === folderId ? 'bg-base-200' : null,
+		];
+	}
 </script>
 
 <div class="flex w-full flex-col gap-4 md:flex-row">
@@ -103,62 +188,67 @@
 
 			{#if activeViewId === 'surveys'}
 				<ul class="menu w-full rounded-box">
-					{#each mockSurveys as item}
-						{#if item.type === 'folder'}
-							<li>
-								<details>
-									<summary
-										class={[
-											item.color === 'primary' && 'text-primary',
-											item.color === 'secondary' && 'text-secondary',
-											item.color === 'accent' && 'text-accent',
-											item.color === 'info' && 'text-info',
-											item.color === 'success' && 'text-success',
-											item.color === 'warning' && 'text-warning',
-											item.color === 'error' && 'text-error',
-										]}>
-										<Folder size={16} />
-										{item.title}
-									</summary>
-									<ul>
-										{#each item.surveys as survey}
-											<li>
-												<button
-													onclick={() => (editingItem = survey.title)}
-													class={[
-														editingItem === survey.title &&
-															'bg-base-300',
-													]}>
-													<div class="flex items-center gap-2">
-														<Scroll size={16} />
-														{survey.title}
-														<ChevronRight size={16} />
-													</div>
-												</button>
-											</li>
-										{/each}
-									</ul>
-								</details>
-							</li>
-						{:else if item.type === 'survey'}
-							<li>
-								<button
-									onclick={() => (editingItem = item.title)}
-									class={[editingItem === item.title && 'bg-base-300']}>
-									<div class="flex items-center gap-2">
-										<Scroll size={16} />
-										{item.title}
-										<ChevronRight size={16} />
-									</div>
-								</button>
-							</li>
-						{/if}
+					{#each folder as f, index (f.folderId)}
+						<li>
+							<details>
+								<summary
+									class={[
+										'text-accent',
+										'text-info',
+										'text-success',
+										'text-warning',
+										'text-error',
+									][index % 5]}
+									ondragover={(event) => handleFolderDragOver(event, f.folderId)}
+									ondragleave={() => handleFolderDragLeave(f.folderId)}
+									ondrop={(event) => handleFolderDrop(event, f.folderId)}>
+									
+									<Folder size={16} />
+									{f.name}
+									<span class="badge badge-sm ml-auto">Items: {f.surveys?.length ?? 0}</span>
+								</summary>
+								<ul>
+									{#each f.surveys ?? [] as survey (survey.surveyId)}
+										<li>
+											<button
+												draggable="true"
+												ondragstart={(event) => handleDragStart(event, survey.surveyId)}
+												ondragend={handleDragEnd}
+												onclick={() => (editingItem = survey.surveyId)}
+												class={[
+													editingItem === survey.surveyId &&'bg-base-300',
+													draggedSurveyId === survey.surveyId && 'opacity-100',
+												]}>
+												<Scroll size={16} />
+												{survey.title}
+												<ChevronRight size={16} />
+											</button>
+										</li>
+									{/each}
+								</ul>
+							</details>
+						</li>
+					{/each}
+					{#each surveys as survey (survey.surveyId)}
+						<li>
+							<button
+								draggable="true"
+								ondragstart={(event) => handleDragStart(event, survey.surveyId)}
+								ondragend={handleDragEnd}
+								onclick={() => (editingItem = survey.surveyId)}
+								class={[
+									editingItem === survey.surveyId && 'bg-base-300',
+									draggedSurveyId === survey.surveyId && 'opacity-60',
+								]}>
+								<Scroll size={16} />
+								{survey.title}
+								<ChevronRight size={16} />
+							</button>
+						</li>
 					{/each}
 				</ul>
 
-				<div class="divider"></div>
 
-				<Pagination numPages={5} currentPage={1} />
 			{:else if activeViewId === 'sessions'}
 				<p>Here will be the Sessions</p>
 			{:else if activeViewId === 'templates'}
@@ -169,15 +259,15 @@
 		</div>
 	</div>
 
-	{#if editingItem}
+	{#if editingSurvey}
 		<div
 			class="card h-fit flex-3 bg-base-100 shadow-sm card-md"
-			use:scrollIntoViewOnMount={editingItem}>
+			use:scrollIntoViewOnMount={editingSurvey.surveyId}>
 			<div class="card-body">
 				<div class="flex justify-between">
 					<h2 class="card-title justify-between">
 						<Scroll />
-						{editingItem}
+						{editingSurvey.title}
 					</h2>
 					<button
 						class="btn btn-ghost btn-sm btn-neutral"
@@ -208,9 +298,9 @@
 				<div class="card-actions flex-col">
 					<button
 						class="btn btn-block btn-outline btn-sm btn-secondary"
-						onclick={() => goto(`/app/surveys/${crypto.randomUUID()}`)}
+						onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}
 						><Cog size={20} /> Full Settings</button>
-					<button class="btn btn-block btn-primary"><Play /> Start Session </button>
+					<StartSessionButton survey={editingSurvey}  />
 				</div>
 			</div>
 		</div>
