@@ -8,9 +8,6 @@
 # Setting up a development SQL Database
 docker compose -f devdb.compose.yaml up -d
 
-# Optional: load runtime public variables for local dev
-source .env
-
 # Starting the Backend
 cd Backend
 dotnet restore
