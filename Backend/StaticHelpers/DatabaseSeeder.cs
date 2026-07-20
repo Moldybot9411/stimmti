@@ -18,8 +18,7 @@ public static class DatabaseSeeder
             .RuleFor(c => c.Id, f => Guid.Empty)
             .RuleFor(c => c.UserName, f => "Bogus" + (f.IndexFaker + 1))
             .RuleFor(c => c.NormalizedUserName, (f, u) => u.UserName!.ToUpper())
-            .RuleFor(c => c.Email, f => $"bogus{f.IndexFaker}@example.com")
-            .RuleFor(c => c.NormalizedEmail, (f, u) => u.Email!.ToUpper())
+            .RuleFor(c => c.DisplayName, f => "Bogus" + (f.IndexFaker + 1))
             .RuleFor(c => c.PasswordHash, f => defaultPasswordHash)
             .RuleFor(c => c.SecurityStamp, f => Guid.NewGuid().ToString("D"))
             .RuleFor(u => u.ConcurrencyStamp, f => Guid.NewGuid().ToString("D"));
@@ -36,7 +35,7 @@ public static class DatabaseSeeder
         {
             UserName = "Admin",
             NormalizedUserName = "ADMIN",
-            Email = "a@a.a",
+            DisplayName = "Admin",
             NormalizedEmail = "A@A.A",
             PasswordHash = defaultPasswordHash,
             SecurityStamp = Guid.NewGuid().ToString("D"),

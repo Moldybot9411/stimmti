@@ -13,7 +13,7 @@
 
 	let { onregisterfinish, class: classes, style }: Props = $props();
 
-	const steps = ['E-Mail', 'Username', 'Password'];
+	const steps = ['Username', 'Password'];
 	const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 	let stage = $state(0);
@@ -27,47 +27,15 @@
 	let password = $state('');
 	let passwordRep = $state('');
 
-	let emailError = $state<string | null>(null);
-	let emailSuccess = $state<string | null>(null);
-	let isCheckingEmail = $state(false);
-
 	let usernameError = $state<string | null>(null);
 	let usernameSuccess = $state<string | null>(null);
 	let isCheckingUsername = $state(false);
 
-	let emailTimeout: ReturnType<typeof setTimeout> | undefined;
 	let usernameTimeout: ReturnType<typeof setTimeout> | undefined;
 
 	let passwordVisible = $state(false);
 
 	let isRegistering = $state(false);
-
-	function handleEmailInput() {
-		emailError = null;
-		emailSuccess = null;
-
-		if (!checkForm()) {
-			return;
-		}
-
-		clearTimeout(emailTimeout);
-		isCheckingEmail = true;
-
-		emailTimeout = setTimeout(async () => {
-			await apiClient.api
-				.v1UserCheckEmailCreate({ email })
-				.then((result) => {
-					if (result.status === 200) {
-						emailSuccess = 'E-Mail is available';
-					}
-				})
-				.catch(() => {
-					emailError = 'This E-Mail is already registered';
-				});
-
-			isCheckingEmail = false;
-		}, 500);
-	}
 
 	function handleUsernameInput() {
 		clearTimeout(usernameTimeout);
@@ -114,12 +82,10 @@
 
 	let isCurrentStepValid = $derived.by(() => {
 		if (stage === 0)
-			return email.length > 0 && checkForm() && emailError === null && !isCheckingEmail;
-		if (stage === 1)
 			return (
 				username.length > 0 && checkForm() && usernameError === null && !isCheckingUsername
 			);
-		if (stage === 2)
+		if (stage === 1)
 			return password.length > 0 && passwordRegex.test(password) && password === passwordRep;
 
 		return false;
@@ -186,30 +152,6 @@
 			}}
 			bind:this={formRef}>
 			{#if stage === 0}
-				<label class={['validator input mb-2', emailError && 'input-error']}>
-					<Mail class="opacity-50" />
-					<input
-						type="email"
-						placeholder="user@mail.com"
-						bind:value={email}
-						oninput={handleEmailInput}
-						required />
-				</label>
-
-				{#if isCheckingEmail}
-					<LoaderCircle class="animate-spin" />
-				{:else if emailError}
-					<div class="inline-grid *:[grid-area:1/1]">
-						<div class="status status-error"></div>
-					</div>
-					{emailError}
-				{:else if emailSuccess}
-					<div class="inline-grid *:[grid-area:1/1]">
-						<div class="status status-success"></div>
-					</div>
-					{emailSuccess}
-				{/if}
-			{:else if stage === 1}
 				<label class={['validator input mb-2', usernameError && 'input-error']}>
 					<User class="opacity-50" />
 					<input
@@ -233,7 +175,7 @@
 					</div>
 					{usernameSuccess}
 				{/if}
-			{:else if stage === 2}
+			{:else if stage === 1}
 				<div class="join w-full">
 					<div class="w-full">
 						<label class="validator input join-item mb-1">

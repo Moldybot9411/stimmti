@@ -111,6 +111,14 @@ export interface CreateSurveyResponseDto {
   folderId?: string | null;
 }
 
+export interface DisplaynameCheckDto {
+  /**
+   * @maxLength 20
+   * @pattern ^[A-Za-z0-9]+$
+   */
+  displayName: string | null;
+}
+
 export interface FreeTextResultDto {
   /** @format uuid */
   id: string;
@@ -255,14 +263,14 @@ export interface UpdateSurveyDto {
 export interface UserAuthDto {
   /** @format uuid */
   id?: string;
-  username?: string | null;
-  email?: string | null;
+  username: string | null;
+  displayName: string | null;
   profilePictureUrl?: string | null;
 }
 
 export interface UserLoginDto {
-  password?: string | null;
-  email?: string | null;
+  password: string | null;
+  username: string | null;
   staySignedIn?: boolean;
 }
 
@@ -282,15 +290,6 @@ export interface UserRegisterDto {
 export interface UserUsernameAvailabilityResponseDto {
   isAvailable?: boolean;
   message?: string | null;
-}
-
-export interface UserUsernameCheckRequestDto {
-  /**
-   * @minLength 1
-   * @maxLength 20
-   * @pattern ^[A-Za-z0-9]+$
-   */
-  username: string;
 }
 
 export interface ValidationProblemDetails {
@@ -791,7 +790,7 @@ export class Api<
      * @request POST:/api/v1/User/register
      */
     v1UserRegisterCreate: (data: UserRegisterDto, params: RequestParams = {}) =>
-      this.request<void, any>({
+      this.request<void, IdentityError[]>({
         path: `/api/v1/User/register`,
         method: "POST",
         body: data,
@@ -861,31 +860,11 @@ export class Api<
      * No description
      *
      * @tags User
-     * @name V1UserCheckEmailCreate
-     * @request POST:/api/v1/User/checkEmail
-     */
-    v1UserCheckEmailCreate: (
-      query?: {
-        email?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<void, any>({
-        path: `/api/v1/User/checkEmail`,
-        method: "POST",
-        query: query,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags User
      * @name V1UserMeList
      * @request GET:/api/v1/User/me
      */
     v1UserMeList: (params: RequestParams = {}) =>
-      this.request<UserAuthDto, any>({
+      this.request<UserAuthDto, ProblemDetails>({
         path: `/api/v1/User/me`,
         method: "GET",
         format: "json",
@@ -896,32 +875,15 @@ export class Api<
      * No description
      *
      * @tags User
-     * @name V1UserUsernamePartialUpdate
-     * @request PATCH:/api/v1/User/username
+     * @name V1UserDisplayNamePartialUpdate
+     * @request PATCH:/api/v1/User/displayName
      */
-    v1UserUsernamePartialUpdate: (
-      data: UserUsernameCheckRequestDto,
+    v1UserDisplayNamePartialUpdate: (
+      data: DisplaynameCheckDto,
       params: RequestParams = {},
     ) =>
-      this.request<string, IdentityError[]>({
-        path: `/api/v1/User/username`,
-        method: "PATCH",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags User
-     * @name V1UserEmailPartialUpdate
-     * @request PATCH:/api/v1/User/email
-     */
-    v1UserEmailPartialUpdate: (data: string, params: RequestParams = {}) =>
-      this.request<string, IdentityError[]>({
-        path: `/api/v1/User/email`,
+      this.request<string, ProblemDetails>({
+        path: `/api/v1/User/displayName`,
         method: "PATCH",
         body: data,
         type: ContentType.Json,
@@ -979,10 +941,9 @@ export class Api<
      * @request DELETE:/api/v1/User/DeleteUser
      */
     v1UserDeleteUserDelete: (params: RequestParams = {}) =>
-      this.request<UserAuthDto, ProblemDetails>({
+      this.request<void, IdentityError[] | ProblemDetails>({
         path: `/api/v1/User/DeleteUser`,
         method: "DELETE",
-        format: "json",
         ...params,
       }),
   };

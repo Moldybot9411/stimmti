@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitalCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,6 +36,7 @@ namespace Backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     ProfilePictureUrl = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: true),
+                    DisplayName = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
