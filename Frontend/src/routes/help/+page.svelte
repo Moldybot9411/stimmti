@@ -22,8 +22,7 @@
 
 	const bugReportUrl =
 		'https://github.com/Moldybot9411/stimmti/issues/new?template=bug_report.yml';
-	const feedbackUrl =
-		'https://github.com/Moldybot9411/stimmti/issues/new?template=feedback.yml';
+	const feedbackUrl = 'https://github.com/Moldybot9411/stimmti/issues/new?template=feedback.yml';
 
 	const faq: Record<Tab, FaqItem[]> = {
 		general: [
@@ -43,7 +42,7 @@
 				icon: Vote,
 				title: 'Which devices are supported?',
 				description:
-					'Any device with internet access and a modern browser: desktop PC, laptop, tablet, or smartphone.',
+					'Any device with internet access and a modern browser: Desktop PC, Laptop, Tablet, or Smartphone.',
 			},
 			{
 				icon: Key,
@@ -97,32 +96,33 @@
 				icon: Key,
 				title: 'Do I have to answer every question?',
 				description:
-					'Only required questions must be answered. This is defined by the survey creator.',
+					'No. Answering is not mandatory. Just wait until the presenter continues to the next question.',
 			},
 		],
 		creator: [
 			{
 				icon: UserPen,
 				title: 'How do I create an account?',
-				description: 'Use "Register" with a unique username and a password. An email address is not required.',
+				description:
+					'Use the "Register" button on the landing page and choose a unique username and a password. An email address is not required.',
 			},
 			{
 				icon: Vote,
 				title: 'How do I create a new survey?',
 				description:
-					'Use "Create New Survey" in the dashboard and configure title, questions, and answer options.',
+					'Use "Create New Survey" in the dashboard\'s "Home" or "Library" tab and configure title, questions, and answer options.',
 			},
 			{
 				icon: Key,
 				title: 'Which question types are available?',
 				description:
-					'Common types include single choice, multiple choice, and free text. We are happy to receive feedback and wishes for additional question types in the future.',
+					'Common types include single choice, multiple choice, number scale, word cloud, and free text. We welcome feedback and suggestions for additional question types.',
 			},
 			{
 				icon: Vote,
 				title: 'How do I start a survey session?',
 				description:
-					'Open your survey and start a survey session. As long as the session is active, the link and QR code are active too, and participants can submit answers to that session.',
+					'Go to your dashboard\'s "Library" tab, choose a survey, and click "Start Session". While the session is active, the link and QR code remain active and participants can submit their answers.',
 			},
 			{
 				icon: UserPen,
@@ -134,30 +134,29 @@
 				icon: Key,
 				title: 'Can I edit a survey after a session?',
 				description:
-					'Yes. You can edit questions after a session. However, once questions are changed, results from different sessions are no longer directly comparable.',
+					'Yes. You can edit questions after a session. No data from previous sessions of that survey is lost. However, once questions are changed, results from different sessions are no longer directly comparable.',
 			},
 			{
 				icon: Vote,
-				title: 'How can I see survey results?',
+				title: 'How can I see session results?',
 				description:
-					'Open "Results" in the dashboard to review answers per question, usually as charts or lists.',
+					'Under your dashboard\'s "Library" tab, click on "Sessions". Select the session you want to review and a dedicated page will display all data collected for that session.',
 			},
 			{
 				icon: UserPen,
 				title: 'Can I export results?',
-				description:
-					'Yes, if export is enabled in your setup. Typical formats are CSV or PDF via the "Export" action.',
+				description: 'Not yet. Export functionality is planned for a future update.',
 			},
 			{
 				icon: Key,
 				title: 'Can I close a survey early?',
 				description:
-					'Yes. You can end/close a running survey at any time using the corresponding dashboard action.',
+					'Yes. Return to your dashboard, where a notification will appear for any open sessions. You can close a running session at any time using the "Fix" button, though this is generally not recommended.',
 			},
 			{
 				icon: Vote,
 				title: 'Where can I find all surveys I created?',
-				description: 'In the dashboard under "My Surveys".',
+				description: 'In the dashboard under the "Library" tab.',
 			},
 		],
 		privacy: [
@@ -193,7 +192,7 @@
 		<div class="collapse-content text-sm">
 			<p>{description}</p>
 			{#if linkText && linkHref}
-				<a class="link link-primary mt-2 inline-block" href={linkHref}>{linkText}</a>
+				<a class="mt-2 inline-block link link-primary" href={linkHref}>{linkText}</a>
 			{/if}
 		</div>
 	</div>
@@ -225,7 +224,7 @@
 </div>
 
 <div class="mx-auto flex w-full flex-col gap-4 p-4 md:w-200">
-	<div class="join join-vertical h-fit w-full rounded-box bg-base-100">
+	<div class="join h-fit w-full join-vertical rounded-box bg-base-100">
 		{#each faq[tabs] as item}
 			{@render tile(item.icon, item.title, item.description, item.linkText, item.linkHref)}
 		{/each}
@@ -235,19 +234,20 @@
 		<div class="card-body">
 			<h2 class="card-title">Feedback & Bug Reports</h2>
 			<p class="text-sm text-base-content/80">
-				Found a problem or have an idea? You can report bugs and share feature wishes directly via
-				GitHub Issues.
+				Found a problem or have an idea? You can report bugs and share feature wishes
+				directly via GitHub Issues.
 			</p>
 			<div class="mt-2 flex flex-wrap gap-2">
-				<a class="btn btn-outline btn-error btn-sm" href={bugReportUrl} target="_blank" rel="noopener noreferrer"
-					>Report a Bug</a
-				>
+				<a
+					class="btn btn-outline btn-error btn-sm"
+					href={bugReportUrl}
+					target="_blank"
+					rel="noopener noreferrer">Report a Bug</a>
 				<a
 					class="btn btn-outline btn-primary btn-sm"
 					href={feedbackUrl}
 					target="_blank"
-					rel="noopener noreferrer">Share Feedback</a
-				>
+					rel="noopener noreferrer">Share Feedback</a>
 			</div>
 			<p class="mt-2 text-xs text-base-content/60">
 				Note: Submitting issues requires a GitHub account.
