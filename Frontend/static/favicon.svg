@@ -1,0 +1,9 @@
+<svg width="140" height="150" viewBox="0 -26 140 164" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Stimmti icon</title>
+  <desc id="desc">Speech bubble with three bars symbolizing poll results, the Stimmti icon mark</desc>
+
+  <path d="M0 16 Q0 0 16 0 L124 0 Q140 0 140 16 L140 96 Q140 112 124 112 L48 112 L20 138 L26 112 L16 112 Q0 112 0 96 Z" fill="#2F6FED"/>
+  <rect x="28" y="52" width="18" height="42" rx="3" fill="#FFFFFF"/>
+  <rect x="61" y="34" width="18" height="60" rx="3" fill="#FFFFFF"/>
+  <rect x="94" y="60" width="18" height="34" rx="3" fill="#FFFFFF"/>
+</svg>
