@@ -98,15 +98,24 @@
 
 <div class="flex gap-4 overflow-auto">
 	{#await data.recentSessions}
-		{#each new Array(8)}{/each}
-	{:then recentSessionData}
-		{#each recentSessionData.sessionListInfo as session}
-			<SessionCard
-				sessionId={session.id}
-				title={session.name ?? undefined}
-				participantCount={session.participantCount}
-				runAt={new Date(session.openedAt)} />
+		{#each new Array(8)}
+			<div class="min-h-50 min-w-70 skeleton rounded-box md:min-w-96"></div>
 		{/each}
+	{:then recentSessionData}
+		{#if recentSessionData.sessionListInfo?.length ?? 0 > 0}
+			{#each recentSessionData.sessionListInfo as session}
+				<SessionCard
+					sessionId={session.id}
+					title={session.name ?? undefined}
+					participantCount={session.participantCount}
+					runAt={new Date(session.openedAt)} />
+			{/each}
+		{:else}
+			<div
+				class="flex min-h-50 min-w-70 items-center justify-center rounded-box bg-base-100 text-lg font-bold md:min-w-96">
+				No recent sessions yet
+			</div>
+		{/if}
 	{/await}
 </div>
 

@@ -80,7 +80,7 @@
 				<div class="inline-grid *:[grid-area:1/1]">
 					<div class="status status-error"></div>
 				</div>
-				Wrong E-Mail or Password
+				Wrong Username or Password
 			{/if}
 
 			<div class="mt-4 card-actions flex justify-end">

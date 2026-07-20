@@ -53,7 +53,7 @@ public class UserController : ControllerBase
         var user = await _userManager.FindByEmailAsync(data.Email);
         if (user == null)
         {
-            return BadRequest("Incorrect E-Mail or Password");
+            return BadRequest(new ProblemDetails { Title = "Login failed", Detail = "Incorrect Username or Password" });
         }
 
         var result = _signInManager.PasswordSignInAsync(
@@ -74,7 +74,7 @@ public class UserController : ControllerBase
             return BadRequest("This account was temporarily locked because of too many failed Sign-In requests");
         }
 
-        return BadRequest("Incorrect E-Mail or Password");
+        return BadRequest(new ProblemDetails { Title = "Login failed", Detail = "Incorrect Username or Password" });
     }
 
     [HttpPost("logout")]
