@@ -3,7 +3,7 @@ import type { PageLoad } from './$types';
 import type { GetFolderResponseDto, GetSurveyResponseDto, PaginatedSessionListDto } from '$lib/api';
 import { apiClient } from '$lib/apiClient';
 
-const validViews = ['surveys', 'sessions', 'templates', 'archive'] as const;
+const validViews = ['surveys', 'sessions'] as const;
 export type View = (typeof validViews)[number];
 
 export const load: PageLoad = async ({ url }) => {

@@ -257,4 +257,32 @@ public class SessionController : ControllerBase
 
         return Ok();
     }
+
+    [HttpDelete("deleteSession")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> DeleteSession([FromQuery] Guid sessionId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var session = await _context.Sessions
+        .Include(x => x.Survey)
+        .FirstOrDefaultAsync(x => x.Id == sessionId);
+
+        if (session == null || session.Survey?.OwnerId != user.Id)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Session not found",
+                Detail = $"Session with ID {sessionId} doesn't exist or you don't have permission. No session was deleted."
+            });
+        }
+
+        _context.Sessions.Remove(session);
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
 }

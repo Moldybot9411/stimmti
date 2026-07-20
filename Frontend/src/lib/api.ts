@@ -623,6 +623,27 @@ export class Api<
     /**
      * No description
      *
+     * @tags Session
+     * @name V1SessionDeleteSessionDelete
+     * @request DELETE:/api/v1/Session/deleteSession
+     */
+    v1SessionDeleteSessionDelete: (
+      query?: {
+        /** @format uuid */
+        sessionId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/v1/Session/deleteSession`,
+        method: "DELETE",
+        query: query,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags Statistics
      * @name V1StatisticsStatisticsList
      * @request GET:/api/v1/Statistics/statistics

@@ -25,8 +25,6 @@
 	let menuTabs = [
 		{ label: 'Surveys', icon: Form },
 		{ label: 'Sessions', icon: ChartNoAxesCombined },
-		{ label: 'Templates', icon: Plus },
-		{ label: 'Archive', icon: Archive },
 	];
 
 	let activeViewId = $state<View>((page.url.searchParams.get('view') ?? 'surveys') as View);
@@ -56,7 +54,9 @@
 					</li>
 				{/each}
 			</ul>
-			<button class="btn mt-2 btn-primary" onclick={() => newSurveyDialogRef?.showModal()}>
+			<button
+				class="btn mt-2 truncate text-nowrap btn-primary"
+				onclick={() => newSurveyDialogRef?.showModal()}>
 				<BadgePlus />
 				New Survey
 			</button>
@@ -89,10 +89,6 @@
 				{:then sessionData}
 					<SessionList {sessionData} />
 				{/await}
-			{:else if activeViewId === 'templates'}
-				<p>Here will be the Templates</p>
-			{:else if activeViewId === 'archive'}
-				<p>Here will be the Archive</p>
 			{/if}
 		</div>
 	</div>
