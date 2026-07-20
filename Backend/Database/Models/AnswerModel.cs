@@ -34,7 +34,7 @@ public class FreeTextAnswer : Answer
 {
     [MaxLength(256)]
     public required string Text { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 
 public class NumberScaleAnswer : Answer

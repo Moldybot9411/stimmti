@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(StimmtiDbContext))]
-    [Migration("20260714085745_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260716130223_InitalCreate")]
+    partial class InitalCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -230,8 +230,8 @@ namespace Backend.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("OpenedAt")
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("datetime");
 
                     b.Property<bool>("RoomActive")
                         .HasColumnType("tinyint(1)");
@@ -259,8 +259,8 @@ namespace Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2048)
@@ -495,8 +495,8 @@ namespace Backend.Migrations
                 {
                     b.HasBaseType("Backend.Models.Answer");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Text")
                         .IsRequired()
