@@ -18,7 +18,9 @@
 	import { themeManager } from '$lib/Theme.svelte';
 
 	const logoSrc = $derived(
-		themeManager.theme === 'light' ? '/stimmti-logo-notagline.svg' : '/stimmti-logo-notagline-light.svg'
+		themeManager.theme === 'light'
+			? '/stimmti-logo-notagline.svg'
+			: '/stimmti-logo-notagline-light.svg'
 	);
 
 	let menuTabs = [
@@ -84,26 +86,27 @@
 	<a href="/help" class="btn btn-circle btn-ghost" aria-label="Help" title="Open Help Page">
 		<CircleQuestionMark />
 	</a>
-	<ThemeToggle />
 
 	{#if !small}
 		<div class="divider mx-0 divider-horizontal"></div>
 	{/if}
+
+	<ThemeToggle />
 {/snippet}
 
 <div class="navbar bg-base-100 shadow-sm">
-	<div class="mx-auto navbar-start flex-col md:flex-row">
+	<div class="mx-auto navbar-start flex-col gap-2 md:flex-row">
 		<div class="mr-0 flex md:mr-2">
 			<a href="/app" class="btn btn-ghost px-0" aria-label="Go to homepage">
 				<img src={logoSrc} alt="Stimmti Logo" class="h-10 w-auto object-contain" />
 			</a>
 
-			<div class="flex items-center gap-2 md:hidden">
+			<div class="flex items-center md:hidden">
 				{@render utils(true)}
 			</div>
 		</div>
 
-		<div class="hidden gap-2 md:flex">
+		<div class="flex">
 			<div role="tablist" class="tabs-box tabs flex-nowrap">
 				{#each menuTabs as tab}
 					{@const Icon = tab.icon}

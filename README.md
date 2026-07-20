@@ -33,6 +33,7 @@ The development DB user is `root` with the password `root`.
 
 Copy and fill out necessary files accordingly
 ```bash
+cp .env.example .env
 cp Caddyfile.example Caddyfile
 ```
 

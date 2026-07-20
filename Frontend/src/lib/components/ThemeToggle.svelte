@@ -3,7 +3,6 @@
 	import type { ClassValue } from 'svelte/elements';
 	import { Moon, Sun } from '@lucide/svelte';
 
-
 	type Props = {
 		class?: ClassValue;
 		style?: string;
@@ -17,8 +16,7 @@
 		type="checkbox"
 		class="theme-controller"
 		checked={themeManager.theme === 'dark'}
-		onchange={() => themeManager.toggle()} 
-	/>
+		onchange={() => themeManager.toggle()} />
 
 	<Sun size={16} />
 
