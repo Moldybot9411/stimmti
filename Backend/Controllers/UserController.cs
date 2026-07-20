@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
@@ -32,6 +33,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("register")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<IdentityError>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RegisterUser([FromBody] UserRegisterDto data)
@@ -57,6 +59,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> LoginUser([FromBody] UserLoginDto data)
     {
         var user = await _userManager.FindByNameAsync(data.Username);
@@ -65,20 +68,20 @@ public class UserController : ControllerBase
             return BadRequest(new ProblemDetails { Title = "Login failed", Detail = "Incorrect Username or Password" });
         }
 
-        var result = _signInManager.PasswordSignInAsync(
+        var result = await _signInManager.PasswordSignInAsync(
             user,
             data.Password,
             isPersistent: data.StaySignedIn,
             lockoutOnFailure: true
         );
 
-        if (result.Result.Succeeded)
+        if (result.Succeeded)
         {
             await _signInManager.SignInAsync(user, data.StaySignedIn);
             return Ok();
         }
 
-        if (result.Result.IsLockedOut)
+        if (result.IsLockedOut)
         {
             return BadRequest(new ProblemDetails
             {
@@ -87,7 +90,11 @@ public class UserController : ControllerBase
             });
         }
 
-        return BadRequest(new ProblemDetails { Title = "Login failed", Detail = "Incorrect Username or Password" });
+        return BadRequest(new ProblemDetails
+        {
+            Title = "Login failed",
+            Detail = "Incorrect Username or Password"
+        });
     }
 
     [HttpPost("logout")]

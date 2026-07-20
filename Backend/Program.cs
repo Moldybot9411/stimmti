@@ -1,10 +1,12 @@
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Backend.Filters;
 using Backend.Hubs;
 using Backend.Mapper;
 using Backend.Models;
 using Backend.Services;
 using Backend.StaticHelpers;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -72,6 +74,42 @@ builder.Services.AddTransient<IAnswerService, AnswerService>();
 builder.Services.AddTransient<IParticipantService, ParticipantService>();
 builder.Services.AddTransient<ISessionService, SessionService>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    string PartitionKey(HttpContext ctx) =>
+        ctx.User.Identity?.Name
+        ?? ctx.Connection.RemoteIpAddress?.ToString()
+        ?? "unknown";
+
+    options.AddPolicy("auth", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        PartitionKey(ctx),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+        RateLimitPartition.GetTokenBucketLimiter(PartitionKey(ctx), _ => new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 60,
+            TokensPerPeriod = 60,
+            ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+            AutoReplenishment = true,
+            QueueLimit = 0
+        }));
+});
+
+builder.Services.Configure<HstsOptions>(o =>
+{
+    o.Preload = true;
+    o.MaxAge = TimeSpan.FromDays(720 /* 2 years */);
+    o.IncludeSubDomains = true;
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -79,6 +117,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -103,6 +146,8 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 app.MapHub<DefaultHub>("/defaulthub");

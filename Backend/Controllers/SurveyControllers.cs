@@ -12,7 +12,7 @@ public class SurveyController : ControllerBase
 	private readonly StimmtiDbContext _dbContext;
 	private readonly UserManager<User> _userManager;
 
-	public SurveyController(StimmtiDbContext dbContext, UserManager<User> userManager, ILogger<SurveyController> logger)
+	public SurveyController(StimmtiDbContext dbContext, UserManager<User> userManager)
 	{
 		_dbContext = dbContext;
 		_userManager = userManager;
@@ -111,8 +111,23 @@ public class SurveyController : ControllerBase
 		if (!string.IsNullOrWhiteSpace(data.Description)) survey.Description = data.Description.Trim();
 
 		if (data.RemoveFromFolder.HasValue && data.RemoveFromFolder.Value) survey.FolderId = null;
-		else if (data.FolderId.HasValue ) survey.FolderId = data.FolderId.Value;
-		else return BadRequest(new ProblemDetails { Title = "Invalid request", Detail = "You must either provide a FolderId or set RemoveFromFolder to true" });
+		else if (data.FolderId.HasValue)
+		{
+			var folder = await _dbContext.Folders
+				.FirstOrDefaultAsync(x => x.Id == data.FolderId && x.OwnerId == user.Id);
+
+			if (folder == null)
+			{
+				return NotFound(new ProblemDetails { Title = "Folder not found", Detail = $"Folder with ID {data.FolderId} couldn't be found" });
+			}
+
+			survey.FolderId = data.FolderId.Value;
+		}
+		else return BadRequest(new ProblemDetails
+		{
+			Title = "Invalid request",
+			Detail = "You must either provide a FolderId or set RemoveFromFolder to true"
+		});
 
 		await _dbContext.SaveChangesAsync();
 
