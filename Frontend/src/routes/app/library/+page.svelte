@@ -14,9 +14,11 @@
 		Cog,
 		Folder,
 		Form,
+		Heart,
 		Play,
 		Plus,
 		Scroll,
+		Trash,
 		X,
 	} from '@lucide/svelte';
 
@@ -278,20 +280,22 @@
 				</div>
 
 				<div class="p-4">
-					Here will be quick settings that will be saved immediatly
-
+					
+					<p>Description: {editingSurvey.description}</p>
 					<fieldset
 						class="fieldset w-full rounded-box border border-base-300 bg-base-100 p-4">
-						<legend class="fieldset-legend">Some Quick Options</legend>
+						<legend class="fieldset-legend">Quick Options</legend>
 						<label class="label">
-							<input type="checkbox" checked class="toggle" />
-							Some
+							<button class="btn btn-ghost btn-sm ">
+								<Heart size={20} class="mr-2 text-primary" /> Favorite
+							</button>
+							
 						</label>
 
 						<label class="label">
-							<input type="checkbox" class="toggle" />
-							Other
-						</label>
+							<button class="btn btn-ghost btn-sm ">
+								<Trash size={20} class="mr-2 text-red-700" /> Delete
+							</button>
 					</fieldset>
 				</div>
 

@@ -88,7 +88,7 @@
 			})
 			.then((result) => {
 				if (result.status === 200) {
-					goto(`/app/surveys/${surveyId}`);
+					ref?.close();
                     
 				}
 			})
@@ -143,7 +143,7 @@
 							onclick={() => {
 								isQuestionTypeDropdownOpen = !isQuestionTypeDropdownOpen;
 							}}
-							class="btn btn-outline w-full justify-start dropdown-close">
+							class="btn btn-outline w-full justify-start">
 							{questionType}
 						</button>
 						<ul class="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow-lg">
