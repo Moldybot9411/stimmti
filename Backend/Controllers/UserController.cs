@@ -42,7 +42,6 @@ public class UserController : ControllerBase
         {
             UserName = data.Username,
             DisplayName = data.Username,
-            Email = data.Email,
         };
 
         var result = await _userManager.CreateAsync(user, data.Password);
