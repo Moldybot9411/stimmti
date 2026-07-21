@@ -23,11 +23,10 @@
 		formRef?.reset();
 	}
 
-	async function createSurvey() {
-		console.error("Survey creation hasn't been implemented yet");
-
+	function createSurvey() {
 		isLoading = true;
-		await apiClient.api
+
+		apiClient.api
 			.v1SurveyCreate({
 				title,
 				description,
@@ -43,10 +42,10 @@
 					label: `Survey Creation ran Into an error: ${error.message}`,
 					icon: HeartCrack,
 				});
+			})
+			.finally(() => {
+				isLoading = false;
 			});
-
-
-		
 	}
 </script>
 
@@ -72,12 +71,21 @@
 				}}>
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Survey Title</legend>
-					<input bind:value={title} type="text" class="input w-full" placeholder="My Survey" required />
+					<input
+						bind:value={title}
+						type="text"
+						class="input w-full"
+						placeholder="My Survey"
+						required />
 				</fieldset>
 
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Survey Description</legend>
-					<input bind:value={description} type="text" class="input w-full" placeholder="My Description" />
+					<input
+						bind:value={description}
+						type="text"
+						class="input w-full"
+						placeholder="My Description" />
 				</fieldset>
 
 				<div class="mt-4 flex flex-col gap-2">

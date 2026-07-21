@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { apiClient } from '$lib/apiClient';
-	import { Eye, Key, LoaderCircle, Mail } from '@lucide/svelte';
+	import { Eye, Key, LoaderCircle, Mail, User } from '@lucide/svelte';
 	import type { ClassValue } from 'svelte/elements';
 
 	type Props = {
@@ -11,7 +11,7 @@
 
 	let { onloginfinished, class: classes, style }: Props = $props();
 
-	let email = $state('');
+	let username = $state('');
 	let password = $state('');
 
 	let passwordVisible = $state(false);
@@ -25,7 +25,7 @@
 
 		await apiClient.api
 			.v1UserLoginCreate({
-				email,
+				username,
 				password,
 			})
 			.then((result) => {
@@ -41,7 +41,7 @@
 	}
 </script>
 
-<div class="card w-96 bg-base-100 shadow-sm card-lg">
+<div class={['card w-96 bg-base-100 shadow-sm card-lg', classes]} {style}>
 	<div class="card-body">
 		<h2 class="card-title">Login</h2>
 
@@ -51,8 +51,14 @@
 				login();
 			}}>
 			<label class="validator input mb-2">
-				<Mail class="opacity-50" />
-				<input type="email" placeholder="user@mail.com" bind:value={email} required />
+				<User class="opacity-50" />
+				<input
+					type="text"
+					placeholder="Username"
+					name="username"
+					autocomplete="username"
+					bind:value={username}
+					required />
 			</label>
 
 			<div class="join w-full">
@@ -63,6 +69,8 @@
 							type={passwordVisible ? 'text' : 'password'}
 							placeholder="Password"
 							bind:value={password}
+							name="password"
+							autocomplete="current-password"
 							required />
 					</label>
 				</div>
@@ -80,7 +88,7 @@
 				<div class="inline-grid *:[grid-area:1/1]">
 					<div class="status status-error"></div>
 				</div>
-				Wrong E-Mail or Password
+				Wrong Username or Password
 			{/if}
 
 			<div class="mt-4 card-actions flex justify-end">

@@ -11,7 +11,7 @@ export const load: LayoutLoad = async ({ params }) => {
 	let joinResult = await hub.joinSession(roomCode);
 
 	if (!joinResult) {
-		redirect(307, '/live');
+		redirect(301, '/live');
 	}
 
 	return {

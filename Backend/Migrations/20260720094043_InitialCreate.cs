@@ -36,6 +36,7 @@ namespace Backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     ProfilePictureUrl = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: true),
+                    DisplayName = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
@@ -195,7 +196,7 @@ namespace Backend.Migrations
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     Title = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetime", nullable: false),
                     FolderId = table.Column<Guid>(type: "char(36)", nullable: true),
                     OwnerId = table.Column<Guid>(type: "char(36)", nullable: false)
                 },
@@ -308,7 +309,7 @@ namespace Backend.Migrations
                     QuestionTypeId = table.Column<int>(type: "int", nullable: false),
                     AnswerOptionId = table.Column<Guid>(type: "char(36)", nullable: true),
                     Text = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetime", nullable: true),
                     Value = table.Column<int>(type: "int", nullable: true),
                     WordCloudAnswer_Text = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: true)
                 },
@@ -360,7 +361,7 @@ namespace Backend.Migrations
                     RoomCode = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false),
                     RoomActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     CurrentState = table.Column<int>(type: "int", nullable: false),
-                    OpenedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    OpenedAt = table.Column<DateTimeOffset>(type: "datetime", nullable: false),
                     SurveyId = table.Column<Guid>(type: "char(36)", nullable: false),
                     CurrentQuestionId = table.Column<Guid>(type: "char(36)", nullable: true)
                 },

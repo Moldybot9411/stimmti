@@ -1,37 +1,27 @@
 using Backend.Dto;
 using Backend.Hubs.Interfaces;
 using Backend.Mapper;
-using Backend.Models;
 using Backend.Models.Enums;
 using Backend.Services;
-using Backend.StaticHelpers;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Hubs;
 
 public class DefaultHub : Hub<ISessionHubClient>, ISessionHub
 {
     private readonly StimmtiDbContext _context;
-    private readonly ILogger<DefaultHub> _logger;
-    private readonly IApiMapper _mapper;
-
     private readonly IAnswerService _answerService;
     private readonly IParticipantService _participantService;
     private readonly ISessionService _sessionService;
 
     public DefaultHub(
         StimmtiDbContext context,
-        ILogger<DefaultHub> logger,
-        IApiMapper mapper,
         IAnswerService answerService,
         IParticipantService participantService,
         ISessionService sessionService
     )
     {
         _context = context;
-        _logger = logger;
-        _mapper = mapper;
 
         _answerService = answerService;
         _participantService = participantService;

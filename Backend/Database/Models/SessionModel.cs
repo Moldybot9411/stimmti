@@ -21,7 +21,7 @@ public class Session
 
     public SessionState CurrentState { get; set; } = SessionState.Lobby;
 
-    public DateTime OpenedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset OpenedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public required Guid SurveyId { get; set; }
     public Survey? Survey { get; set; }

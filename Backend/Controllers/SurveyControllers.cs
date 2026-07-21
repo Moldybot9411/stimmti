@@ -72,7 +72,7 @@ public class SurveyController : ControllerBase
     [Authorize]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(IEnumerable<GetSurveyResponseDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<GetSurveyResponseDto>>> GetSurveys()
+    public async Task<IActionResult> GetSurveys()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();

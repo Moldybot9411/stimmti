@@ -4,7 +4,7 @@ import type { PageLoad } from './$types';
 
 export const load: PageLoad = async () => {
 	try {
-		let res = await apiClient.api.v1StatisticsStatisticsList();
+		let res = await apiClient.api.v1StatisticsStatisticsList({ pageSize: 15 });
 
 		return {
 			statisticsData: res.data,

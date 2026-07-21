@@ -8,8 +8,14 @@ public class UserUsernameAvailabilityResponseDto
 
 public class UserUsernameCheckRequestDto
 {
-    [Required(ErrorMessage = "No username provided")]
     [RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "Username can only contain letters and digits")]
     [MaxLength(20, ErrorMessage = "Username is too long (max. 20 characters)")]
-    public string Username { get; set; } = string.Empty;
+    public required string Username { get; set; }
+}
+
+public class DisplaynameCheckDto
+{
+    [RegularExpression("^[A-Za-z0-9]+$", ErrorMessage = "Displayname can only contain letters and digits")]
+    [MaxLength(20, ErrorMessage = "Username is too long (max. 20 characters)")]
+    public required string DisplayName { get; set; }
 }
