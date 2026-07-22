@@ -131,7 +131,9 @@
 
 				<div class="p-4">
 					
-					<p>Description: {editingSurvey.description}</p>
+					{#if editingSurvey.description}
+						<p>Description: {editingSurvey.description}</p>
+					{/if}
 					<fieldset
 						class="fieldset w-full rounded-box border border-base-300 bg-base-100 p-4">
 						<legend class="fieldset-legend">Quick Options</legend>
@@ -140,6 +142,11 @@
 								<Heart size={20} class="mr-2 text-primary" /> Favorite
 							</button>
 							
+						</label>
+						<label class="label">
+							<button class="btn btn-ghost btn-sm " onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}>
+								<Cog size={20} class="mr-2 text-gray-700" /> Settings
+							</button>
 						</label>
 
 						<label class="label">
@@ -151,10 +158,6 @@
 				</div>
 
 				<div class="card-actions flex-col">
-					<button
-						class="btn btn-block btn-outline btn-secondary btn-sm"
-						onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}
-						><Cog size={20} /> Full Settings</button>
 					<StartSessionButton survey={editingSurvey} />
 				</div>
 			</div>

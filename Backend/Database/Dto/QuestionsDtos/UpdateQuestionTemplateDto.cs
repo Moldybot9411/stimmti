@@ -7,4 +7,5 @@ public class UpdateQuestionTemplateResponseDto
     public int? MinValue { get; set; }
     public int? MaxValue { get; set; }
     public int? MaxWords { get; set; }
+    public string[]? Answers { get; set; } = Array.Empty<string>();
 }

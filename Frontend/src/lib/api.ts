@@ -87,16 +87,16 @@ export interface CreateQuestionTemplateDto {
   /** @format uuid */
   surveyId: string;
   /** @format int32 */
-  orderNumber?: number ;
+  orderNumber?: number | null;
   isArchived: boolean;
   questionType: QuestionTypeEnum;
   answers?: string[] | null;
   /** @format int32 */
-  minValue?: number;
+  minValue?: number | null;
   /** @format int32 */
-  maxValue?: number;
+  maxValue?: number | null;
   /** @format int32 */
-  maxWords?: number;
+  maxWords?: number | null;
 }
 
 export interface CreateSessionDto {

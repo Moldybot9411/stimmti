@@ -7,13 +7,18 @@
 	import { page } from '$app/state';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import PatchQuestion from '$lib/components/PatchQuestion.svelte';
 
 	const id = $derived(page.params.id);
+	$effect(() => {
 		if (!id) {
-		throw new Error('Survey ID fehlt');
-	}
+			throw new Error('Survey ID fehlt');
+		}
+	});
 	let { data }: { data: PageData } = $props();
 	let newQuestionDialogRef: HTMLDialogElement | undefined = $state();
+	let patchQuestionDialogRef: HTMLDialogElement | undefined = $state();
+	let editingQuestionId: string | null = $state(null);
 	let questions = $derived<GetQuestionTemplateResponseDto[]>([
 		...(data.questions as GetQuestionTemplateResponseDto[]),
 	]);
@@ -27,13 +32,6 @@
 		});
 	}
 
-	function editQuestion(questionId: string) {
-		addToast({
-			type: 'error',
-			label: 'Edit question feature is not implemented yet',
-			icon: HeartCrack,
-		});
-	}
 	// Drag and drop handlers for reordering questions
 	function handleDragStart(event: DragEvent, index: number) {
 		draggedIndex = index;
@@ -148,7 +146,7 @@
 					<!-- Middle: Buttons (top-right) -->
 					<div class="flex gap-2">
 						<Trash onclick={() => deleteQuestion(question.id!)} color="red" size={20} />
-						<Cog onclick={() => editQuestion(question.id!)} color="gray" size={20} />
+						<Cog onclick={() => { editingQuestionId = question.id!; patchQuestionDialogRef?.showModal(); }} color="gray" size={20} />
 					</div>
 					<!-- Right: Grip Icon (middle-right) -->
 					<div class="align-center flex items-center justify-center opacity-40">
@@ -185,8 +183,16 @@
 	</li>
 </ul>
 <NewQuestionDialog
-	surveyId={id}
+	surveyId={id!}
 	bind:ref={newQuestionDialogRef}
+	onClose={async () => {
+		await invalidateAll();
+	}} />
+
+<PatchQuestion
+	surveyId={id!}
+	questionId={editingQuestionId}
+	bind:ref={patchQuestionDialogRef}
 	onClose={async () => {
 		await invalidateAll();
 	}} />

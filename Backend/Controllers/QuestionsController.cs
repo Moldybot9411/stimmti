@@ -201,6 +201,7 @@ public class QuestionsController : ControllerBase
 
         var questionTemplate = await _context.QuestionTemplates
             .Include(x => x.Survey)
+            .Include(x => (x as ChoiceQuestionTemplate)!.AnswerOptions)
             .FirstOrDefaultAsync(x => x.Id == questionId);
 
         if (questionTemplate == null)
@@ -259,6 +260,36 @@ public class QuestionsController : ControllerBase
         else if (data.MaxWords.HasValue)
         {
             return BadRequest(new ProblemDetails { Title = "Invalid Question Type", Detail = "MaxWords can only be set for WordCloud questions" });
+        }
+
+        if (questionTemplate is MultipleChoiceQuestionTemplate || questionTemplate is SingleChoiceQuestionTemplate)
+        {
+            if (data.Answers != null)
+            {
+                var cleanedAnswers = data.Answers
+                    .Select(x => x?.Trim())
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (cleanedAnswers.Count < 2)
+                    return BadRequest(new ProblemDetails { Title = "Invalid Answers", Detail = "SingleChoice and MultipleChoice require at least 2 answer options" });
+
+                var choiceTemplate = questionTemplate as ChoiceQuestionTemplate;
+                choiceTemplate!.AnswerOptions.Clear();
+                choiceTemplate.AnswerOptions.AddRange(
+                    cleanedAnswers.Select((answer, index) => new AnswerOption
+                    {
+                        OrderNumber = index + 1,
+                        Description = answer!,
+                        QuestionTemplateId = choiceTemplate.Id,
+                    })
+                );
+            }
+        }
+        else if (data.Answers != null)
+        {
+            return BadRequest(new ProblemDetails { Title = "Invalid Question Type", Detail = "Answers can only be set for MultipleChoice and SingleChoice questions" });
         }
 
         await _context.SaveChangesAsync();
