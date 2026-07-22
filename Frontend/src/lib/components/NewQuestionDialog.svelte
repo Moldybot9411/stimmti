@@ -5,15 +5,18 @@
 	import { addToast } from './Toast/Toast.svelte';
 	import { apiClient } from '$lib/apiClient';
 	import { QuestionTypeEnum } from '$lib/api';
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 
 	type Props = {
 		class?: ClassValue;
 		style?: string;
 		ref?: HTMLDialogElement;
 		surveyId: string;
+		onClose?: () => void | Promise<void>;
 	};
 
-	let { class: classes, style, ref = $bindable(), surveyId }: Props = $props();
+	let { class: classes, style, ref = $bindable(), surveyId, onClose }: Props = $props();
 	let formRef: HTMLFormElement | null = $state(null);
 	let isLoading = $state(false);
 
@@ -84,10 +87,11 @@
 				minValue: questionType === QuestionTypeEnum.NumberScale ? minValue : 0,
 				maxValue: questionType === QuestionTypeEnum.NumberScale ? maxValue : 0,
 				maxWords: questionType === QuestionTypeEnum.WordCloud ? maxWords : 0,
-				orderNumber: 0
+				orderNumber: undefined,
 			})
 			.then((result) => {
 				if (result.status === 200) {
+					dispatch('created');
 					ref?.close();
                     
 				}
@@ -105,7 +109,14 @@
 	}
 </script>
 
-<dialog class={['modal', classes]} {style} bind:this={ref} onclose={reset}>
+<dialog
+	class={['modal', classes]}
+	{style}
+	bind:this={ref}
+	onclose={() => {
+		reset();
+		onClose?.();
+	}}>
 	<div class="modal-box">
 		<form method="dialog">
 			<button class="btn absolute top-2 right-2 btn-ghost btn-sm" disabled={isLoading}>

@@ -111,15 +111,19 @@ public class QuestionsController : ControllerBase
         if (data.QuestionType != QuestionTypeEnum.SingleChoice && data.QuestionType != QuestionTypeEnum.MultipleChoice && cleanedAnswers.Count > 0)
             return BadRequest(new ProblemDetails { Title = "Invalid Question Type", Detail = "Answer options can only be provided for SingleChoice and MultipleChoice" });
 
+        data.OrderNumber= await _context.QuestionTemplates
+            .Where(x => x.SurveyId == data.SurveyId)
+            .MaxAsync(x => (int?)x.OrderNumber) + 1 ?? 1;
+
         QuestionTemplate questionTemplate = data.QuestionType switch
         {
-            QuestionTypeEnum.SingleChoice => new SingleChoiceQuestionTemplate
+            QuestionTypeEnum.SingleChoice=> new SingleChoiceQuestionTemplate
             {
                 Id = Guid.NewGuid(),
                 Name = name,
                 Description = data.Description?.Trim(),
                 SurveyId = data.SurveyId,
-                OrderNumber = data.OrderNumber,
+                OrderNumber = (int)data.OrderNumber,
                 IsArchived = data.IsArchived,
             },
             QuestionTypeEnum.MultipleChoice => new MultipleChoiceQuestionTemplate
@@ -128,39 +132,41 @@ public class QuestionsController : ControllerBase
                 Name = name,
                 Description = data.Description?.Trim(),
                 SurveyId = data.SurveyId,
-                OrderNumber = data.OrderNumber,
+                OrderNumber = (int)data.OrderNumber,
                 IsArchived = data.IsArchived,
             },
-            QuestionTypeEnum.WordCloud => new WordCloudQuestionTemplate
+            QuestionTypeEnum.WordCloud when data.MaxWords.HasValue => new WordCloudQuestionTemplate
             {
                 Id = Guid.NewGuid(),
                 Name = name,
                 Description = data.Description?.Trim(),
                 SurveyId = data.SurveyId,
-                OrderNumber = data.OrderNumber,
+                OrderNumber = (int)data.OrderNumber,
                 IsArchived = data.IsArchived,
-                MaxWords = data.MaxWords,
+                MaxWords = (int)data.MaxWords,
             },
+            QuestionTypeEnum.WordCloud => throw new InvalidOperationException("WordCloud questions require MaxWords"),
             QuestionTypeEnum.FreeText => new FreeTextQuestionTemplate
             {
                 Id = Guid.NewGuid(),
                 Name = name,
                 Description = data.Description?.Trim(),
                 SurveyId = data.SurveyId,
-                OrderNumber = data.OrderNumber,
+                OrderNumber = (int)data.OrderNumber,
                 IsArchived = data.IsArchived,
             },
-            QuestionTypeEnum.NumberScale => new NumberScaleQuestionTemplate
+            QuestionTypeEnum.NumberScale when data.MinValue.HasValue && data.MaxValue.HasValue => new NumberScaleQuestionTemplate
             {
                 Id = Guid.NewGuid(),
                 Name = name,
                 Description = data.Description?.Trim(),
                 SurveyId = data.SurveyId,
-                OrderNumber = data.OrderNumber,
+                OrderNumber = (int)data.OrderNumber,
                 IsArchived = data.IsArchived,
-                MinValue = data.MinValue,
-                MaxValue = data.MaxValue,
+                MinValue = (int)data.MinValue,
+                MaxValue = (int)data.MaxValue,
             },
+            QuestionTypeEnum.NumberScale => throw new InvalidOperationException("NumberScale questions require MinValue and MaxValue"),
             _ => throw new InvalidOperationException($"Unsupported QuestionType: {data.QuestionType}"),
         };
 

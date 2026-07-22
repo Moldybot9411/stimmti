@@ -87,7 +87,7 @@ export interface CreateQuestionTemplateDto {
   /** @format uuid */
   surveyId: string;
   /** @format int32 */
-  orderNumber: number;
+  orderNumber?: number ;
   isArchived: boolean;
   questionType: QuestionTypeEnum;
   answers?: string[] | null;
@@ -137,7 +137,6 @@ export interface DisplaynameCheckDto {
   displayName: string | null;
 }
 
-
 export interface FreeTextResultDto {
   /** @format uuid */
   id: string;
@@ -151,13 +150,13 @@ export interface GetFolderResponseDto {
   surveys: GetSurveyResponseDto[] | null;
 }
 
-export interface GetSurveyResponseDto {
+export interface GetOpenSessionsDto {
   /** @format uuid */
-  surveyId: string;
-  title: string | null;
-  description?: string | null;
-  /** @format uuid */
-  folderId?: string | null;
+  id: string;
+  name: string | null;
+  roomCode: string | null;
+  /** @format date-time */
+  openedAt: string;
 }
 
 export interface GetQuestionTemplateResponseDto {
@@ -216,6 +215,17 @@ export interface NumberResultDto {
   value: number;
   /** @format int32 */
   count: number;
+}
+
+export interface PaginatedSessionListDto {
+  /** @format int32 */
+  sessionCount: number;
+  sessionListInfo?: SessionListInfoDto[] | null;
+}
+
+export interface PatchQuestionTemplateOrderDto {
+  /** @format int32 */
+  orderNumber?: number;
 }
 
 export interface ProblemDetails {
@@ -867,6 +877,20 @@ export class Api<
      * No description
      *
      * @tags Survey
+     * @name V1SurveyDelete
+     * @request DELETE:/api/v1/Survey/{surveyId}
+     */
+    v1SurveyDelete: (surveyId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Survey/${surveyId}`,
+        method: "DELETE",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
      * @name V1SurveyFoldersCreate
      * @request POST:/api/v1/Survey/folders
      */
@@ -1111,6 +1135,20 @@ export class Api<
         path: `/surveys/${surveyId}/questions`,
         method: "GET",
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name SurveysDelete
+     * @request DELETE:/surveys/{surveyId}
+     */
+    surveysDelete: (surveyId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/surveys/${surveyId}`,
+        method: "DELETE",
         ...params,
       }),
   };

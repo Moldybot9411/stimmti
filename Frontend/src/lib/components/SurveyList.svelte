@@ -19,6 +19,7 @@
 	let folder = $state<GetFolderResponseDto[]>([]);
 	let draggedSurveyId = $state<string | null>(null);
 	let hoveredFolderId = $state<string | null>(null);
+	let hoveredRootArea = $state(false);
 
 	$effect(() => {
 		surveys = initialSurveys.map((survey) => ({ ...survey }));
@@ -79,6 +80,7 @@
 	function handleDragEnd() {
 		draggedSurveyId = null;
 		hoveredFolderId = null;
+		hoveredRootArea = false;
 	}
 
 	function handleFolderDragOver(event: DragEvent, folderId: string) {
@@ -89,6 +91,50 @@
 
 	function handleFolderDragLeave(folderId: string) {
 		if (hoveredFolderId === folderId) hoveredFolderId = null;
+	}
+
+	function handleRootDragOver(event: DragEvent) {
+		event.preventDefault();
+		hoveredRootArea = true;
+		if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+	}
+
+	function handleRootDragLeave() {
+		hoveredRootArea = false;
+	}
+
+	async function handleRootDrop(event: DragEvent) {
+		event.preventDefault();
+		const surveyId = draggedSurveyId ?? event.dataTransfer?.getData('application/x-survey-id');
+		hoveredRootArea = false;
+		draggedSurveyId = null;
+
+		if (!surveyId) return;
+
+		const existingSurvey =
+			surveys.find((s) => s.surveyId === surveyId) ??
+			folder.flatMap((item) => item.surveys ?? []).find((s) => s.surveyId === surveyId);
+		if (!existingSurvey || existingSurvey.folderId == null) return;
+
+		const previousState = snapshotLibraryState();
+		const removedSurvey = takeSurveyFromLibrary(surveyId);
+		if (!removedSurvey) return;
+
+		surveys = [...surveys, { ...removedSurvey, folderId: null }].sort((a, b) =>
+			(a.title ?? '').localeCompare(b.title ?? '')
+		);
+
+		try {
+			await apiClient.api.v1SurveyPartialUpdate(surveyId, {
+				title: removedSurvey.title,
+				description: removedSurvey.description ?? null,
+				removeFromFolder: true,
+			});
+		} catch (error) {
+			console.error('Error removing survey from folder:', error);
+			surveys = previousState.surveys;
+			folder = previousState.folder;
+		}
 	}
 
 	async function handleFolderDrop(event: DragEvent, folderId: string) {
@@ -137,12 +183,9 @@
 			<details>
 				<summary
 					class={[
-						'text-accent',
-						'text-info',
-						'text-success',
-						'text-warning',
-						'text-error',
-					][index % 5]}
+						['text-accent', 'text-info', 'text-success', 'text-warning', 'text-error'][index % 5],
+						hoveredFolderId === f.folderId && 'ring-2 ring-base-content rounded-box',
+					]}
 					ondragover={(event) => handleFolderDragOver(event, f.folderId)}
 					ondragleave={() => handleFolderDragLeave(f.folderId)}
 					ondrop={(event) => handleFolderDrop(event, f.folderId)}>
@@ -172,21 +215,32 @@
 			</details>
 		</li>
 	{/each}
-	{#each surveys as survey (survey.surveyId)}
-		<li>
-			<button
-				draggable="true"
-				ondragstart={(event) => handleDragStart(event, survey.surveyId)}
-				ondragend={handleDragEnd}
-				onclick={() => (editingSurvey = survey)}
-				class={[
-					editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
-					draggedSurveyId === survey.surveyId && 'opacity-60',
-				]}>
-				<Scroll size={16} />
-				{survey.title}
-				<ChevronRight size={16} />
-			</button>
-		</li>
-	{/each}
+	<li
+		class={[
+			'rounded-box transition-all',
+			hoveredRootArea && draggedSurveyId != null && 'ring-2 ring-base-content',
+		]}
+		ondragover={handleRootDragOver}
+		ondragleave={handleRootDragLeave}
+		ondrop={handleRootDrop}>
+		<ul>
+			{#each surveys as survey (survey.surveyId)}
+				<li>
+					<button
+						draggable="true"
+						ondragstart={(event) => handleDragStart(event, survey.surveyId)}
+						ondragend={handleDragEnd}
+						onclick={() => (editingSurvey = survey)}
+						class={[
+							editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
+							draggedSurveyId === survey.surveyId && 'opacity-60',
+						]}>
+						<Scroll size={16} />
+						{survey.title}
+						<ChevronRight size={16} />
+					</button>
+				</li>
+			{/each}
+		</ul>
+	</li>
 </ul>

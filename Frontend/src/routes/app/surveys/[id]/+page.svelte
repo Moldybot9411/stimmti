@@ -6,6 +6,7 @@
 	import NewQuestionDialog from '$lib/components/NewQuestionDialog.svelte';
 	import { page } from '$app/state';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	const id = $derived(page.params.id);
 	if (!id) {
@@ -18,8 +19,6 @@
 	]);
 	let draggedIndex = $state<number | null>(null);
 	let dragOverIndex = $state<number | null>(null);
-
-	
 
 	function deleteQuestion(questionId: string) {
 		questions = questions.filter((q) => q.id !== questionId);
@@ -35,7 +34,7 @@
 			icon: HeartCrack,
 		});
 	}
-	
+	// Drag and drop handlers for reordering questions
 	function handleDragStart(event: DragEvent, index: number) {
 		draggedIndex = index;
 		event.dataTransfer!.effectAllowed = 'move';
@@ -73,6 +72,8 @@
 		} catch (e) {
 			console.error('Failed to update question order', e);
 			questions = prev;
+		} finally {
+			invalidateAll();
 		}
 	}
 
@@ -102,12 +103,12 @@
 					draggedIndex !== index &&
 					'rounded-box ring-2 ring-primary',
 			]}>
-			<div class="timeline-left  md:text-end">
+			<div class="timeline-left md:text-end">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 20 20"
 					fill="currentColor"
-					class="h-10 w-10 mb-6">
+					class="mb-6 h-10 w-10">
 					<path
 						fill-rule="evenodd"
 						d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
@@ -117,39 +118,45 @@
 
 			<div class="timeline-start mb-10 md:text-end">
 				<div>Question {index + 1}</div>
-				<div class="w-full min-w-150 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm grid grid-cols-[1fr_auto_auto] gap-4 items-start">
+				<div
+					class="grid w-full min-w-150 grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm">
 					<!-- Left: Content -->
 					<div class="flex flex-col gap-1">
-						<div class="text-lg font-bold content-start text-left">
+						<div class="content-start text-left text-lg font-bold">
 							{question.name} - {question.questionType}
 						</div>
-						<div class="text-sm opacity-80 text-left overflow-wrap break-words">Description: {question.description}</div>
+						<div class="overflow-wrap text-left text-sm break-words opacity-80">
+							Description: {question.description}
+						</div>
 
 						{#if question.questionType === QuestionTypeEnum.NumberScale}
-							<div class="text-left">Scale: {question.minValue ?? 1} - {question.maxValue ?? 10}</div>
+							<div class="text-left">
+								Scale: {question.minValue ?? 1} - {question.maxValue ?? 10}
+							</div>
 						{:else if question.questionType === QuestionTypeEnum.WordCloud}
 							<div class="text-left">Max words: {question.maxWords ?? 0}</div>
 						{:else if question.answers?.length}
 							<div class="direction-row grid grid-cols-2 gap-2">
 								{#each question.answers as answer}
-									<div class="flex justify-center rounded  p-2 bg-accent">{answer}</div>
+									<div class="flex justify-center rounded bg-accent p-2">
+										{answer}
+									</div>
 								{/each}
 							</div>
 						{/if}
 					</div>
 					<!-- Middle: Buttons (top-right) -->
 					<div class="flex gap-2">
-						<Trash onclick={()=>deleteQuestion(question.id!)} color="red" size={20} />
+						<Trash onclick={() => deleteQuestion(question.id!)} color="red" size={20} />
 						<Cog onclick={() => editQuestion(question.id!)} color="gray" size={20} />
 					</div>
 					<!-- Right: Grip Icon (middle-right) -->
-					<div class="flex items-center align-center justify-center opacity-40">
+					<div class="align-center flex items-center justify-center opacity-40">
 						<GripVertical class="cursor-grab text-base-content/40" />
 					</div>
 				</div>
-				
 			</div>
-			
+
 			<hr />
 		</li>
 	{/each}
@@ -160,7 +167,7 @@
 				xmlns="http://www.w3.org/2000/svg"
 				viewBox="0 0 20 20"
 				fill="currentColor"
-				class="h-5 w-5 ">
+				class="h-5 w-5">
 				<path
 					fill-rule="evenodd"
 					d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
@@ -177,4 +184,9 @@
 		</div>
 	</li>
 </ul>
-<NewQuestionDialog surveyId={id} bind:ref={newQuestionDialogRef} />
+<NewQuestionDialog
+	surveyId={id}
+	bind:ref={newQuestionDialogRef}
+	onClose={async () => {
+		await invalidateAll();
+	}} />

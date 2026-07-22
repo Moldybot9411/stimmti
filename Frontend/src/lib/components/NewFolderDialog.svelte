@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { HeartCrack, LoaderCircle, X } from '@lucide/svelte';
 	import type { ClassValue } from 'svelte/elements';
 	import { addToast } from './Toast/Toast.svelte';
@@ -18,7 +17,6 @@
 	let isLoading = $state(false);
 
 	let title = $state('');
-	let description = $state('');
 
 	function reset() {
 		formRef?.reset();
@@ -29,23 +27,23 @@
 		await onClose?.();
 	}
 
-	function createSurvey() {
+	function createFolder() {
 		isLoading = true;
 
 		apiClient.api
-			.v1SurveyCreate({
-				title,
-				description,
+			.v1SurveyFoldersCreate({
+				name: title,
 			})
 			.then((result) => {
 				if (result.status === 200) {
-					goto(`/app/surveys/${result.data.surveyId}`);
+                    
+					ref?.close();
 				}
 			})
 			.catch((error) => {
 				addToast({
 					type: 'error',
-					label: `Survey Creation ran Into an error: ${error.message}`,
+					label: `Folder Creation ran Into an error: ${error.message}`,
 					icon: HeartCrack,
 				});
 			})
@@ -62,35 +60,26 @@
 				<X />
 			</button>
 		</form>
-		<h3 class="text-lg font-bold">New Survey</h3>
+		<h3 class="text-lg font-bold">New Folder</h3>
 		<div class="p-4">
 			<form
 				class=""
 				bind:this={formRef}
 				onsubmit={async (e) => {
 					e.preventDefault();
-					await createSurvey();
+					await createFolder();
 				}}
 				onreset={() => {
 					isLoading = false;
 				}}>
 				<fieldset class="fieldset">
-					<legend class="fieldset-legend">Survey Title</legend>
+					<legend class="fieldset-legend">Folder Name</legend>
 					<input
 						bind:value={title}
 						type="text"
 						class="input w-full"
-						placeholder="My Survey"
+						placeholder="My Folder"
 						required />
-				</fieldset>
-
-				<fieldset class="fieldset">
-					<legend class="fieldset-legend">Survey Description</legend>
-					<input
-						bind:value={description}
-						type="text"
-						class="input w-full"
-						placeholder="My Description" />
 				</fieldset>
 
 				<div class="mt-4 flex flex-col gap-2">
@@ -105,7 +94,7 @@
 						{#if isLoading}
 							<LoaderCircle class="animate-spin" />
 						{/if}
-						Create Survey
+						Create Folder
 					</button>
 				</div>
 			</form>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import StartSessionButton from '$lib/components/startSessionButton.svelte';
-	import { goto, replaceState } from '$app/navigation';
+	import { goto, invalidateAll, replaceState } from '$app/navigation';
 	import { scrollIntoViewOnMount } from '$lib/actions/scrollaction.js';
 	import type { GetSurveyResponseDto } from '$lib/api';
 	import NewSurveyDialog from '$lib/components/NewSurveyDialog.svelte';
@@ -21,6 +21,8 @@
 	import SurveyList from '$lib/components/SurveyList.svelte';
 	import type { View } from './+page.js';
 	import { page } from '$app/state';
+	import NewFolderDialog from '$lib/components/NewFolderDialog.svelte';
+	import { apiClient } from '$lib/apiClient.js';
 
 	let { data } = $props();
 
@@ -33,12 +35,21 @@
 
 	let editingSurvey = $state<GetSurveyResponseDto | null>(null);
 	let newSurveyDialogRef: HTMLDialogElement | undefined = $state();
+	let newFolderRef: HTMLDialogElement | undefined = $state();
 
 	function switchView(viewId: View) {
 		const url = new URL(page.url);
 		url.searchParams.set('view', viewId);
 		history.replaceState(history.state, '', url);
 		activeViewId = viewId;
+	}
+
+	async function deleteSurvey(surveyId: string) {
+		await apiClient.api.v1SurveyDelete(surveyId);
+		if (editingSurvey?.surveyId === surveyId) {
+			editingSurvey = null;
+		}
+		await invalidateAll();
 	}
 </script>
 
@@ -56,6 +67,11 @@
 					</li>
 				{/each}
 			</ul>
+			<button
+				class="btn mt-2 truncate text-nowrap btn-secondary btn-outline"
+				onclick={() => newFolderRef?.showModal()}>
+				New Folder
+			</button>
 			<button
 				class="btn mt-2 truncate text-nowrap btn-primary"
 				onclick={() => newSurveyDialogRef?.showModal()}>
@@ -127,9 +143,10 @@
 						</label>
 
 						<label class="label">
-							<button class="btn btn-ghost btn-sm ">
+							<button class="btn btn-ghost btn-sm " onclick={() => deleteSurvey(editingSurvey!.surveyId)}>
 								<Trash size={20} class="mr-2 text-red-700" /> Delete
 							</button>
+						</label>
 					</fieldset>
 				</div>
 
@@ -145,4 +162,11 @@
 	{/if}
 </div>
 
-<NewSurveyDialog bind:ref={newSurveyDialogRef} />
+<NewSurveyDialog bind:ref={newSurveyDialogRef} 
+onClose={async () => {
+		await invalidateAll();
+	}} />
+<NewFolderDialog bind:ref={newFolderRef} 
+	onClose={async () => {
+		await invalidateAll();
+	}}/>

@@ -79,7 +79,7 @@ public class SurveyController : ControllerBase
 
         var surveys = await _dbContext.Surveys
             .AsNoTracking()
-            .Where(x => x.OwnerId == user.Id && x.FolderId == null)
+            .Where(x => x.OwnerId == user.Id && x.FolderId == null && !x.IsArchived)
             .OrderBy(x => x.Title)
             .Select(x => new GetSurveyResponseDto
             {
@@ -257,5 +257,32 @@ public class SurveyController : ControllerBase
             .ToList();
 
         return Ok(questions);
+    }
+
+
+    [HttpDelete("{surveyId:guid}")]
+    [HttpDelete("/surveys/{surveyId:guid}")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteSurvey(Guid surveyId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var survey = await _dbContext.Surveys.FirstOrDefaultAsync(x => x.Id == surveyId);
+        if (survey == null) return NotFound();
+
+        if (survey.OwnerId != user.Id)
+        {
+            return Forbid();
+        }
+
+        survey.IsArchived = true;
+
+        await _dbContext.SaveChangesAsync();
+
+        return NoContent();
     }
 }
