@@ -230,7 +230,7 @@ public class SurveyController : ControllerBase
         var questionTemplates = await _dbContext.QuestionTemplates
             .AsNoTracking()
             .Include(x => (x as ChoiceQuestionTemplate)!.AnswerOptions)
-            .Where(x => x.SurveyId == surveyId)
+            .Where(x => x.SurveyId == surveyId && x.IsArchived == false)
             .OrderBy(x => x.OrderNumber)
             .ToListAsync();
 
@@ -279,7 +279,16 @@ public class SurveyController : ControllerBase
             return Forbid();
         }
 
+        var questionTemplates = await _dbContext.QuestionTemplates
+            .Where(x => x.SurveyId == surveyId && x.IsArchived == false)
+            .ToListAsync();
+
         survey.IsArchived = true;
+
+        foreach (var questionTemplate in questionTemplates)
+        {
+            questionTemplate.IsArchived = true;
+        }
 
         await _dbContext.SaveChangesAsync();
 

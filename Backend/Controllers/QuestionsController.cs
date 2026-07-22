@@ -35,6 +35,7 @@ public class QuestionsController : ControllerBase
 
         var questionTemplate = await _context.QuestionTemplates
             .Include(x => x.Survey)
+            .Where(x => x.Survey != null && x.Survey.IsArchived == false && x.IsArchived == false)
             .Include(x => (x as ChoiceQuestionTemplate)!.AnswerOptions)
             .FirstOrDefaultAsync(x => x.Id == questionId);
 
