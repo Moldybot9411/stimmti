@@ -147,8 +147,8 @@
 					ondragleave={() => handleFolderDragLeave(f.folderId)}
 					ondrop={(event) => handleFolderDrop(event, f.folderId)}>
 					<Folder size={16} />
-					{f.name}
-					<span class="ml-auto badge badge-sm">Items: {f.surveys?.length ?? 0}</span>
+					<span class="min-w-0 truncate">{f.name}</span>
+					<span class="badge badge-sm">Items: {f.surveys?.length ?? 0}</span>
 				</summary>
 				<ul>
 					{#each f.surveys ?? [] as survey (survey.surveyId)}
@@ -163,7 +163,9 @@
 									draggedSurveyId === survey.surveyId && 'opacity-100',
 								]}>
 								<Scroll size={16} />
-								{survey.title}
+								<span class="min-w-0 truncate">
+									{survey.title}
+								</span>
 								<ChevronRight size={16} />
 							</button>
 						</li>
@@ -184,7 +186,9 @@
 					draggedSurveyId === survey.surveyId && 'opacity-60',
 				]}>
 				<Scroll size={16} />
-				{survey.title}
+				<span class="min-w-0 truncate">
+					{survey.title}
+				</span>
 				<ChevronRight size={16} />
 			</button>
 		</li>

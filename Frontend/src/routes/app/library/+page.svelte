@@ -95,13 +95,13 @@
 
 	{#if editingSurvey && activeViewId === 'surveys'}
 		<div
-			class="card h-fit flex-3 bg-base-100 shadow-sm card-md"
+			class="card h-fit min-w-0 flex-3 bg-base-100 shadow-sm card-md"
 			use:scrollIntoViewOnMount={editingSurvey.surveyId}>
 			<div class="card-body">
 				<div class="flex justify-between">
-					<h2 class="card-title justify-between">
-						<Scroll />
-						{editingSurvey.title}
+					<h2 class="card-title min-w-0 justify-between">
+						<Scroll class="shrink-0" />
+						<span class="min-w-0 truncate">{editingSurvey.title}</span>
 					</h2>
 					<button
 						class="btn btn-ghost btn-neutral btn-sm"

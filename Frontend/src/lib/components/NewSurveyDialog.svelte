@@ -61,10 +61,9 @@
 			<form
 				class=""
 				bind:this={formRef}
-				onsubmit={async (e) => {
+				onsubmit={(e) => {
 					e.preventDefault();
-					await createSurvey();
-					goto(`/app/surveys/${crypto.randomUUID()}`);
+					createSurvey();
 				}}
 				onreset={() => {
 					isLoading = false;
@@ -76,6 +75,7 @@
 						type="text"
 						class="input w-full"
 						placeholder="My Survey"
+						maxlength={255}
 						required />
 				</fieldset>
 
@@ -85,7 +85,8 @@
 						bind:value={description}
 						type="text"
 						class="input w-full"
-						placeholder="My Description" />
+						placeholder="My Description"
+						maxlength={2048} />
 				</fieldset>
 
 				<div class="mt-4 flex flex-col gap-2">
