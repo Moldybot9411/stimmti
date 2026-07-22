@@ -7,6 +7,7 @@
 	import { QuestionTypeEnum } from '$lib/api';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
+	const maxChoiceAnswers = 8;
 
 	type Props = {
 		class?: ClassValue;
@@ -27,16 +28,27 @@
 	let minValue = $state(1);
 	let maxValue = $state(10);
 	let maxWords = $state(3);
-	let answersRaw = $state('');
+	let answerInputs = $state(['', '']);
+
+	function addAnswerFieldIfNeeded(index: number) {
+		if (answerInputs[index]?.trim().length === 0) {
+			return;
+		}
+
+		const isLastField = index === answerInputs.length - 1;
+		if (isLastField && answerInputs.length < maxChoiceAnswers) {
+			answerInputs = [...answerInputs, ''];
+		}
+	}
 
 	function reset() {
 		formRef?.reset();
 		isQuestionTypeDropdownOpen = false;
+		answerInputs = ['', ''];
 	}
 
 	async function createQuestion() {
-		const parsedAnswers = answersRaw
-			.split(',')
+		const parsedAnswers = answerInputs
 			.map((x) => x.trim())
 			.filter((x) => x.length > 0);
 
@@ -177,12 +189,20 @@
 
 							{#if questionType === QuestionTypeEnum.SingleChoice || questionType === QuestionTypeEnum.MultipleChoice}
 								<fieldset class="fieldset">
-									<legend class="fieldset-legend">Answers (comma separated)</legend>
-									<input
-										bind:value={answersRaw}
-										type="text"
-										class="input w-full"
-										placeholder="Yes, No, Maybe" />
+									<legend class="fieldset-legend">Answers</legend>
+									<div class="flex flex-col gap-2">
+										{#each answerInputs as _, index}
+											<input
+												bind:value={answerInputs[index]}
+												onblur={() => addAnswerFieldIfNeeded(index)}
+												type="text"
+												class="input w-full"
+												placeholder={`Answer ${index + 1}`} />
+										{/each}
+									</div>
+									<div class="label">
+										<span class="label-text-alt">Neue Felder entstehen beim Raus-Tabben, maximal 8 Antworten.</span>
+									</div>
 								</fieldset>
 							{:else if questionType === QuestionTypeEnum.NumberScale}
 								<div class="grid grid-cols-2 gap-2">
