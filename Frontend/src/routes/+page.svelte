@@ -233,7 +233,7 @@
 					<NotepadText size={20} />
 				</div>
 
-				<div>Choose a community template or build your own custom session in minutes.</div>
+				<div>Choose a community template or build your own custom survey in minutes.</div>
 			</div>
 			<hr class="bg-primary" />
 		</li>
@@ -250,8 +250,8 @@
 				</div>
 
 				<div>
-					Launch a live session. Participants join anonymously via a simple link or
-					code—no account required.
+					Launch a live session. Participants join anonymously via a simple link or code -
+					no account required.
 				</div>
 			</div>
 			<hr class="bg-primary" />
@@ -269,8 +269,8 @@
 				</div>
 
 				<div>
-					Watch results roll in live on the presenter's screen. Share insights instantly
-					with your community.
+					Watch results roll in live on the presenter's screen. Compare results afterwards
+					and gain useful insights.
 				</div>
 			</div>
 		</li>
@@ -279,7 +279,7 @@
 
 <div
 	class="flex w-full flex-col items-center justify-center gap-8 bg-primary px-4 py-16 text-primary-content">
-	<div class="text-center">
+	<div class="flex flex-col items-center">
 		<h2 class="text-4xl font-bold">Ready to engage your Community?</h2>
 		<div class="mt-2 max-w-120 text-primary-content/80">
 			Create an account to gain access to all features. No paywall.
@@ -289,7 +289,7 @@
 	<div class="flex w-full flex-col gap-2 px-4 md:w-fit md:flex-row">
 		<a class="btn-out btn w-full btn-lg md:w-fit" href="/register">Get Started</a>
 		<a
-			class="btn w-full border-primary-content btn-outline text-primary-content btn-lg md:w-fit"
+			class="btn w-full border-primary-content btn-outline text-primary-content btn-lg hover:bg-base-content/30 md:w-fit"
 			href="/help"
 			aria-label="Open Help">
 			<CircleQuestionMark />
