@@ -149,12 +149,12 @@
 				}}>
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Question Title</legend>
-					<input bind:value={name} type="text" class="input w-full" placeholder="My Question" required />
+					<input bind:value={name} type="text" maxlength="100" class="input w-full" placeholder="My Question" required />
 				</fieldset>
 
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Question Description</legend>
-					<input bind:value={description} type="text" class="input w-full" placeholder="My Description" />
+					<input bind:value={description} type="text" maxlength="255" class="input w-full" placeholder="My Description" />
 				</fieldset>
 
 				<fieldset class="fieldset">
@@ -196,12 +196,13 @@
 												bind:value={answerInputs[index]}
 												onblur={() => addAnswerFieldIfNeeded(index)}
 												type="text"
+												Maxlength="100"
 												class="input w-full"
 												placeholder={`Answer ${index + 1}`} />
 										{/each}
 									</div>
 									<div class="label">
-										<span class="label-text-alt">Neue Felder entstehen beim Raus-Tabben, maximal 8 Antworten.</span>
+										<span class="label-text-alt">New Fields are created when you tab out, up to 8 answers.</span>
 									</div>
 								</fieldset>
 							{:else if questionType === QuestionTypeEnum.NumberScale}

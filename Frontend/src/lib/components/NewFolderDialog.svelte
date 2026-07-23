@@ -79,6 +79,7 @@
 						type="text"
 						class="input w-full"
 						placeholder="My Folder"
+						maxlength="100"
 						required />
 				</fieldset>
 

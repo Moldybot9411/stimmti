@@ -80,6 +80,7 @@
 						bind:value={title}
 						type="text"
 						class="input w-full"
+						maxlength="100"
 						placeholder="My Survey"
 						required />
 				</fieldset>
@@ -89,6 +90,7 @@
 					<input
 						bind:value={description}
 						type="text"
+						maxlength="255"
 						class="input w-full"
 						placeholder="My Description" />
 				</fieldset>
