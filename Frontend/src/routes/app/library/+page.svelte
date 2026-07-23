@@ -138,8 +138,11 @@
 						class="fieldset w-full rounded-box border border-base-300 bg-base-100 p-4">
 						<legend class="fieldset-legend">Quick Options</legend>
 						<label class="label">
-							<button class="btn btn-ghost btn-sm " onclick={async () => {
-								apiClient.api.v1SurveyToggleFavoriteCreate(editingSurvey!.surveyId);
+							<button class="btn btn-ghost btn-sm animate" onclick={async () => {
+								await apiClient.api.v1SurveyToggleFavoriteCreate(editingSurvey!.surveyId);
+								if (editingSurvey) {
+									editingSurvey.isFavorite = !editingSurvey.isFavorite;
+								}
 								await invalidateAll();}}>
 								{#if editingSurvey.isFavorite}
 									<Heart size={20} class="mr-2 text-primary" fill="currentColor" strokeWidth="2" /> Favorite
