@@ -203,6 +203,7 @@ export interface GetSurveyResponseDto {
   description?: string | null;
   /** @format uuid */
   folderId?: string | null;
+  isFavorite?: boolean;
 }
 
 export interface IdentityError {
@@ -305,6 +306,7 @@ export interface UpdateQuestionTemplateResponseDto {
   maxValue?: number | null;
   /** @format int32 */
   maxWords?: number | null;
+  answers?: string[] | null;
 }
 
 export interface UpdateSurveyDto {
@@ -960,6 +962,23 @@ export class Api<
     /**
      * No description
      *
+     * @tags Survey
+     * @name V1SurveyToggleFavoriteCreate
+     * @request POST:/api/v1/Survey/{surveyId}/toggle-favorite
+     */
+    v1SurveyToggleFavoriteCreate: (
+      surveyId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Survey/${surveyId}/toggle-favorite`,
+        method: "POST",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags User
      * @name V1UserRegisterCreate
      * @request POST:/api/v1/User/register
@@ -1149,6 +1168,20 @@ export class Api<
       this.request<any, ProblemDetails>({
         path: `/surveys/${surveyId}`,
         method: "DELETE",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name ToggleFavoriteCreate
+     * @request POST:/surveys/{surveyId}/toggle-favorite
+     */
+    toggleFavoriteCreate: (surveyId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/surveys/${surveyId}/toggle-favorite`,
+        method: "POST",
         ...params,
       }),
   };

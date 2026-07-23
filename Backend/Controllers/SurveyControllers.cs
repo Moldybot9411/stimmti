@@ -80,13 +80,15 @@ public class SurveyController : ControllerBase
         var surveys = await _dbContext.Surveys
             .AsNoTracking()
             .Where(x => x.OwnerId == user.Id && x.FolderId == null && !x.IsArchived)
-            .OrderBy(x => x.Title)
+            .OrderByDescending(x => x.IsFavorite)
+            .ThenBy(x => x.Title)
             .Select(x => new GetSurveyResponseDto
             {
                 SurveyId = x.Id,
                 Title = x.Title,
                 Description = x.Description,
                 FolderId = x.FolderId,
+                IsFavorite = x.IsFavorite   
             })
             .ToListAsync();
 
@@ -293,5 +295,31 @@ public class SurveyController : ControllerBase
         await _dbContext.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpPost("{surveyId:guid}/toggle-favorite")]
+    [HttpPost("/surveys/{surveyId:guid}/toggle-favorite")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ToggleFavoriteSurvey(Guid surveyId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var survey = await _dbContext.Surveys.FirstOrDefaultAsync(x => x.Id == surveyId);
+        if (survey == null) return NotFound();
+
+        if (survey.OwnerId != user.Id)
+        {
+            return Forbid();
+        }
+
+        survey.IsFavorite = !survey.IsFavorite;
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new { IsFavorite = survey.IsFavorite });
     }
 }

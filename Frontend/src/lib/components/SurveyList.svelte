@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { GetFolderResponseDto, GetSurveyResponseDto } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
-	import { ChevronRight, Folder, Scroll } from '@lucide/svelte';
+	import { ChevronRight, Folder, Heart, Scroll } from '@lucide/svelte';
 
 	type Props = {
 		surveys: GetSurveyResponseDto[];
@@ -205,7 +205,11 @@
 									editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
 									draggedSurveyId === survey.surveyId && 'opacity-100',
 								]}>
-								<Scroll size={16} />
+								{#if survey.isFavorite}
+									<Heart size={16} class="mr-2 text-primary" fill="currentColor" strokeWidth="2" />
+								{:else}
+									<Scroll size={16} />
+								{/if}
 								{survey.title}
 								<ChevronRight size={16} />
 							</button>
@@ -235,7 +239,11 @@
 							editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
 							draggedSurveyId === survey.surveyId && 'opacity-60',
 						]}>
-						<Scroll size={16} />
+						{#if survey.isFavorite}
+									<Heart size={16} class="mr-2 text-primary" fill="currentColor" strokeWidth="2" />
+								{:else}
+									<Scroll size={16} />
+								{/if}
 						{survey.title}
 						<ChevronRight size={16} />
 					</button>
