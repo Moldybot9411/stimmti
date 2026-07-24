@@ -83,7 +83,7 @@
 
 		<ul class="menu menu-horizontal gap-2">
 			<li>
-				<a class="btn btn-outline btn-neutral" href="/register">Register</a>
+				<a class="btn btn-outline btn-secondary" href="/register">Register</a>
 			</li>
 
 			<li>

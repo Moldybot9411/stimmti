@@ -41,7 +41,7 @@
 
 {#snippet profileDropdown()}
 	<div class="dropdown dropdown-end">
-		<button class="btn bg-base-300 btn-ghost py-6">
+		<button class="btn rounded-full bg-base-300 btn-ghost px-1 py-6 md:pr-4 md:pl-1">
 			<UserAvatar />
 
 			<span class="hidden max-w-40 truncate md:inline">
@@ -94,7 +94,7 @@
 	<ThemeToggle />
 {/snippet}
 
-<div class="navbar bg-base-100 shadow-sm">
+<div class="navbar rounded-b-box bg-base-100 shadow-sm">
 	<div class="mx-auto navbar-start flex-col gap-2 md:flex-row">
 		<div class="mr-0 flex md:mr-2">
 			<a href="/app" class="btn btn-ghost px-0" aria-label="Go to homepage">
@@ -106,8 +106,8 @@
 			</div>
 		</div>
 
-		<div class="flex">
-			<div role="tablist" class="tabs-box tabs flex-nowrap">
+		<div class="flex gap-2">
+			<div role="tablist" class="tabs-box tabs flex-nowrap rounded-full">
 				{#each menuTabs as tab}
 					{@const Icon = tab.icon}
 					{@const isActive = page.url.pathname.endsWith(tab.href)}
@@ -116,7 +116,7 @@
 						role="tab"
 						href={tab.href}
 						class={[
-							'tab flex flex-nowrap items-center gap-1 transition-all',
+							'tab flex flex-nowrap items-center gap-1 rounded-full transition-all',
 							isActive && 'tab-active',
 						]}>
 						<Icon size={16} />
