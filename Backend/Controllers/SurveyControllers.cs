@@ -1,4 +1,5 @@
 using Backend.Dto;
+using Backend.Mapper;
 using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,11 +12,13 @@ public class SurveyController : ControllerBase
 {
     private readonly StimmtiDbContext _dbContext;
     private readonly UserManager<User> _userManager;
+    private readonly IApiMapper _mapper;
 
-    public SurveyController(StimmtiDbContext dbContext, UserManager<User> userManager, ILogger<SurveyController> logger)
+    public SurveyController(StimmtiDbContext dbContext, UserManager<User> userManager, ILogger<SurveyController> logger, IApiMapper mapper)
     {
         _dbContext = dbContext;
         _userManager = userManager;
+        _mapper = mapper;
     }
 
     [HttpPost]
@@ -178,6 +181,7 @@ public class SurveyController : ControllerBase
                         Title = s.Title,
                         Description = s.Description,
                         FolderId = s.FolderId,
+                        IsFavorite = s.IsFavorite
                     })
                     .ToList()
             })
@@ -210,7 +214,6 @@ public class SurveyController : ControllerBase
     }
 
     [HttpGet("{surveyId:guid}/questions")]
-    [HttpGet("/surveys/{surveyId:guid}/questions")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -237,25 +240,7 @@ public class SurveyController : ControllerBase
             .ToListAsync();
 
         var questions = questionTemplates
-            .Select(x => new GetQuestionTemplateResponseDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Description = x.Description,
-                SurveyId = x.SurveyId,
-                OrderNumber = x.OrderNumber,
-                IsArchived = x.IsArchived,
-                QuestionType = x.QuestionType,
-                MinValue = x is NumberScaleQuestionTemplate numberScale ? numberScale.MinValue : 0,
-                MaxValue = x is NumberScaleQuestionTemplate numberScaleForMax ? numberScaleForMax.MaxValue : 0,
-                MaxWords = x is WordCloudQuestionTemplate wordCloud ? wordCloud.MaxWords : 0,
-                Answers = x is ChoiceQuestionTemplate choice
-                    ? choice.AnswerOptions
-                        .OrderBy(a => a.OrderNumber)
-                        .Select(a => a.Description)
-                        .ToArray()
-                    : Array.Empty<string>()
-            })
+            .Select(_mapper.MapToGetQuestionTemplateResponseDto)
             .ToList();
 
         return Ok(questions);

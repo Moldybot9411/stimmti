@@ -227,7 +227,7 @@
 		ondragover={handleRootDragOver}
 		ondragleave={handleRootDragLeave}
 		ondrop={handleRootDrop}>
-		<ul>
+		<ul class="ml-0">
 			{#each surveys as survey (survey.surveyId)}
 				<li>
 					<button

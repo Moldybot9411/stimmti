@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { HeartCrack, LoaderCircle, X } from '@lucide/svelte';
+	import { Check, Heart, HeartCrack, LoaderCircle, X } from '@lucide/svelte';
 	import type { ClassValue } from 'svelte/elements';
 	import { addToast } from './Toast/Toast.svelte';
 	import { apiClient } from '$lib/apiClient';
@@ -62,12 +62,20 @@
 	});
 
 	function addAnswerFieldIfNeeded(index: number) {
+		const isLastField = index === answerInputs.length - 1;
+		if (!isLastField) {
+			return;
+		}
+
 		if (answerInputs[index]?.trim().length === 0) {
 			return;
 		}
 
-		const isLastField = index === answerInputs.length - 1;
-		if (isLastField && answerInputs.length < maxChoiceAnswers) {
+		const hasOtherEmptyField = answerInputs
+			.slice(0, answerInputs.length - 1)
+			.some((answer) => answer.trim().length === 0);
+
+		if (!hasOtherEmptyField && answerInputs.length < maxChoiceAnswers) {
 			answerInputs = [...answerInputs, ''];
 		}
 	}
@@ -140,7 +148,7 @@
 				addToast({
 					type: 'success',
 					label: 'Question updated successfully',
-					icon: HeartCrack,
+					icon: Check,
 				});
 				ref?.close();
 			})
@@ -206,14 +214,14 @@
 								{#each answerInputs as _, index}
 									<input
 										bind:value={answerInputs[index]}
-										onblur={() => addAnswerFieldIfNeeded(index)}
+										oninput={() => addAnswerFieldIfNeeded(index)}
 										type="text"
 										class="input w-full"
 										placeholder={`Answer ${index + 1}`} />
 								{/each}
 							</div>
-							<div class="label">
-								<span class="label-text-alt">Neue Felder entstehen beim Raus-Tabben, maximal 8 Antworten.</span>
+							<div class="label overflow-auto">
+								<span class="label-text-alt">A new field is created while typing in the last field when no other empty field exists, up to 8 answers.</span>
 							</div>
 						</fieldset>
 					{:else if questionType === QuestionTypeEnum.NumberScale}
@@ -229,14 +237,10 @@
 						</div>
 					{:else if questionType === QuestionTypeEnum.WordCloud}
 						<fieldset class="fieldset">
-							<legend class="fieldset-legend">Max Words</legend>
+							<legend class="fieldset-legend">Maximum Answers</legend>
 							<input bind:value={maxWords} type="number" class="input w-full" placeholder="Max Words" />
 						</fieldset>
-					{:else if questionType === QuestionTypeEnum.FreeText}
-						<fieldset class="fieldset">
-							<legend class="fieldset-legend">Maximal Inputs</legend>
-							<input bind:value={maxWords} type="number" class="input w-full" placeholder="Maximal Inputs" />
-						</fieldset>
+					
 					{/if}
 
 					<div class="mt-4 flex flex-col gap-2">

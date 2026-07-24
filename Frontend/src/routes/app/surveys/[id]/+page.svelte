@@ -19,9 +19,10 @@
 	let newQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let patchQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let editingQuestionId: string | null = $state(null);
-	let questions = $derived<GetQuestionTemplateResponseDto[]>([
-		...(data.questions as GetQuestionTemplateResponseDto[]),
-	]);
+	let questions = $state<GetQuestionTemplateResponseDto[]>([]);
+	$effect(() => {
+		questions = [...(data.questions as GetQuestionTemplateResponseDto[])];
+	});
 	let draggedIndex = $state<number | null>(null);
 	let dragOverIndex = $state<number | null>(null);
 
@@ -85,6 +86,20 @@
 	<h1 class="text-center text-4xl font-bold">Survey Questions</h1>
 	<p class="text-center opacity-80">{questions.length} question(s)</p>
 </div>
+{#if questions.length==0}
+	<div class="text-center text-lg opacity-80">Add your first question</div>
+	<div class="timeline-start mb-10 md:text-end">
+			<button
+				class="btn btn-outline btn-primary btn-sm"
+				onclick={() => newQuestionDialogRef?.showModal()}>
+				<Plus class="mr-2 h-4 w-4" />
+				Add Question
+			</button>
+		</div>
+	
+{:else}
+
+	
 <ul class="timeline timeline-vertical timeline-snap-icon max-md:timeline-compact">
 	{#each questions as question, index}
 		<li
@@ -113,11 +128,12 @@
 						clip-rule="evenodd" />
 				</svg>
 			</div>
+			<check> </check>
 
 			<div class="timeline-start mb-10 md:text-end">
 				<div>Question {index + 1}</div>
 				<div
-					class="grid w-full min-w-150 grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm">
+					class="grid w-fit min-w-100 grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm">
 					<!-- Left: Content -->
 					<div class="flex flex-col gap-1">
 						<div class="content-start text-left text-lg font-bold">
@@ -182,6 +198,7 @@
 		</div>
 	</li>
 </ul>
+{/if}
 <NewQuestionDialog
 	surveyId={id!}
 	bind:ref={newQuestionDialogRef}
@@ -194,5 +211,6 @@
 	questionId={editingQuestionId}
 	bind:ref={patchQuestionDialogRef}
 	onClose={async () => {
+		editingQuestionId = null;
 		await invalidateAll();
 	}} />

@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitalCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -198,7 +198,9 @@ namespace Backend.Migrations
                     Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetime", nullable: false),
                     FolderId = table.Column<Guid>(type: "char(36)", nullable: true),
-                    OwnerId = table.Column<Guid>(type: "char(36)", nullable: false)
+                    OwnerId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsFavorite = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {

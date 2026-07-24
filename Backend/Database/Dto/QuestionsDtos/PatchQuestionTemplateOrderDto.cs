@@ -1,4 +1,4 @@
 public class PatchQuestionTemplateOrderDto
 {
-    public int OrderNumber { get; set; }
+    public required int OrderNumber { get; set; }
 }

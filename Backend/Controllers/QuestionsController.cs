@@ -287,10 +287,7 @@ public class QuestionsController : ControllerBase
                 );
             }
         }
-        else if (data.Answers != null)
-        {
-            return BadRequest(new ProblemDetails { Title = "Invalid Question Type", Detail = "Answers can only be set for MultipleChoice and SingleChoice questions" });
-        }
+
 
         await _context.SaveChangesAsync();
 

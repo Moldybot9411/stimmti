@@ -31,12 +31,20 @@
 	let answerInputs = $state(['', '']);
 
 	function addAnswerFieldIfNeeded(index: number) {
+		const isLastField = index === answerInputs.length - 1;
+		if (!isLastField) {
+			return;
+		}
+
 		if (answerInputs[index]?.trim().length === 0) {
 			return;
 		}
 
-		const isLastField = index === answerInputs.length - 1;
-		if (isLastField && answerInputs.length < maxChoiceAnswers) {
+		const hasOtherEmptyField = answerInputs
+			.slice(0, answerInputs.length - 1)
+			.some((answer) => answer.trim().length === 0);
+
+		if (!hasOtherEmptyField && answerInputs.length < maxChoiceAnswers) {
 			answerInputs = [...answerInputs, ''];
 		}
 	}
@@ -194,15 +202,15 @@
 										{#each answerInputs as _, index}
 											<input
 												bind:value={answerInputs[index]}
-												onblur={() => addAnswerFieldIfNeeded(index)}
+												oninput={() => addAnswerFieldIfNeeded(index)}
 												type="text"
-												Maxlength="100"
+												maxlength="100"
 												class="input w-full"
 												placeholder={`Answer ${index + 1}`} />
 										{/each}
 									</div>
-									<div class="label">
-										<span class="label-text-alt">New Fields are created when you tab out, up to 8 answers.</span>
+									<div class="label overflow-auto">
+										<span class="label-text-alt">A new field is created while typing in the last field when no other empty field exists, up to 8 answers.</span>
 									</div>
 								</fieldset>
 							{:else if questionType === QuestionTypeEnum.NumberScale}
@@ -218,13 +226,8 @@
 								</div>
 							{:else if questionType === QuestionTypeEnum.WordCloud}
 								<fieldset class="fieldset">
-									<legend class="fieldset-legend">Max Words</legend>
+									<legend class="fieldset-legend">Maximum Answers</legend>
 									<input bind:value={maxWords} type="number" class="input w-full" placeholder="Max Words" />
-								</fieldset>
-                            {:else if questionType === QuestionTypeEnum.FreeText}
-								<fieldset class="fieldset">
-									<legend class="fieldset-legend">Maximal Inputs</legend>
-									<input bind:value={maxWords} type="number" class="input w-full" placeholder="Maximal Inputs" />
 								</fieldset>
 							{/if}
 

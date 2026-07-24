@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(StimmtiDbContext))]
-    [Migration("20260721123542_smallChange")]
-    partial class smallChange
+    [Migration("20260724131737_InitalCreate")]
+    partial class InitalCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -270,6 +270,9 @@ namespace Backend.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<bool>("IsArchived")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsFavorite")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("OwnerId")

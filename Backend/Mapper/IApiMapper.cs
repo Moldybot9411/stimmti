@@ -12,6 +12,7 @@ public interface IApiMapper
     AnonymousProfilePictureDto MapToAnonymousProfilePictureDto(AnonymousProfilePicture source);
     void UpdateAnonymousProfilePicture(AnonymousProfilePictureDto source, AnonymousProfilePicture target);
     QuestionTemplateDto MapToQuestionTemplateDto(QuestionTemplate source);
+    GetQuestionTemplateResponseDto MapToGetQuestionTemplateResponseDto(QuestionTemplate source);
     List<ParticipantDto> MapToParticipantDtoList(IEnumerable<AnonymousUser> source);
     SessionListInfoDto MapToSessionListInfoDto(Session source);
     GetOpenSessionsDto MapToGetOpenSessionsDto(Session source);
