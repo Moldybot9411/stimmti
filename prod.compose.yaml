@@ -109,3 +109,8 @@ volumes:
   data_protection_keys:
   caddy_data:
   caddy_config:
+
+networks:
+  default:
+    external: true
+    name: stimmti_default
