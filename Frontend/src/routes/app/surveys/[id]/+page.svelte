@@ -134,6 +134,9 @@
 						<div
 							class="grid w-fit min-w-100 grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm">
 							<!-- Left: Content -->
+							 <div class="align-center flex items-center justify-center opacity-40">
+								<GripVertical class="cursor-grab text-base-content/40" />
+							</div>
 							<div class="flex flex-col gap-1">
 								<div class="content-start text-left text-lg font-bold">
 									{question.name} - {question.questionType}
@@ -151,7 +154,17 @@
 										Answers Amount: {question.maxWords ?? 0}
 									</div>
 								{:else if question.answers?.length}
-									<div class="direction-row grid grid-cols-2 gap-2">
+									<div class="direction-row grid grid-cols-2 gap-2 text-accent-content">
+										{#if question.answers.length > 8}
+											<div class="col-span-2 text-left text-sm opacity-80">
+												Note: Only the first 8 answers are displayed
+											</div>
+										{/if}
+										{#each question.answers.slice(0, 8) as answer}
+											<div class="flex justify-center rounded bg-accent p-2">
+												{answer}
+											</div>
+										{/each}
 										{#each question.answers as answer}
 											<div class="flex justify-center rounded bg-accent p-2">
 												{answer}
@@ -163,10 +176,12 @@
 							<!-- Middle: Buttons (top-right) -->
 							<div class="flex gap-2">
 								<Trash
+									class="btn-sm  cursor-pointer"
 									onclick={() => deleteQuestion(question.id!)}
 									color="red"
 									size={20} />
 								<Cog
+									class="btn-sm cursor-pointer"
 									onclick={() => {
 										editingQuestionId = question.id!;
 										patchQuestionDialogRef?.showModal();
@@ -175,9 +190,7 @@
 									size={20} />
 							</div>
 							<!-- Right: Grip Icon (middle-right) -->
-							<div class="align-center flex items-center justify-center opacity-40">
-								<GripVertical class="cursor-grab text-base-content/40" />
-							</div>
+							
 						</div>
 					</div>
 
