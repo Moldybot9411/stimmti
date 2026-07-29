@@ -204,6 +204,8 @@ export interface GetSurveyResponseDto {
   /** @format uuid */
   folderId?: string | null;
   isFavorite?: boolean;
+  /** @format int32 */
+  questionAmount?: number;
 }
 
 export interface IdentityError {
@@ -226,7 +228,7 @@ export interface PaginatedSessionListDto {
 
 export interface PatchQuestionTemplateOrderDto {
   /** @format int32 */
-  orderNumber?: number;
+  orderNumber: number;
 }
 
 export interface ProblemDetails {
@@ -1142,21 +1144,6 @@ export class Api<
       }),
   };
   surveys = {
-    /**
-     * No description
-     *
-     * @tags Survey
-     * @name QuestionsList
-     * @request GET:/surveys/{surveyId}/questions
-     */
-    questionsList: (surveyId: string, params: RequestParams = {}) =>
-      this.request<GetQuestionTemplateResponseDto[], ProblemDetails>({
-        path: `/surveys/${surveyId}/questions`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
     /**
      * No description
      *

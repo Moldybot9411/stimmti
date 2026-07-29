@@ -112,13 +112,13 @@ public class QuestionsController : ControllerBase
         if (data.QuestionType != QuestionTypeEnum.SingleChoice && data.QuestionType != QuestionTypeEnum.MultipleChoice && cleanedAnswers.Count > 0)
             return BadRequest(new ProblemDetails { Title = "Invalid Question Type", Detail = "Answer options can only be provided for SingleChoice and MultipleChoice" });
 
-        data.OrderNumber= await _context.QuestionTemplates
+        data.OrderNumber = await _context.QuestionTemplates
             .Where(x => x.SurveyId == data.SurveyId)
             .MaxAsync(x => (int?)x.OrderNumber) + 1 ?? 1;
 
         QuestionTemplate questionTemplate = data.QuestionType switch
         {
-            QuestionTypeEnum.SingleChoice=> new SingleChoiceQuestionTemplate
+            QuestionTypeEnum.SingleChoice => new SingleChoiceQuestionTemplate
             {
                 Id = Guid.NewGuid(),
                 Name = name,
@@ -212,6 +212,17 @@ public class QuestionsController : ControllerBase
 
         if (questionTemplate.Survey.OwnerId != user.Id)
             return Forbid();
+
+        var hasLinkedQuestions = await _context.Questions
+            .AnyAsync(x => x.QuestionTemplateId == questionTemplate.Id);
+
+        if (hasLinkedQuestions)
+        {
+            var oldQuestionTemplate = questionTemplate;
+            questionTemplate = QuestionTemplateCloner.CloneQuestionTemplate(oldQuestionTemplate);
+            oldQuestionTemplate.IsArchived = true;
+            _context.QuestionTemplates.Add(questionTemplate);
+        }
 
         if (data.Name != null)
         {
@@ -317,7 +328,15 @@ public class QuestionsController : ControllerBase
         if (questionTemplate.Survey.OwnerId != user.Id)
             return Forbid();
 
-        questionTemplate.IsArchived = true;
+        var linkedQuestions = await _context.Questions
+            .Where(x => x.QuestionTemplateId == questionTemplate.Id)
+            .ToListAsync();
+
+        if (linkedQuestions.Any())
+            questionTemplate.IsArchived = true;
+        else
+            _context.QuestionTemplates.Remove(questionTemplate);
+
         _context.QuestionTemplates.Update(questionTemplate);
         await _context.SaveChangesAsync();
 
@@ -352,6 +371,17 @@ public class QuestionsController : ControllerBase
             .Where(x => x.SurveyId == questionTemplate.SurveyId)
             .OrderBy(x => x.OrderNumber)
             .ToListAsync();
+
+        var hasLinkedQuestions = await _context.Questions
+           .AnyAsync(x => x.QuestionTemplateId == questionTemplate.Id);
+
+        if (hasLinkedQuestions)
+        {
+            var oldQuestionTemplate = questionTemplate;
+            questionTemplate = QuestionTemplateCloner.CloneQuestionTemplate(oldQuestionTemplate);
+            oldQuestionTemplate.IsArchived = true;
+            _context.QuestionTemplates.Add(questionTemplate);
+        }
 
         if (data.OrderNumber <= 0 || data.OrderNumber > surveyTemplates.Count)
             return BadRequest(new ProblemDetails

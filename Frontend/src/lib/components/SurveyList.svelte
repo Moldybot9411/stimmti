@@ -23,10 +23,31 @@
 
 	$effect(() => {
 		surveys = initialSurveys.map((survey) => ({ ...survey }));
-		folder = initialFolder.map((item) => ({
-			...item,
-			surveys: (item.surveys ?? []).map((survey) => ({ ...survey })),
-		}));
+
+		// Update folders in-place to preserve <details> open state.
+		// Replacing the array entirely causes Svelte to recreate DOM nodes and close all folders.
+		const updatedFolderIds = new Set(initialFolder.map((f) => f.folderId));
+
+		// Remove folders that no longer exist
+		for (let i = folder.length - 1; i >= 0; i--) {
+			if (!updatedFolderIds.has(folder[i].folderId)) {
+				folder.splice(i, 1);
+			}
+		}
+
+		// Update existing folders and add new ones
+		for (const updatedItem of initialFolder) {
+			const existingIndex = folder.findIndex((f) => f.folderId === updatedItem.folderId);
+			if (existingIndex !== -1) {
+				folder[existingIndex].name = updatedItem.name;
+				folder[existingIndex].surveys = (updatedItem.surveys ?? []).map((s) => ({ ...s }));
+			} else {
+				folder.push({
+					...updatedItem,
+					surveys: (updatedItem.surveys ?? []).map((s) => ({ ...s })),
+				});
+			}
+		}
 	});
 
 	function snapshotLibraryState() {
@@ -177,7 +198,7 @@
 	}
 </script>
 
-<ul class="menu w-full gap-2 rounded-box">
+<ul class="menu w-full bg-base-200 rounded-box">
 	{#each folder as f, index (f.folderId)}
 		<li>
 			<details>
@@ -193,9 +214,9 @@
 					{f.name}
 					<span class="ml-auto badge badge-sm">Items: {f.surveys?.length ?? 0}</span>
 				</summary>
-				<ul>
+				<ul class="">
 					{#each f.surveys ?? [] as survey (survey.surveyId)}
-						<li>
+						<li class="">
 							<button
 								draggable="true"
 								ondragstart={(event) => handleDragStart(event, survey.surveyId)}
@@ -219,7 +240,8 @@
 			</details>
 		</li>
 	{/each}
-	<li
+	<div
+		role="list"
 		class={[
 			'rounded-box transition-all',
 			hoveredRootArea && draggedSurveyId != null && 'ring-2 ring-base-content',
@@ -227,7 +249,7 @@
 		ondragover={handleRootDragOver}
 		ondragleave={handleRootDragLeave}
 		ondrop={handleRootDrop}>
-		<ul class="ml-0">
+		
 			{#each surveys as survey (survey.surveyId)}
 				<li>
 					<button
@@ -249,6 +271,6 @@
 					</button>
 				</li>
 			{/each}
-		</ul>
-	</li>
+		
+	</div>
 </ul>

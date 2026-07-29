@@ -7,4 +7,5 @@ public class GetSurveyResponseDto
     public string? Description { get; set; }
     public Guid? FolderId { get; set; }
     public bool IsFavorite { get; set; }
+    public int QuestionAmount { get; set; }
 }

@@ -160,11 +160,6 @@
 												Note: Only the first 8 answers are displayed
 											</div>
 										{/if}
-										{#each question.answers.slice(0, 8) as answer}
-											<div class="flex justify-center rounded bg-accent p-2">
-												{answer}
-											</div>
-										{/each}
 										{#each question.answers as answer}
 											<div class="flex justify-center rounded bg-accent p-2">
 												{answer}

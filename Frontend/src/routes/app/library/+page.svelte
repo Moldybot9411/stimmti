@@ -68,7 +68,7 @@
 				{/each}
 			</ul>
 			<button
-				class="btn mt-2 truncate text-nowrap btn-secondary btn-outline"
+				class="btn mt-2 truncate btn-outline text-nowrap btn-secondary"
 				onclick={() => newFolderRef?.showModal()}>
 				New Folder
 			</button>
@@ -130,36 +130,50 @@
 				</div>
 
 				<div class="p-4">
-					
 					{#if editingSurvey.description}
 						<p>Description: {editingSurvey.description}</p>
+					{/if}
+					{#if editingSurvey.questionAmount !== undefined}
+						<p>{editingSurvey.questionAmount} Questions</p>
 					{/if}
 					<fieldset
 						class="fieldset w-full rounded-box border border-base-300 bg-base-100 p-4">
 						<legend class="fieldset-legend">Quick Options</legend>
 						<label class="label">
-							<button class="btn btn-ghost btn-sm animate" onclick={async () => {
-								await apiClient.api.v1SurveyToggleFavoriteCreate(editingSurvey!.surveyId);
-								if (editingSurvey) {
-									editingSurvey.isFavorite = !editingSurvey.isFavorite;
-								}
-								await invalidateAll();}}>
+							<button
+								class="animate btn btn-ghost btn-sm"
+								onclick={async () => {
+									await apiClient.api.v1SurveyToggleFavoriteCreate(
+										editingSurvey!.surveyId
+									);
+									if (editingSurvey) {
+										editingSurvey.isFavorite = !editingSurvey.isFavorite;
+									}
+									await invalidateAll();
+								}}>
 								{#if editingSurvey.isFavorite}
-									<Heart size={20} class="mr-2 text-primary" fill="currentColor" strokeWidth="2" /> Favorite
+									<Heart
+										size={20}
+										class="mr-2 text-primary"
+										fill="currentColor"
+										strokeWidth="2" /> Favorite
 								{:else}
 									<Heart size={20} class="mr-2 text-primary" strokeWidth="2" /> Favorite
 								{/if}
 							</button>
-							
 						</label>
 						<label class="label">
-							<button class="btn btn-ghost btn-sm " onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}>
+							<button
+								class="btn btn-ghost btn-sm"
+								onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}>
 								<Cog size={20} class="mr-2 text-gray-700" /> Settings
 							</button>
 						</label>
 
 						<label class="label">
-							<button class="btn btn-ghost btn-sm " onclick={() => deleteSurvey(editingSurvey!.surveyId)}>
+							<button
+								class="btn btn-ghost btn-sm"
+								onclick={() => deleteSurvey(editingSurvey!.surveyId)}>
 								<Trash size={20} class="mr-2 text-red-700" /> Delete
 							</button>
 						</label>
@@ -174,11 +188,13 @@
 	{/if}
 </div>
 
-<NewSurveyDialog bind:ref={newSurveyDialogRef} 
-onClose={async () => {
-		await invalidateAll();
-	}} />
-<NewFolderDialog bind:ref={newFolderRef} 
+<NewSurveyDialog
+	bind:ref={newSurveyDialogRef}
 	onClose={async () => {
 		await invalidateAll();
-	}}/>
+	}} />
+<NewFolderDialog
+	bind:ref={newFolderRef}
+	onClose={async () => {
+		await invalidateAll();
+	}} />

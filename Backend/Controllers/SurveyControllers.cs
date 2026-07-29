@@ -91,7 +91,8 @@ public class SurveyController : ControllerBase
                 Title = x.Title,
                 Description = x.Description,
                 FolderId = x.FolderId,
-                IsFavorite = x.IsFavorite   
+                IsFavorite = x.IsFavorite,
+                QuestionAmount = x.QuestionTemplates.Count(q => !q.IsArchived)
             })
             .ToListAsync();
 
@@ -174,14 +175,17 @@ public class SurveyController : ControllerBase
                 FolderId = x.Id,
                 Name = x.Name,
                 Surveys = x.Surveys
-                    .OrderBy(s => s.Title)
+                    .Where(s => s.IsArchived == false)
+                    .OrderByDescending(s => s.IsFavorite)
+                    .ThenBy(s => s.Title)
                     .Select(s => new GetSurveyResponseDto
                     {
                         SurveyId = s.Id,
                         Title = s.Title,
                         Description = s.Description,
                         FolderId = s.FolderId,
-                        IsFavorite = s.IsFavorite
+                        IsFavorite = s.IsFavorite,
+                        QuestionAmount = s.QuestionTemplates.Count(q => !q.IsArchived)
                     })
                     .ToList()
             })
@@ -266,15 +270,30 @@ public class SurveyController : ControllerBase
             return Forbid();
         }
 
-        var questionTemplates = await _dbContext.QuestionTemplates
-            .Where(x => x.SurveyId == surveyId && x.IsArchived == false)
-            .ToListAsync();
 
-        survey.IsArchived = true;
+        var hasLinkedSession = await _dbContext.Questions
+            .AnyAsync(x => x.Session != null);
 
-        foreach (var questionTemplate in questionTemplates)
+        if (hasLinkedSession)
         {
-            questionTemplate.IsArchived = true;
+            var questionTemplates = await _dbContext.QuestionTemplates
+                .Where(x => x.SurveyId == surveyId && x.IsArchived == false)
+                .ToListAsync();
+
+            survey.IsArchived = true;
+
+            foreach (var questionTemplate in questionTemplates)
+            {
+                questionTemplate.IsArchived = true;
+            }
+        }
+        else
+        {
+            _dbContext.Surveys.Remove(survey);
+            var questionTemplates = await _dbContext.QuestionTemplates
+                .Where(x => x.SurveyId == surveyId)
+                .ToListAsync();
+            _dbContext.QuestionTemplates.RemoveRange(questionTemplates);
         }
 
         await _dbContext.SaveChangesAsync();
