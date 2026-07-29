@@ -13,7 +13,7 @@
 	// svelte-ignore state_referenced_locally
 	var localSessions = $state(openSessions);
 
-	let fixDialog: HTMLDialogElement | undefined;
+	let fixDialog: HTMLDialogElement | undefined = $state();
 	let loading = $state(false);
 	let openSessionSelect = $state<{ checked: boolean; data: GetOpenSessionsDto }[]>([]);
 
