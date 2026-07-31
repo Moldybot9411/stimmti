@@ -81,6 +81,26 @@ export interface CreateFolderResponseDto {
   folderId: string;
 }
 
+export interface CreateQuestionTemplateDto {
+  /** @maxLength 255 */
+  name: string | null;
+  /** @maxLength 2048 */
+  description: string | null;
+  /** @format uuid */
+  surveyId: string;
+  /** @format int32 */
+  orderNumber?: number | null;
+  isArchived: boolean;
+  questionType: QuestionTypeEnum;
+  answers?: string[] | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  maxWords?: number | null;
+}
+
 export interface CreateSessionDto {
   /** @maxLength 255 */
   name: string | null;
@@ -141,6 +161,26 @@ export interface GetOpenSessionsDto {
   openedAt: string;
 }
 
+export interface GetQuestionTemplateResponseDto {
+  /** @format uuid */
+  id: string;
+  name: string | null;
+  description?: string | null;
+  /** @format int32 */
+  orderNumber?: number | null;
+  isArchived?: boolean | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  maxWords?: number | null;
+  /** @format uuid */
+  surveyId?: string;
+  questionType?: QuestionTypeEnum;
+  answers?: string[] | null;
+}
+
 export interface GetStatisticsDto {
   /** @format int32 */
   surveyCount: number;
@@ -165,6 +205,9 @@ export interface GetSurveyResponseDto {
   description?: string | null;
   /** @format uuid */
   folderId?: string | null;
+  isFavorite?: boolean;
+  /** @format int32 */
+  questionAmount?: number;
 }
 
 export interface IdentityError {
@@ -179,10 +222,27 @@ export interface NumberResultDto {
   count: number;
 }
 
+export interface PaginatedFolderListDto {
+  /** @format int32 */
+  folderCount: number;
+  folderListInfo?: GetFolderResponseDto[] | null;
+}
+
 export interface PaginatedSessionListDto {
   /** @format int32 */
   sessionCount: number;
   sessionListInfo?: SessionListInfoDto[] | null;
+}
+
+export interface PaginatedSurveyListDto {
+  /** @format int32 */
+  surveyCount: number;
+  surveyListInfo?: GetSurveyResponseDto[] | null;
+}
+
+export interface PatchQuestionTemplateOrderDto {
+  /** @format int32 */
+  orderNumber: number;
 }
 
 export interface ProblemDetails {
@@ -248,6 +308,18 @@ export interface SurveyStatisticsDto {
 export interface UpdateFolderDto {
   /** @maxLength 255 */
   name?: string | null;
+}
+
+export interface UpdateQuestionTemplateResponseDto {
+  name?: string | null;
+  description?: string | null;
+  /** @format int32 */
+  minValue?: number | null;
+  /** @format int32 */
+  maxValue?: number | null;
+  /** @format int32 */
+  maxWords?: number | null;
+  answers?: string[] | null;
 }
 
 export interface UpdateSurveyDto {
@@ -496,6 +568,96 @@ export class Api<
     /**
      * No description
      *
+     * @tags Questions
+     * @name V1QuestionsDetail
+     * @request GET:/api/v1/Questions/{questionId}
+     */
+    v1QuestionsDetail: (questionId: string, params: RequestParams = {}) =>
+      this.request<GetQuestionTemplateResponseDto, ProblemDetails>({
+        path: `/api/v1/Questions/${questionId}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsPartialUpdate
+     * @request PATCH:/api/v1/Questions/{questionId}
+     */
+    v1QuestionsPartialUpdate: (
+      questionId: string,
+      data: UpdateQuestionTemplateResponseDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<string, ProblemDetails>({
+        path: `/api/v1/Questions/${questionId}`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsDelete
+     * @request DELETE:/api/v1/Questions/{questionId}
+     */
+    v1QuestionsDelete: (questionId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Questions/${questionId}`,
+        method: "DELETE",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsCreate
+     * @request POST:/api/v1/Questions
+     */
+    v1QuestionsCreate: (
+      data: CreateQuestionTemplateDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<string, ProblemDetails>({
+        path: `/api/v1/Questions`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Questions
+     * @name V1QuestionsOrderPartialUpdate
+     * @request PATCH:/api/v1/Questions/order/{questionId}
+     */
+    v1QuestionsOrderPartialUpdate: (
+      questionId: string,
+      data: PatchQuestionTemplateOrderDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Questions/order/${questionId}`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags Session
      * @name V1SessionCreateSessionCreate
      * @request POST:/api/v1/Session/createSession
@@ -699,10 +861,30 @@ export class Api<
      * @name V1SurveyList
      * @request GET:/api/v1/Survey
      */
-    v1SurveyList: (params: RequestParams = {}) =>
-      this.request<GetSurveyResponseDto[], ProblemDetails>({
+    v1SurveyList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 10
+         */
+        pageSize?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentPage?: number;
+        /**
+         * @format int32
+         * @default 0
+         */
+        skip?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedSurveyListDto, ProblemDetails>({
         path: `/api/v1/Survey`,
         method: "GET",
+        query: query,
         format: "json",
         ...params,
       }),
@@ -724,6 +906,20 @@ export class Api<
         method: "PATCH",
         body: data,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name V1SurveyDelete
+     * @request DELETE:/api/v1/Survey/{surveyId}
+     */
+    v1SurveyDelete: (surveyId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Survey/${surveyId}`,
+        method: "DELETE",
         ...params,
       }),
 
@@ -754,10 +950,25 @@ export class Api<
      * @name V1SurveyFoldersList
      * @request GET:/api/v1/Survey/folders
      */
-    v1SurveyFoldersList: (params: RequestParams = {}) =>
-      this.request<GetFolderResponseDto[], ProblemDetails>({
+    v1SurveyFoldersList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 10
+         */
+        pageSize?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentPage?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedFolderListDto, ProblemDetails>({
         path: `/api/v1/Survey/folders`,
         method: "GET",
+        query: query,
         format: "json",
         ...params,
       }),
@@ -779,6 +990,38 @@ export class Api<
         method: "PATCH",
         body: data,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name V1SurveyQuestionsList
+     * @request GET:/api/v1/Survey/{surveyId}/questions
+     */
+    v1SurveyQuestionsList: (surveyId: string, params: RequestParams = {}) =>
+      this.request<GetQuestionTemplateResponseDto[], ProblemDetails>({
+        path: `/api/v1/Survey/${surveyId}/questions`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name V1SurveyToggleFavoriteCreate
+     * @request POST:/api/v1/Survey/{surveyId}/toggle-favorite
+     */
+    v1SurveyToggleFavoriteCreate: (
+      surveyId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<any, ProblemDetails>({
+        path: `/api/v1/Survey/${surveyId}/toggle-favorite`,
+        method: "POST",
         ...params,
       }),
 
@@ -944,6 +1187,35 @@ export class Api<
       this.request<void, IdentityError[] | ProblemDetails>({
         path: `/api/v1/User/DeleteUser`,
         method: "DELETE",
+        ...params,
+      }),
+  };
+  surveys = {
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name SurveysDelete
+     * @request DELETE:/surveys/{surveyId}
+     */
+    surveysDelete: (surveyId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/surveys/${surveyId}`,
+        method: "DELETE",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name ToggleFavoriteCreate
+     * @request POST:/surveys/{surveyId}/toggle-favorite
+     */
+    toggleFavoriteCreate: (surveyId: string, params: RequestParams = {}) =>
+      this.request<any, ProblemDetails>({
+        path: `/surveys/${surveyId}/toggle-favorite`,
+        method: "POST",
         ...params,
       }),
   };

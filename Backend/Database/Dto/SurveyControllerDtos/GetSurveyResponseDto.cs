@@ -6,4 +6,6 @@ public class GetSurveyResponseDto
     public required string Title { get; set; }
     public string? Description { get; set; }
     public Guid? FolderId { get; set; }
+    public bool IsFavorite { get; set; }
+    public int QuestionAmount { get; set; }
 }

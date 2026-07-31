@@ -37,7 +37,7 @@
 	}
 </script>
 
-<div class="flex w-full flex-col items-center gap-2">
+<div class="flex w-full flex-col items-center gap-2 text-balance wrap-anywhere">
 	<h1 class="text-center text-4xl font-bold">{data.questionResults.name}</h1>
 	{#if data.questionResults.description}
 		<h2 class="text-center text-2xl font-bold opacity-80 md:max-w-120">
@@ -58,7 +58,7 @@
 		{@const questionType = question.questionTemplateDto.questionType}
 		<div class="collapse-arrow collapse w-full border border-base-300 bg-base-100">
 			<input type="checkbox" name="question-accordion" />
-			<div class="collapse-title text-xl font-bold">
+			<div class="collapse-title text-xl font-bold text-balance wrap-anywhere">
 				{question.questionTemplateDto.name}
 			</div>
 			<div class="collapse-content">
