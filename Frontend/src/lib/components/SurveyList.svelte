@@ -8,6 +8,7 @@
 	import { ChevronRight, Folder, Heart, Scroll } from '@lucide/svelte';
 	import Pagination from './Pagination.svelte';
 	import { addToast } from './Toast/Toast.svelte';
+	import { untrack } from 'svelte';
 
 	type Props = {
 		surveys: PaginatedSurveyListDto;
@@ -40,45 +41,54 @@
 	$effect(() => {
 		currentPage;
 
-		if (isInitalLoad) {
-			isInitalLoad = false;
+		untrack(() => {
+			if (isInitalLoad) {
+				isInitalLoad = false;
 
-			surveys.surveyListInfo = surveys.surveyListInfo?.slice(
-				0,
-				folders.folderListInfo?.length ?? pageSize
-			);
-			return;
-		}
+				const folderCount = folders.folderListInfo?.length ?? 0;
+				const surveyCountToShow = Math.max(0, pageSize - folderCount);
 
-		apiClient.api
-			.v1SurveyFoldersList({ pageSize, currentPage })
-			.then((res) => {
-				if (res.status === 200) {
-					folders = res.data;
-				}
-			})
-			.catch((e) => {
-				addToast({ label: 'Error loading folder: ' + e, type: 'error', icon: Folder });
-			});
+				surveys.surveyListInfo = surveys.surveyListInfo?.slice(0, surveyCountToShow);
+				return;
+			}
 
-		if (currentPage >= firstSurveyPage) {
 			apiClient.api
-				.v1SurveyList({
-					pageSize: currentSurveyPage === 0 ? numSurveysOnFirstPage : pageSize,
-					currentPage: currentSurveyPage === 0 ? 1 : currentSurveyPage,
-					skip: currentPage === firstSurveyPage ? 0 : numSurveysOnFirstPage,
-				})
+				.v1SurveyFoldersList({ pageSize, currentPage })
 				.then((res) => {
 					if (res.status === 200) {
-						surveys = res.data;
+						folders = res.data;
 					}
 				})
 				.catch((e) => {
 					addToast({ label: 'Error loading folder: ' + e, type: 'error', icon: Folder });
 				});
-		} else {
-			surveys.surveyListInfo = [];
-		}
+
+			if (currentPage >= firstSurveyPage) {
+				apiClient.api
+					.v1SurveyList({
+						pageSize: currentSurveyPage === 0 ? numSurveysOnFirstPage : pageSize,
+						currentPage: currentSurveyPage === 0 ? 1 : currentSurveyPage,
+						skip:
+							currentPage === firstSurveyPage || folders.folderCount === 0
+								? 0
+								: numSurveysOnFirstPage,
+					})
+					.then((res) => {
+						if (res.status === 200) {
+							surveys = res.data;
+						}
+					})
+					.catch((e) => {
+						addToast({
+							label: 'Error loading folder: ' + e,
+							type: 'error',
+							icon: Folder,
+						});
+					});
+			} else {
+				surveys.surveyListInfo = [];
+			}
+		});
 	});
 
 	let draggedSurveyId = $state<string | null>(null);
