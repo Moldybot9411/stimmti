@@ -109,12 +109,16 @@
 </script>
 
 <div class="flex w-full flex-col gap-4 md:flex-row">
-	<ul class="menu h-fit w-full bg-base-100 shadow-sm md:sticky md:top-4 md:flex-1">
+	<ul class="menu h-fit w-full rounded-box bg-base-100 shadow-sm md:sticky md:top-4 md:flex-1">
 		<li>
 			<h2 class="menu-title">Library</h2>
 			<ul>
 				{#each menuTabs as tab}
-					<li class={activeViewId === tab.label.toLowerCase() ? 'menu-active' : ''}>
+					<li
+						class={[
+							'rounded-box',
+							activeViewId === tab.label.toLowerCase() ? 'menu-active' : '',
+						]}>
 						<button onclick={() => switchView(tab.label.toLowerCase() as View)}>
 							<tab.icon size={16} />
 							{tab.label}
@@ -158,13 +162,13 @@
 
 	{#if editingSurvey && activeViewId === 'surveys'}
 		<div
-			class="card h-fit flex-3 bg-base-100 shadow-sm card-md"
+			class="card h-fit min-w-0 flex-3 bg-base-100 shadow-sm card-md"
 			use:scrollIntoViewOnMount={editingSurvey.surveyId}>
 			<div class="card-body">
 				<div class="flex justify-between">
-					<h2 class="card-title justify-between">
-						<Scroll />
-						{editingSurvey.title}
+					<h2 class="card-title min-w-0 justify-between">
+						<Scroll class="shrink-0" />
+						<span class="min-w-0 truncate">{editingSurvey.title}</span>
 					</h2>
 					<button
 						class="btn btn-ghost btn-neutral btn-sm"

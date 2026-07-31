@@ -1,12 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Backend.Dto;
 
 public class CreateSurveyDto
 {
     [MaxLength(255)]
-    public string Title { get; set; } = string.Empty;
+    public required string Title { get; set; }
 
     [MaxLength(2048)]
     public string? Description { get; set; }

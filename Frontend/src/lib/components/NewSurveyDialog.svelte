@@ -65,9 +65,9 @@
 			<form
 				class=""
 				bind:this={formRef}
-				onsubmit={async (e) => {
+				onsubmit={(e) => {
 					e.preventDefault();
-					await createSurvey();
+					createSurvey();
 				}}
 				onreset={() => {
 					isLoading = false;
@@ -78,8 +78,8 @@
 						bind:value={title}
 						type="text"
 						class="input w-full"
-						maxlength="100"
 						placeholder="My Survey"
+						maxlength={255}
 						required />
 				</fieldset>
 
@@ -88,9 +88,9 @@
 					<input
 						bind:value={description}
 						type="text"
-						maxlength="255"
 						class="input w-full"
-						placeholder="My Description" />
+						placeholder="My Description"
+						maxlength={2048} />
 				</fieldset>
 
 				<div class="mt-4 flex flex-col gap-2">

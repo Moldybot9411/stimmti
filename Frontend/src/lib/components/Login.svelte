@@ -58,6 +58,7 @@
 					name="username"
 					autocomplete="username"
 					bind:value={username}
+					maxlength={20}
 					required />
 			</label>
 
@@ -71,6 +72,7 @@
 							bind:value={password}
 							name="password"
 							autocomplete="current-password"
+							maxlength={64}
 							required />
 					</label>
 				</div>

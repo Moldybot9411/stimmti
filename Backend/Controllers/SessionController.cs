@@ -7,6 +7,7 @@ using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -115,6 +116,7 @@ public class SessionController : ControllerBase
     }
 
     [HttpGet("checkSession")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CheckSession([FromQuery] string roomCode)
@@ -225,6 +227,7 @@ public class SessionController : ControllerBase
     }
 
     [HttpPatch("closeSessionBatch")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CloseSessionBatch([FromBody] List<Guid> sessionIds)

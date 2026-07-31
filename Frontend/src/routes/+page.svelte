@@ -16,6 +16,7 @@
 	import wordcloud from '$lib/assets/WordCloud.svg';
 	import numberscale from '$lib/assets/NumberScale.svg';
 	import freetext from '$lib/assets/FreeText.svg';
+	import { themeManager } from '$lib/Theme.svelte';
 
 	const features = [
 		{
@@ -70,11 +71,17 @@
 			description: 'Participants submit text providing detailed feedback',
 		},
 	];
+
+	const logoSrc = $derived(
+		themeManager.theme === 'light'
+			? '/stimmti-logo-notagline.svg'
+			: '/stimmti-logo-notagline-light.svg'
+	);
 </script>
 
-<div class="navbar bg-base-100 shadow-sm">
-	<div class="flex-1">
-		<span class="px-2 text-xl font-extrabold">Stimmti</span>
+<div class="navbar flex-col bg-base-100 shadow-sm md:flex-row">
+	<div class="w-fit flex-1">
+		<img src={logoSrc} alt="Stimmti Logo" class="w-autoobject-contain h-10" />
 	</div>
 	<div class="flex items-center">
 		<ThemeToggle />
@@ -83,7 +90,7 @@
 
 		<ul class="menu menu-horizontal gap-2">
 			<li>
-				<a class="btn btn-outline btn-neutral" href="/register">Register</a>
+				<a class="btn btn-outline btn-secondary" href="/register">Register</a>
 			</li>
 
 			<li>
@@ -233,7 +240,7 @@
 					<NotepadText size={20} />
 				</div>
 
-				<div>Choose a community template or build your own custom session in minutes.</div>
+				<div>Choose a community template or build your own custom survey in minutes.</div>
 			</div>
 			<hr class="bg-primary" />
 		</li>
@@ -250,8 +257,8 @@
 				</div>
 
 				<div>
-					Launch a live session. Participants join anonymously via a simple link or
-					code—no account required.
+					Launch a live session. Participants join anonymously via a simple link or code -
+					no account required.
 				</div>
 			</div>
 			<hr class="bg-primary" />
@@ -269,8 +276,8 @@
 				</div>
 
 				<div>
-					Watch results roll in live on the presenter's screen. Share insights instantly
-					with your community.
+					Watch results roll in live on the presenter's screen. Compare results afterwards
+					and gain useful insights.
 				</div>
 			</div>
 		</li>
@@ -279,7 +286,7 @@
 
 <div
 	class="flex w-full flex-col items-center justify-center gap-8 bg-primary px-4 py-16 text-primary-content">
-	<div class="text-center">
+	<div class="flex flex-col items-center">
 		<h2 class="text-4xl font-bold">Ready to engage your Community?</h2>
 		<div class="mt-2 max-w-120 text-primary-content/80">
 			Create an account to gain access to all features. No paywall.
@@ -289,7 +296,7 @@
 	<div class="flex w-full flex-col gap-2 px-4 md:w-fit md:flex-row">
 		<a class="btn-out btn w-full btn-lg md:w-fit" href="/register">Get Started</a>
 		<a
-			class="btn w-full border-primary-content btn-outline text-primary-content btn-lg md:w-fit"
+			class="btn w-full border-primary-content btn-outline text-primary-content btn-lg hover:bg-base-content/30 md:w-fit"
 			href="/help"
 			aria-label="Open Help">
 			<CircleQuestionMark />

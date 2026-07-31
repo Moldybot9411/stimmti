@@ -250,7 +250,7 @@
 								'text-error',
 							][index % 5],
 							hoveredFolderId === f.folderId &&
-								'rounded-box outline-2 outline-accent',
+								'rounded-box ring-2 ring-base-content',
 						]}
 						ondragover={(event) => handleFolderDragOver(event, f.folderId)}
 						ondragleave={() => handleFolderDragLeave(f.folderId)}

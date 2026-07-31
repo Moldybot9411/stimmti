@@ -96,7 +96,7 @@
 						bind:value={participantName}
 						maxlength="64" />
 				</fieldset>
-				<button class="btn mt-3 btn-block btn-outline btn-neutral">
+				<button class="btn mt-3 btn-block btn-outline btn-secondary">
 					<Save class="h-4 w-4" />
 					Save Changes
 				</button>
