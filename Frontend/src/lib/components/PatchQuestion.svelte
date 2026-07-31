@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Check, Heart, HeartCrack, LoaderCircle, X } from '@lucide/svelte';
+	import { Check, HeartCrack, LoaderCircle, X } from '@lucide/svelte';
 	import type { ClassValue } from 'svelte/elements';
 	import { addToast } from './Toast/Toast.svelte';
 	import { apiClient } from '$lib/apiClient';
@@ -11,23 +11,42 @@
 		style?: string;
 		ref?: HTMLDialogElement;
 		surveyId: string;
-		onClose?: () => void | Promise<void>;
 		questionId?: string | null;
+		onSave?: (questionData: GetQuestionTemplateResponseDto) => void;
+		onCancel?: () => void;
 	};
 
-	let { class: classes, style, ref = $bindable(), surveyId, onClose, questionId }: Props = $props();
+	let {
+		class: classes,
+		style,
+		ref = $bindable(),
+		onSave = () => {},
+		onCancel = () => {},
+		questionId,
+	}: Props = $props();
+
 	let formRef: HTMLFormElement | null = $state(null);
 	let isLoading = $state(false);
 	let isLoadingData = $state(false);
 
-	let name = $state('');
-	let description = $state('');
-	let questionType = $state(QuestionTypeEnum.SingleChoice);
-	let isQuestionTypeDropdownOpen = $state(false);
-	let minValue = $state(1);
-	let maxValue = $state(10);
-	let maxWords = $state(3);
-	let answerInputs = $state(['', '']);
+	let currentQuestionData: GetQuestionTemplateResponseDto = $state(getDefaultQuestion());
+
+	function getDefaultQuestion(): GetQuestionTemplateResponseDto {
+		return {
+			name: '',
+			description: '',
+			questionType: QuestionTypeEnum.SingleChoice,
+			minValue: 1,
+			maxValue: 10,
+			answers: ['', ''],
+		};
+	}
+
+	$effect(() => {
+		if (currentQuestionData.minValue! >= currentQuestionData.maxValue!) {
+			currentQuestionData.minValue = currentQuestionData.maxValue! - 1;
+		}
+	});
 
 	// Load question data when questionId changes
 	$effect(() => {
@@ -38,14 +57,13 @@
 			.v1QuestionsDetail(questionId)
 			.then((result) => {
 				if (result.data) {
-					const q = result.data;
-					name = q.name || '';
-					description = q.description || '';
-					questionType = q.questionType || QuestionTypeEnum.SingleChoice;
-					minValue = q.minValue || 1;
-					maxValue = q.maxValue || 10;
-					maxWords = q.maxWords || 3;
-					answerInputs = q.answers && q.answers.length > 0 ? [...q.answers, ''] : ['', ''];
+					currentQuestionData = result.data;
+
+					if (!currentQuestionData.answers || currentQuestionData.answers.length === 0) {
+						currentQuestionData.answers = ['', ''];
+					} else {
+						currentQuestionData.answers = [...currentQuestionData.answers, ''];
+					}
 				}
 			})
 			.catch((error: unknown) => {
@@ -61,58 +79,53 @@
 			});
 	});
 
-	function addAnswerFieldIfNeeded(index: number) {
-		const isLastField = index === answerInputs.length - 1;
-		if (!isLastField) {
-			return;
-		}
+	function handleAnswerInput(index: number) {
+		const answers = currentQuestionData.answers ?? [];
+		const isLastField = index === answers.length - 1;
 
-		if (answerInputs[index]?.trim().length === 0) {
-			return;
-		}
+		if (!isLastField || !answers[index]?.trim()) return;
 
-		const hasOtherEmptyField = answerInputs
-			.slice(0, answerInputs.length - 1)
-			.some((answer) => answer.trim().length === 0);
+		const hasOtherEmptyField = answers.slice(0, -1).some((a) => a.trim().length === 0);
 
-		if (!hasOtherEmptyField && answerInputs.length < maxChoiceAnswers) {
-			answerInputs = [...answerInputs, ''];
+		if (!hasOtherEmptyField && answers.length < maxChoiceAnswers) {
+			currentQuestionData.answers = [...answers, ''];
 		}
 	}
 
 	function reset() {
 		formRef?.reset();
-		isQuestionTypeDropdownOpen = false;
-		answerInputs = ['', ''];
-		name = '';
-		description = '';
-		questionType = QuestionTypeEnum.SingleChoice;
-		minValue = 1;
-		maxValue = 10;
-		maxWords = 3;
+		isLoading = false;
+		currentQuestionData = getDefaultQuestion();
+	}
+
+	function handleClose() {
+		ref?.close();
+		onCancel?.();
 	}
 
 	async function updateQuestion() {
 		if (!questionId) return;
 
-		const parsedAnswers = answerInputs
-			.map((x) => x.trim())
-			.filter((x) => x.length > 0);
+		const payload = { ...currentQuestionData };
+		payload.answers = (payload.answers ?? []).map((x) => x.trim()).filter((x) => x.length > 0);
 
 		if (
-			(questionType === QuestionTypeEnum.SingleChoice ||
-				questionType === QuestionTypeEnum.MultipleChoice) &&
-			parsedAnswers.length < 2
+			(payload.questionType === QuestionTypeEnum.SingleChoice ||
+				payload.questionType === QuestionTypeEnum.MultipleChoice) &&
+			payload.answers.length < 2
 		) {
 			addToast({
 				type: 'error',
-				label: 'Please provide at least 2 answers for choice questions',
+				label: 'Please provide at least 2 answer options',
 				icon: HeartCrack,
 			});
 			return;
 		}
 
-		if (questionType === QuestionTypeEnum.NumberScale && minValue >= maxValue) {
+		if (
+			payload.questionType === QuestionTypeEnum.NumberScale &&
+			(payload.minValue ?? 1) >= (payload.maxValue ?? 10)
+		) {
 			addToast({
 				type: 'error',
 				label: 'Min value must be smaller than max value',
@@ -121,7 +134,7 @@
 			return;
 		}
 
-		if (questionType === QuestionTypeEnum.WordCloud && maxWords <= 0) {
+		if (payload.questionType === QuestionTypeEnum.WordCloud && (payload.maxWords ?? 0) <= 0) {
 			addToast({
 				type: 'error',
 				label: 'Max words must be greater than 0',
@@ -131,52 +144,41 @@
 		}
 
 		isLoading = true;
-		await apiClient.api
-			.v1QuestionsPartialUpdate(questionId, {
-				name,
-				description,
-				answers:
-					questionType === QuestionTypeEnum.SingleChoice ||
-					questionType === QuestionTypeEnum.MultipleChoice
-						? parsedAnswers
-						: [],
-				minValue: questionType === QuestionTypeEnum.NumberScale ? minValue : undefined,
-				maxValue: questionType === QuestionTypeEnum.NumberScale ? maxValue : undefined,
-				maxWords: questionType === QuestionTypeEnum.WordCloud ? maxWords : undefined,
-			} as any)
-			.then(() => {
-				addToast({
-					type: 'success',
-					label: 'Question updated successfully',
-					icon: Check,
-				});
-				ref?.close();
-			})
-			.catch((error: unknown) => {
-				const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-				addToast({
-					type: 'error',
-					label: `Failed to update question: ${errorMsg}`,
-					icon: HeartCrack,
-				});
-			})
-			.finally(() => {
-				isLoading = false;
+		try {
+			const updatedResult = await apiClient.api.v1QuestionsPartialUpdate(questionId, payload);
+			const newQuestionId = updatedResult.data;
+
+			const fetchResult = await apiClient.api.v1QuestionsDetail(newQuestionId);
+			const updatedData = fetchResult.data;
+
+			addToast({
+				type: 'success',
+				label: 'Question updated successfully',
+				icon: Check,
 			});
+
+			onSave(updatedData);
+			ref?.close();
+		} catch (error) {
+			const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+			addToast({
+				type: 'error',
+				label: `Failed to update question: ${errorMsg}`,
+				icon: HeartCrack,
+			});
+		} finally {
+			isLoading = false;
+		}
 	}
 </script>
 
-<dialog
-	class={['modal', classes]}
-	{style}
-	bind:this={ref}
-	onclose={() => {
-		reset();
-		onClose?.();
-	}}>
+<dialog class={['modal', classes]} {style} bind:this={ref} onclose={reset}>
 	<div class="modal-box">
 		<form method="dialog">
-			<button class="btn absolute top-2 right-2 btn-ghost btn-sm" disabled={isLoading || isLoadingData}>
+			<button
+				class="btn absolute top-2 right-2 btn-ghost btn-sm"
+				disabled={isLoading || isLoadingData}
+				onclick={handleClose}>
 				<X />
 			</button>
 		</form>
@@ -199,59 +201,84 @@
 					}}>
 					<fieldset class="fieldset">
 						<legend class="fieldset-legend">Question Title</legend>
-						<input bind:value={name} type="text" class="input w-full" placeholder="My Question" required />
+						<input
+							bind:value={currentQuestionData.name}
+							type="text"
+							class="input w-full"
+							placeholder="My Question"
+							required />
 					</fieldset>
 
 					<fieldset class="fieldset">
 						<legend class="fieldset-legend">Question Description</legend>
-						<input bind:value={description} type="text" class="input w-full" placeholder="My Description" />
+						<input
+							bind:value={currentQuestionData.description}
+							type="text"
+							class="input w-full"
+							placeholder="My Description" />
 					</fieldset>
-                    
-					{#if questionType === QuestionTypeEnum.SingleChoice || questionType === QuestionTypeEnum.MultipleChoice}
+
+					{#if currentQuestionData.questionType === QuestionTypeEnum.SingleChoice || currentQuestionData.questionType === QuestionTypeEnum.MultipleChoice}
 						<fieldset class="fieldset">
 							<legend class="fieldset-legend">Answers</legend>
 							<div class="flex flex-col gap-2">
-								{#each answerInputs as _, index}
+								{#each currentQuestionData.answers ?? [] as _, index}
 									<input
-										bind:value={answerInputs[index]}
-										oninput={() => addAnswerFieldIfNeeded(index)}
+										bind:value={currentQuestionData.answers![index]}
+										oninput={() => handleAnswerInput(index)}
 										type="text"
 										class="input w-full"
 										placeholder={`Answer ${index + 1}`} />
 								{/each}
 							</div>
 							<div class="label overflow-auto">
-								<span class="label-text-alt">A new field is created while typing in the last field when no other empty field exists, up to 8 answers.</span>
+								<span class="label-text-alt"
+									>A new field is created while typing in the last field when no
+									other empty field exists, up to 8 answers.</span>
 							</div>
 						</fieldset>
-					{:else if questionType === QuestionTypeEnum.NumberScale}
+					{:else if currentQuestionData.questionType === QuestionTypeEnum.NumberScale}
 						<div class="grid grid-cols-2 gap-2">
 							<fieldset class="fieldset">
 								<legend class="fieldset-legend">Min Value</legend>
-								<input bind:value={minValue} type="number" class="input w-full" placeholder="Min Value" />
+								<input
+									bind:value={currentQuestionData.minValue}
+									type="number"
+									class="input w-full"
+									placeholder="Min Value" />
 							</fieldset>
 							<fieldset class="fieldset">
 								<legend class="fieldset-legend">Max Value</legend>
-								<input bind:value={maxValue} type="number" class="input w-full" placeholder="Max Value" />
+								<input
+									bind:value={currentQuestionData.maxValue}
+									type="number"
+									class="input w-full"
+									placeholder="Max Value" />
 							</fieldset>
 						</div>
-					{:else if questionType === QuestionTypeEnum.WordCloud}
+					{:else if currentQuestionData.questionType === QuestionTypeEnum.WordCloud}
 						<fieldset class="fieldset">
 							<legend class="fieldset-legend">Maximum Answers</legend>
-							<input bind:value={maxWords} type="number" class="input w-full" placeholder="Max Words" />
+							<input
+								bind:value={currentQuestionData.maxWords}
+								type="number"
+								class="input w-full"
+								placeholder="Max Words" />
 						</fieldset>
-					
 					{/if}
 
 					<div class="mt-4 flex flex-col gap-2">
 						<button
 							class="btn btn-secondary"
 							type="reset"
-							onclick={() => ref?.close()}
+							onclick={handleClose}
 							disabled={isLoading || isLoadingData}>
 							Cancel
 						</button>
-						<button class="btn btn-primary" type="submit" disabled={isLoading || isLoadingData}>
+						<button
+							class="btn btn-primary"
+							type="submit"
+							disabled={isLoading || isLoadingData}>
 							{#if isLoading}
 								<LoaderCircle class="animate-spin" />
 							{/if}

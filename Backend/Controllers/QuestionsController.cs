@@ -27,7 +27,7 @@ public class QuestionsController : ControllerBase
     [ProducesResponseType(typeof(GetQuestionTemplateResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetQuestionTemplate(Guid questionId)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -35,15 +35,23 @@ public class QuestionsController : ControllerBase
 
         var questionTemplate = await _context.QuestionTemplates
             .Include(x => x.Survey)
-            .Where(x => x.Survey != null && x.Survey.IsArchived == false && x.IsArchived == false)
+            .Where(x => x.Id == questionId && x.Survey!.IsArchived == false && x.IsArchived == false)
             .Include(x => (x as ChoiceQuestionTemplate)!.AnswerOptions)
-            .FirstOrDefaultAsync(x => x.Id == questionId);
+            .FirstOrDefaultAsync();
 
         if (questionTemplate == null)
-            return BadRequest(new ProblemDetails { Title = "Question Template not found", Detail = $"Question Template with ID {questionId} doesn't exist" });
+            return NotFound(new ProblemDetails
+            {
+                Title = "Question Template not found",
+                Detail = $"Question Template with ID {questionId} doesn't exist"
+            });
 
         if (questionTemplate.Survey == null)
-            return BadRequest(new ProblemDetails { Title = "Survey not found", Detail = "Question template has no linked survey" });
+            return NotFound(new ProblemDetails
+            {
+                Title = "Survey not found",
+                Detail = "Question template has no linked survey"
+            });
 
         if (questionTemplate.Survey.OwnerId != user.Id)
             return Forbid();
@@ -75,6 +83,7 @@ public class QuestionsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PostQuestionTemplate([FromBody] CreateQuestionTemplateDto data)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -85,7 +94,11 @@ public class QuestionsController : ControllerBase
             .FirstOrDefaultAsync(x => x.Id == data.SurveyId);
 
         if (survey == null)
-            return BadRequest(new ProblemDetails { Title = "Survey not found", Detail = $"Survey with ID {data.SurveyId} doesn't exist" });
+            return NotFound(new ProblemDetails
+            {
+                Title = "Survey not found",
+                Detail = $"Survey with ID {data.SurveyId} doesn't exist"
+            });
 
         if (survey.OwnerId != user.Id)
             return Forbid();
@@ -100,8 +113,8 @@ public class QuestionsController : ControllerBase
         if (data.QuestionType == QuestionTypeEnum.WordCloud && data.MaxWords <= 0)
             return BadRequest(new ProblemDetails { Title = "Invalid Word Cloud", Detail = "MaxWords must be greater than 0" });
 
-        var cleanedAnswers = (data.Answers ?? Array.Empty<string>())
-            .Select(x => x?.Trim())
+        var cleanedAnswers = (data.Answers ?? new List<string>())
+            .Select(x => x.Trim())
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -114,7 +127,7 @@ public class QuestionsController : ControllerBase
 
         data.OrderNumber = await _context.QuestionTemplates
             .Where(x => x.SurveyId == data.SurveyId)
-            .MaxAsync(x => (int?)x.OrderNumber) + 1 ?? 1;
+            .MaxAsync(x => (int?)x.OrderNumber) + 1 ?? 0;
 
         QuestionTemplate questionTemplate = data.QuestionType switch
         {
@@ -194,6 +207,8 @@ public class QuestionsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     public async Task<IActionResult> PatchQuestionTemplate(Guid questionId, [FromBody] UpdateQuestionTemplateResponseDto data)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -202,13 +217,13 @@ public class QuestionsController : ControllerBase
         var questionTemplate = await _context.QuestionTemplates
             .Include(x => x.Survey)
             .Include(x => (x as ChoiceQuestionTemplate)!.AnswerOptions)
-            .FirstOrDefaultAsync(x => x.Id == questionId);
+            .FirstOrDefaultAsync(x => x.Id == questionId && x.IsArchived == false);
 
         if (questionTemplate == null)
-            return BadRequest(new ProblemDetails { Title = "Question Template not found", Detail = $"Question Template with ID {questionId} doesn't exist" });
+            return NotFound(new ProblemDetails { Title = "Question Template not found", Detail = $"Question Template with ID {questionId} doesn't exist" });
 
         if (questionTemplate.Survey == null)
-            return BadRequest(new ProblemDetails { Title = "Survey not found", Detail = "Question template has no linked survey" });
+            return NotFound(new ProblemDetails { Title = "Survey not found", Detail = "Question template has no linked survey" });
 
         if (questionTemplate.Survey.OwnerId != user.Id)
             return Forbid();
@@ -219,8 +234,10 @@ public class QuestionsController : ControllerBase
         if (hasLinkedQuestions)
         {
             var oldQuestionTemplate = questionTemplate;
+
             questionTemplate = QuestionTemplateCloner.CloneQuestionTemplate(oldQuestionTemplate);
             oldQuestionTemplate.IsArchived = true;
+
             _context.QuestionTemplates.Add(questionTemplate);
         }
 
@@ -236,12 +253,6 @@ public class QuestionsController : ControllerBase
         if (data.Description != null)
             questionTemplate.Description = data.Description.Trim();
 
-        if (data.OrderNumber.HasValue)
-            questionTemplate.OrderNumber = data.OrderNumber.Value;
-
-        if (data.IsArchived.HasValue)
-            questionTemplate.IsArchived = data.IsArchived.Value;
-
         if (questionTemplate is NumberScaleQuestionTemplate numberScaleTemplate)
         {
             var minValue = data.MinValue ?? numberScaleTemplate.MinValue;
@@ -253,10 +264,6 @@ public class QuestionsController : ControllerBase
             numberScaleTemplate.MinValue = minValue;
             numberScaleTemplate.MaxValue = maxValue;
         }
-        else if (data.MinValue.HasValue || data.MaxValue.HasValue)
-        {
-            return BadRequest(new ProblemDetails { Title = "Invalid Question Type", Detail = "MinValue and MaxValue can only be set for NumberScale questions" });
-        }
 
         if (questionTemplate is WordCloudQuestionTemplate wordCloudTemplate)
         {
@@ -267,10 +274,6 @@ public class QuestionsController : ControllerBase
 
                 wordCloudTemplate.MaxWords = data.MaxWords.Value;
             }
-        }
-        else if (data.MaxWords.HasValue)
-        {
-            return BadRequest(new ProblemDetails { Title = "Invalid Question Type", Detail = "MaxWords can only be set for WordCloud questions" });
         }
 
         if (questionTemplate is MultipleChoiceQuestionTemplate || questionTemplate is SingleChoiceQuestionTemplate)
@@ -299,10 +302,9 @@ public class QuestionsController : ControllerBase
             }
         }
 
-
         await _context.SaveChangesAsync();
 
-        return Ok();
+        return Ok(questionTemplate.Id);
     }
 
     [HttpDelete("{questionId:guid}")]
@@ -322,22 +324,18 @@ public class QuestionsController : ControllerBase
         if (questionTemplate == null)
             return BadRequest(new ProblemDetails { Title = "Question Template not found", Detail = $"Question Template with ID {questionId} doesn't exist" });
 
-        if (questionTemplate.Survey == null)
-            return BadRequest(new ProblemDetails { Title = "Survey not found", Detail = "Question template has no linked survey" });
-
-        if (questionTemplate.Survey.OwnerId != user.Id)
+        if (questionTemplate.Survey!.OwnerId != user.Id)
             return Forbid();
 
-        var linkedQuestions = await _context.Questions
+        var hasLinkedQuestions = await _context.Questions
             .Where(x => x.QuestionTemplateId == questionTemplate.Id)
-            .ToListAsync();
+            .AnyAsync();
 
-        if (linkedQuestions.Any())
+        if (hasLinkedQuestions)
             questionTemplate.IsArchived = true;
         else
             _context.QuestionTemplates.Remove(questionTemplate);
 
-        _context.QuestionTemplates.Update(questionTemplate);
         await _context.SaveChangesAsync();
 
         return Ok();
@@ -348,6 +346,7 @@ public class QuestionsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PatchOrder(Guid questionId, [FromBody] PatchQuestionTemplateOrderDto data)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -355,33 +354,21 @@ public class QuestionsController : ControllerBase
 
         var questionTemplate = await _context.QuestionTemplates
             .Include(x => x.Survey)
-            .FirstOrDefaultAsync(x => x.Id == questionId);
+            .FirstOrDefaultAsync(x => x.Id == questionId && x.IsArchived == false);
 
         if (questionTemplate == null)
-            return BadRequest(new ProblemDetails { Title = "Question Template not found", Detail = $"Question Template with ID {questionId} doesn't exist" });
+            return NotFound(new ProblemDetails { Title = "Question Template not found", Detail = $"Question Template with ID {questionId} doesn't exist" });
 
-        var survey = questionTemplate.Survey;
-        if (survey == null)
-            return BadRequest(new ProblemDetails { Title = "Survey not found", Detail = "Question template has no linked survey" });
-
-        if (survey.OwnerId != user.Id)
+        if (questionTemplate.Survey!.OwnerId != user.Id)
             return Forbid();
 
         var surveyTemplates = await _context.QuestionTemplates
-            .Where(x => x.SurveyId == questionTemplate.SurveyId)
+            .Where(x => x.SurveyId == questionTemplate.SurveyId && x.IsArchived == false)
             .OrderBy(x => x.OrderNumber)
             .ToListAsync();
 
         var hasLinkedQuestions = await _context.Questions
            .AnyAsync(x => x.QuestionTemplateId == questionTemplate.Id);
-
-        if (hasLinkedQuestions)
-        {
-            var oldQuestionTemplate = questionTemplate;
-            questionTemplate = QuestionTemplateCloner.CloneQuestionTemplate(oldQuestionTemplate);
-            oldQuestionTemplate.IsArchived = true;
-            _context.QuestionTemplates.Add(questionTemplate);
-        }
 
         if (data.OrderNumber <= 0 || data.OrderNumber > surveyTemplates.Count)
             return BadRequest(new ProblemDetails
@@ -391,6 +378,17 @@ public class QuestionsController : ControllerBase
             });
 
         surveyTemplates.Remove(questionTemplate);
+
+        if (hasLinkedQuestions)
+        {
+            var oldQuestionTemplate = questionTemplate;
+
+            questionTemplate = QuestionTemplateCloner.CloneQuestionTemplate(oldQuestionTemplate);
+            oldQuestionTemplate.IsArchived = true;
+
+            _context.QuestionTemplates.Add(questionTemplate);
+        }
+
         surveyTemplates.Insert(data.OrderNumber - 1, questionTemplate);
 
         for (var i = 0; i < surveyTemplates.Count; i++)

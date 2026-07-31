@@ -9,10 +9,9 @@
 		class?: ClassValue;
 		style?: string;
 		ref?: HTMLDialogElement;
-		onClose?: () => void | Promise<void>;
 	};
 
-	let { class: classes, style, ref = $bindable(), onClose }: Props = $props();
+	let { class: classes, style, ref = $bindable() }: Props = $props();
 
 	let formRef: HTMLFormElement | null = $state(null);
 	let isLoading = $state(false);
@@ -24,9 +23,8 @@
 		formRef?.reset();
 	}
 
-	async function handleClose() {
+	function handleClose() {
 		reset();
-		await onClose?.();
 	}
 
 	function createSurvey() {

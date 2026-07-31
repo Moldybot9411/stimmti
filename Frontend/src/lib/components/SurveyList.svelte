@@ -5,55 +5,20 @@
 
 	type Props = {
 		surveys: GetSurveyResponseDto[];
-		folder: GetFolderResponseDto[];
+		folders: GetFolderResponseDto[];
 		editingSurvey?: GetSurveyResponseDto | null;
 	};
 
-	let {
-		surveys: initialSurveys,
-		folder: initialFolder,
-		editingSurvey = $bindable(null),
-	}: Props = $props();
+	let { surveys, folders, editingSurvey = $bindable(null) }: Props = $props();
 
-	let surveys = $state<GetSurveyResponseDto[]>([]);
-	let folder = $state<GetFolderResponseDto[]>([]);
 	let draggedSurveyId = $state<string | null>(null);
 	let hoveredFolderId = $state<string | null>(null);
 	let hoveredRootArea = $state(false);
 
-	$effect(() => {
-		surveys = initialSurveys.map((survey) => ({ ...survey }));
-
-		// Update folders in-place to preserve <details> open state.
-		// Replacing the array entirely causes Svelte to recreate DOM nodes and close all folders.
-		const updatedFolderIds = new Set(initialFolder.map((f) => f.folderId));
-
-		// Remove folders that no longer exist
-		for (let i = folder.length - 1; i >= 0; i--) {
-			if (!updatedFolderIds.has(folder[i].folderId)) {
-				folder.splice(i, 1);
-			}
-		}
-
-		// Update existing folders and add new ones
-		for (const updatedItem of initialFolder) {
-			const existingIndex = folder.findIndex((f) => f.folderId === updatedItem.folderId);
-			if (existingIndex !== -1) {
-				folder[existingIndex].name = updatedItem.name;
-				folder[existingIndex].surveys = (updatedItem.surveys ?? []).map((s) => ({ ...s }));
-			} else {
-				folder.push({
-					...updatedItem,
-					surveys: (updatedItem.surveys ?? []).map((s) => ({ ...s })),
-				});
-			}
-		}
-	});
-
 	function snapshotLibraryState() {
 		return {
 			surveys: surveys.map((survey) => ({ ...survey })),
-			folder: folder.map((item) => ({
+			folder: folders.map((item) => ({
 				...item,
 				surveys: (item.surveys ?? []).map((survey) => ({ ...survey })),
 			})),
@@ -67,7 +32,7 @@
 			return survey;
 		}
 
-		for (const item of folder) {
+		for (const item of folders) {
 			const nestedSurveys = item.surveys ?? [];
 			const nestedIndex = nestedSurveys.findIndex((survey) => survey.surveyId === surveyId);
 			if (nestedIndex !== -1) {
@@ -81,7 +46,7 @@
 	}
 
 	function insertSurveyIntoFolder(folderId: string, survey: GetSurveyResponseDto) {
-		const targetFolder = folder.find((item) => item.folderId === folderId);
+		const targetFolder = folders.find((item) => item.folderId === folderId);
 		if (!targetFolder) return false;
 
 		targetFolder.surveys = [...(targetFolder.surveys ?? []), { ...survey, folderId }].sort(
@@ -134,7 +99,7 @@
 
 		const existingSurvey =
 			surveys.find((s) => s.surveyId === surveyId) ??
-			folder.flatMap((item) => item.surveys ?? []).find((s) => s.surveyId === surveyId);
+			folders.flatMap((item) => item.surveys ?? []).find((s) => s.surveyId === surveyId);
 		if (!existingSurvey || existingSurvey.folderId == null) return;
 
 		const previousState = snapshotLibraryState();
@@ -154,7 +119,7 @@
 		} catch (error) {
 			console.error('Error removing survey from folder:', error);
 			surveys = previousState.surveys;
-			folder = previousState.folder;
+			folders = previousState.folder;
 		}
 	}
 
@@ -168,7 +133,7 @@
 
 		const existingSurvey =
 			surveys.find((survey) => survey.surveyId === surveyId) ??
-			folder
+			folders
 				.flatMap((item) => item.surveys ?? [])
 				.find((survey) => survey.surveyId === surveyId);
 		if (!existingSurvey || existingSurvey.folderId === folderId) return;
@@ -180,7 +145,7 @@
 		const inserted = insertSurveyIntoFolder(folderId, removedSurvey);
 		if (!inserted) {
 			surveys = previousState.surveys;
-			folder = previousState.folder;
+			folders = previousState.folder;
 			return;
 		}
 
@@ -193,19 +158,21 @@
 		} catch (error) {
 			console.error('Error moving survey to folder:', error);
 			surveys = previousState.surveys;
-			folder = previousState.folder;
+			folders = previousState.folder;
 		}
 	}
 </script>
 
-<ul class="menu w-full bg-base-200 rounded-box">
-	{#each folder as f, index (f.folderId)}
+<ul class="menu w-full rounded-box bg-base-200">
+	{#each folders as f, index (f.folderId)}
 		<li>
 			<details>
 				<summary
 					class={[
-						['text-accent', 'text-info', 'text-success', 'text-warning', 'text-error'][index % 5],
-						hoveredFolderId === f.folderId && 'ring-2 ring-base-content rounded-box',
+						['text-accent', 'text-info', 'text-success', 'text-warning', 'text-error'][
+							index % 5
+						],
+						hoveredFolderId === f.folderId && 'rounded-box ring-2 ring-base-content',
 					]}
 					ondragover={(event) => handleFolderDragOver(event, f.folderId)}
 					ondragleave={() => handleFolderDragLeave(f.folderId)}
@@ -227,7 +194,11 @@
 									draggedSurveyId === survey.surveyId && 'opacity-100',
 								]}>
 								{#if survey.isFavorite}
-									<Heart size={16} class="mr-2 text-primary" fill="currentColor" strokeWidth="2" />
+									<Heart
+										size={16}
+										class="text-primary"
+										fill="currentColor"
+										strokeWidth="2" />
 								{:else}
 									<Scroll size={16} />
 								{/if}
@@ -249,28 +220,26 @@
 		ondragover={handleRootDragOver}
 		ondragleave={handleRootDragLeave}
 		ondrop={handleRootDrop}>
-		
-			{#each surveys as survey (survey.surveyId)}
-				<li>
-					<button
-						draggable="true"
-						ondragstart={(event) => handleDragStart(event, survey.surveyId)}
-						ondragend={handleDragEnd}
-						onclick={() => (editingSurvey = survey)}
-						class={[
-							editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
-							draggedSurveyId === survey.surveyId && 'opacity-60',
-						]}>
-						{#if survey.isFavorite}
-									<Heart size={16} class="mr-2 text-primary" fill="currentColor" strokeWidth="2" />
-								{:else}
-									<Scroll size={16} />
-								{/if}
-						{survey.title}
-						<ChevronRight size={16} />
-					</button>
-				</li>
-			{/each}
-		
+		{#each surveys as survey (survey.surveyId)}
+			<li>
+				<button
+					draggable="true"
+					ondragstart={(event) => handleDragStart(event, survey.surveyId)}
+					ondragend={handleDragEnd}
+					onclick={() => (editingSurvey = survey)}
+					class={[
+						editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
+						draggedSurveyId === survey.surveyId && 'opacity-60',
+					]}>
+					{#if survey.isFavorite}
+						<Heart size={16} class="text-primary" fill="currentColor" strokeWidth="2" />
+					{:else}
+						<Scroll size={16} />
+					{/if}
+					{survey.title}
+					<ChevronRight size={16} />
+				</button>
+			</li>
+		{/each}
 	</div>
 </ul>

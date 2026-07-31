@@ -82,7 +82,9 @@ export interface CreateFolderResponseDto {
 }
 
 export interface CreateQuestionTemplateDto {
+  /** @maxLength 255 */
   name: string | null;
+  /** @maxLength 2048 */
   description: string | null;
   /** @format uuid */
   surveyId: string;
@@ -161,8 +163,8 @@ export interface GetOpenSessionsDto {
 
 export interface GetQuestionTemplateResponseDto {
   /** @format uuid */
-  id?: string;
-  name?: string | null;
+  id: string;
+  name: string | null;
   description?: string | null;
   /** @format int32 */
   orderNumber?: number | null;
@@ -299,9 +301,6 @@ export interface UpdateFolderDto {
 export interface UpdateQuestionTemplateResponseDto {
   name?: string | null;
   description?: string | null;
-  /** @format int32 */
-  orderNumber?: number | null;
-  isArchived?: boolean | null;
   /** @format int32 */
   minValue?: number | null;
   /** @format int32 */
@@ -581,11 +580,12 @@ export class Api<
       data: UpdateQuestionTemplateResponseDto,
       params: RequestParams = {},
     ) =>
-      this.request<any, ProblemDetails>({
+      this.request<string, ProblemDetails>({
         path: `/api/v1/Questions/${questionId}`,
         method: "PATCH",
         body: data,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 

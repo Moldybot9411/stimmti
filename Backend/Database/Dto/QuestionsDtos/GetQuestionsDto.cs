@@ -2,8 +2,8 @@ using Backend.Models.Enums;
 
 public class GetQuestionTemplateResponseDto
 {
-    public Guid Id { get; set; }
-    public string? Name { get; set; }
+    public required Guid Id { get; set; }
+    public required string Name { get; set; }
     public string? Description { get; set; }
     public int? OrderNumber { get; set; }
     public bool? IsArchived { get; set; }

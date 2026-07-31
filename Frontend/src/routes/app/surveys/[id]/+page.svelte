@@ -1,28 +1,23 @@
 <script lang="ts">
 	import { QuestionTypeEnum, type GetQuestionTemplateResponseDto } from '$lib/api.js';
 	import { apiClient } from '$lib/apiClient.js';
-	import { Trash, Cog, GripVertical, Plus, HeartCrack } from '@lucide/svelte';
-	import type { PageData } from './$types.js';
+	import { Trash, Cog, GripVertical, Plus } from '@lucide/svelte';
 	import NewQuestionDialog from '$lib/components/NewQuestionDialog.svelte';
-	import { page } from '$app/state';
-	import { addToast } from '$lib/components/Toast/Toast.svelte';
-	import { invalidateAll } from '$app/navigation';
 	import PatchQuestion from '$lib/components/PatchQuestion.svelte';
+	import { dndzone, type DndEvent } from 'svelte-dnd-action';
 
-	const id = $derived(page.params.id);
-	$effect(() => {
-		if (!id) {
-			throw new Error('Survey ID fehlt');
-		}
-	});
-	let { data }: { data: PageData } = $props();
+	let { data } = $props();
+	const id = $derived(data.surveyId);
+
 	let newQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let patchQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let editingQuestionId: string | null = $state(null);
-	let questions = $state<GetQuestionTemplateResponseDto[]>([]);
+
+	let questions: GetQuestionTemplateResponseDto[] = $state([]);
 	$effect(() => {
-		questions = [...(data.questions as GetQuestionTemplateResponseDto[])];
+		questions = data.questions;
 	});
+
 	let draggedIndex = $state<number | null>(null);
 	let dragOverIndex = $state<number | null>(null);
 
@@ -34,51 +29,28 @@
 	}
 
 	// Drag and drop handlers for reordering questions
-	function handleDragStart(event: DragEvent, index: number) {
-		draggedIndex = index;
-		event.dataTransfer!.effectAllowed = 'move';
+	function handleDndConsider(e: CustomEvent<DndEvent<GetQuestionTemplateResponseDto>>) {
+		questions = e.detail.items;
 	}
 
-	function handleDragOver(event: DragEvent, index: number) {
-		event.preventDefault();
-		event.dataTransfer!.dropEffect = 'move';
-		dragOverIndex = index;
-	}
+	async function handleDndFinalize(e: CustomEvent<DndEvent<GetQuestionTemplateResponseDto>>) {
+		const previousQuestions = [...questions];
 
-	function handleDragLeave() {
-		dragOverIndex = null;
-	}
+		questions = e.detail.items;
 
-	async function handleDrop(event: DragEvent, targetIndex: number) {
-		event.preventDefault();
-		dragOverIndex = null;
+		const movedItemId = e.detail.info.id;
+		const newIndex = questions.findIndex((q) => q.id === movedItemId);
 
-		if (draggedIndex === null || draggedIndex === targetIndex) {
-			draggedIndex = null;
-			return;
+		if (newIndex !== -1) {
+			try {
+				await apiClient.api.v1QuestionsOrderPartialUpdate(movedItemId, {
+					orderNumber: newIndex + 1,
+				});
+			} catch (error) {
+				console.error('Failed to update question order', error);
+				questions = previousQuestions;
+			}
 		}
-
-		// Optimistic reorder locally
-		const prev = [...questions];
-		const [moved] = questions.splice(draggedIndex, 1);
-		questions.splice(targetIndex, 0, moved);
-		draggedIndex = null;
-
-		try {
-			await apiClient.api.v1QuestionsOrderPartialUpdate(moved.id!, {
-				orderNumber: targetIndex + 1,
-			});
-		} catch (e) {
-			console.error('Failed to update question order', e);
-			questions = prev;
-		} finally {
-			invalidateAll();
-		}
-	}
-
-	function handleDragEnd() {
-		draggedIndex = null;
-		dragOverIndex = null;
 	}
 </script>
 
@@ -98,52 +70,43 @@
 		</button>
 	</div>
 {:else}
-	<div class="flex w-full items-center justify-center pl-4">
-		<ul class="timeline timeline-vertical timeline-compact timeline-snap-icon">
-			{#each questions as question, index}
-				<li
-					draggable="true"
-					ondragstart={(e) => handleDragStart(e, index)}
-					ondragover={(e) => handleDragOver(e, index)}
-					ondragleave={handleDragLeave}
-					ondrop={(e) => handleDrop(e, index)}
-					ondragend={handleDragEnd}
-					class={[
-						'transition-opacity',
-						draggedIndex === index && 'opacity-30',
-						dragOverIndex === index &&
-							draggedIndex !== index &&
-							'rounded-box ring-2 ring-primary',
-					]}>
-					<div class="timeline-left">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 20 20"
-							fill="currentColor"
-							class="mb-6 h-10 w-10">
-							<path
-								fill-rule="evenodd"
-								d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-								clip-rule="evenodd" />
-						</svg>
-					</div>
-					<check> </check>
+	<div class="mx-auto flex w-fit flex-col items-start pl-4">
+		<ul
+			class="timeline timeline-vertical timeline-compact timeline-snap-icon"
+			use:dndzone={{
+				items: questions,
+				flipDurationMs: 300,
+				delayTouchStart: 300,
+				dropTargetStyle: {},
+			}}
+			onconsider={handleDndConsider}
+			onfinalize={handleDndFinalize}>
+			{#each questions as question, index (question.id)}
+				<li class="w-fit transition-opacity outline-none">
+					{#if index > 0}
+						<hr />
+					{/if}
 
-					<div class="timeline-start mb-10">
-						<div>Question {index + 1}</div>
+					<div class="timeline-middle min-h-8 rounded-full border-4 border-base-300 p-1">
+					</div>
+
+					<div class="timeline-end mb-4">
+						<div class="flex min-h-10 items-center font-bold">Question {index + 1}</div>
 						<div
-							class="grid w-fit min-w-100 grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm">
-							<!-- Left: Content -->
-							 <div class="align-center flex items-center justify-center opacity-40">
+							class="grid w-fit grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm">
+							<div class="align-center flex items-center justify-center opacity-40">
 								<GripVertical class="cursor-grab text-base-content/40" />
 							</div>
-							<div class="flex flex-col gap-1">
+							<div class="flex flex-col gap-1 text-balance wrap-anywhere">
 								<div class="content-start text-left text-lg font-bold">
 									{question.name} - {question.questionType}
 								</div>
-								<div class="overflow-wrap text-left text-sm break-words opacity-80">
-									Description: {question.description}
-								</div>
+
+								{#if question.description}
+									<div class="mb-2 text-left text-sm opacity-80">
+										{question.description}
+									</div>
+								{/if}
 
 								{#if question.questionType === QuestionTypeEnum.NumberScale}
 									<div class="text-left">
@@ -154,7 +117,8 @@
 										Answers Amount: {question.maxWords ?? 0}
 									</div>
 								{:else if question.answers?.length}
-									<div class="direction-row grid grid-cols-2 gap-2 text-accent-content">
+									<div
+										class="direction-row grid grid-cols-1 gap-2 text-accent-content md:grid-cols-2">
 										{#if question.answers.length > 8}
 											<div class="col-span-2 text-left text-sm opacity-80">
 												Note: Only the first 8 answers are displayed
@@ -170,47 +134,43 @@
 							</div>
 							<!-- Middle: Buttons (top-right) -->
 							<div class="flex gap-2">
-								<Trash
-									class="btn-sm  cursor-pointer"
+								<button
+									class="btn btn-ghost btn-error btn-xs"
 									onclick={() => deleteQuestion(question.id!)}
-									color="red"
-									size={20} />
-								<Cog
-									class="btn-sm cursor-pointer"
+									aria-label="Delete Question">
+									<Trash size={20} />
+								</button>
+
+								<button
+									class="btn btn-ghost btn-secondary btn-xs"
 									onclick={() => {
 										editingQuestionId = question.id!;
 										patchQuestionDialogRef?.showModal();
 									}}
-									color="gray"
-									size={20} />
+									aria-label="Question Settings">
+									<Cog size={20} />
+								</button>
 							</div>
-							<!-- Right: Grip Icon (middle-right) -->
-							
 						</div>
 					</div>
 
 					<hr />
 				</li>
 			{/each}
+		</ul>
 
+		<ul class="timeline timeline-vertical timeline-compact">
 			<li>
-				<div class="timeline-left mb-10 md:text-end">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-						class="h-10 w-10">
-						<path
-							fill-rule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-							clip-rule="evenodd" />
-					</svg>
+				<hr />
+
+				<div class="timeline-middle min-h-8 rounded-full border-4 border-base-300 p-1">
 				</div>
-				<div class="timeline-end mb-10">
+
+				<div class="timeline-end mt-2">
 					<button
 						class="btn btn-outline btn-primary btn-sm"
 						onclick={() => newQuestionDialogRef?.showModal()}>
-						<Plus class="mr-2 h-4 w-4" />
+						<Plus class="shrink-0" size={20} />
 						Add Question
 					</button>
 				</div>
@@ -218,18 +178,23 @@
 		</ul>
 	</div>
 {/if}
+
 <NewQuestionDialog
 	surveyId={id!}
 	bind:ref={newQuestionDialogRef}
-	onClose={async () => {
-		await invalidateAll();
+	onCreated={(question) => {
+		questions.push(question);
 	}} />
 
 <PatchQuestion
-	surveyId={id!}
+	surveyId={id}
 	questionId={editingQuestionId}
 	bind:ref={patchQuestionDialogRef}
-	onClose={async () => {
+	onSave={(res) => {
+		questions = questions.map((x) => (x.id === editingQuestionId ? res : x));
+
 		editingQuestionId = null;
-		await invalidateAll();
+	}}
+	onCancel={() => {
+		editingQuestionId = null;
 	}} />

@@ -3,15 +3,16 @@
 	import type { ClassValue } from 'svelte/elements';
 	import { addToast } from './Toast/Toast.svelte';
 	import { apiClient } from '$lib/apiClient';
+	import type { GetFolderResponseDto } from '$lib/api';
 
 	type Props = {
 		class?: ClassValue;
 		style?: string;
 		ref?: HTMLDialogElement;
-		onClose?: () => void | Promise<void>;
+		onCreate?: (folderName: GetFolderResponseDto) => void;
 	};
 
-	let { class: classes, style, ref = $bindable(), onClose }: Props = $props();
+	let { class: classes, style, ref = $bindable(), onCreate = () => {} }: Props = $props();
 
 	let formRef: HTMLFormElement | null = $state(null);
 	let isLoading = $state(false);
@@ -22,9 +23,8 @@
 		formRef?.reset();
 	}
 
-	async function handleClose() {
+	function handleClose() {
 		reset();
-		await onClose?.();
 	}
 
 	function createFolder() {
@@ -36,7 +36,7 @@
 			})
 			.then((result) => {
 				if (result.status === 200) {
-                    
+					onCreate({ folderId: result.data.folderId, name: title, surveys: [] });
 					ref?.close();
 				}
 			})

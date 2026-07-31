@@ -107,8 +107,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("varchar(2048)");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<bool>("IsArchived")
                         .HasColumnType("tinyint(1)");

@@ -1,20 +1,21 @@
 <script lang="ts">
 	import StartSessionButton from '$lib/components/startSessionButton.svelte';
-	import { goto, invalidateAll, replaceState } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { scrollIntoViewOnMount } from '$lib/actions/scrollaction.js';
-	import type { GetSurveyResponseDto } from '$lib/api';
+	import type {
+		GetFolderResponseDto,
+		GetSurveyResponseDto,
+		PaginatedSessionListDto,
+	} from '$lib/api';
 	import NewSurveyDialog from '$lib/components/NewSurveyDialog.svelte';
 	import {
-		Archive,
 		BadgePlus,
 		ChartNoAxesCombined,
 		Cog,
 		Form,
 		Heart,
-		Plus,
 		Scroll,
 		Trash,
-		SquareKanban,
 		X,
 	} from '@lucide/svelte';
 	import SessionList from '$lib/components/SessionList.svelte';
@@ -23,8 +24,25 @@
 	import { page } from '$app/state';
 	import NewFolderDialog from '$lib/components/NewFolderDialog.svelte';
 	import { apiClient } from '$lib/apiClient.js';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
+	let surveys: GetSurveyResponseDto[] = $state([]);
+	let folders: GetFolderResponseDto[] = $state([]);
+	let sessions: PaginatedSessionListDto = $state({ sessionCount: 0, sessionListInfo: [] });
+
+	let isLoading = $state(false);
+
+	onMount(() => {
+		isLoading = true;
+		Promise.all([data.surveys, data.folder, data.sessions])
+			.then((res) => {
+				surveys = res[0];
+				folders = res[1];
+				sessions = res[2];
+			})
+			.finally(() => (isLoading = false));
+	});
 
 	let menuTabs = [
 		{ label: 'Surveys', icon: Form },
@@ -45,11 +63,34 @@
 	}
 
 	async function deleteSurvey(surveyId: string) {
+		surveys = surveys.filter((x) => x.surveyId !== surveyId);
+
 		await apiClient.api.v1SurveyDelete(surveyId);
 		if (editingSurvey?.surveyId === surveyId) {
 			editingSurvey = null;
 		}
-		await invalidateAll();
+	}
+
+	async function favoriteCurrentSurvey() {
+		if (!editingSurvey) return;
+
+		const newFavoriteState = !editingSurvey.isFavorite;
+		editingSurvey.isFavorite = newFavoriteState;
+
+		surveys = surveys.map((survey) =>
+			survey.surveyId === editingSurvey?.surveyId
+				? { ...survey, isFavorite: newFavoriteState }
+				: survey
+		);
+
+		folders = folders.map((folder) => ({
+			...folder,
+			surveys: (folder.surveys ?? []).map((survey) => ({
+				...survey,
+			})),
+		}));
+
+		await apiClient.api.v1SurveyToggleFavoriteCreate(editingSurvey.surveyId);
 	}
 </script>
 
@@ -87,26 +128,16 @@
 				{activeViewId.charAt(0).toUpperCase() + activeViewId.slice(1)}
 			</h2>
 
-			{#if activeViewId === 'surveys'}
-				{#await Promise.all([data.surveys, data.folder])}
-					<ul class="menu w-full gap-2 rounded-box">
-						<li class="skeleton p-2">
-							<div class="skeleton-text">Loading Surveys...</div>
-						</li>
-					</ul>
-				{:then [surveys, folder]}
-					<SurveyList {surveys} {folder} bind:editingSurvey />
-				{/await}
+			{#if isLoading}
+				<ul class="menu w-full gap-2 rounded-box">
+					<li class="skeleton p-2">
+						<div class="skeleton-text">Loading...</div>
+					</li>
+				</ul>
+			{:else if activeViewId === 'surveys'}
+				<SurveyList {surveys} {folders} bind:editingSurvey />
 			{:else if activeViewId === 'sessions'}
-				{#await data.sessions}
-					<ul class="menu w-full gap-2 rounded-box">
-						<li class="skeleton p-2">
-							<div class="skeleton-text">Loading Sessions...</div>
-						</li>
-					</ul>
-				{:then sessionData}
-					<SessionList {sessionData} />
-				{/await}
+				<SessionList sessionData={sessions} />
 			{/if}
 		</div>
 	</div>
@@ -129,55 +160,40 @@
 					</button>
 				</div>
 
-				<div class="p-4">
+				<div class="flex flex-col gap-2 p-4">
 					{#if editingSurvey.description}
 						<p>Description: {editingSurvey.description}</p>
 					{/if}
 					{#if editingSurvey.questionAmount !== undefined}
-						<p>{editingSurvey.questionAmount} Questions</p>
+						<div class="badge badge-outline badge-neutral">
+							{editingSurvey.questionAmount} Questions
+						</div>
 					{/if}
-					<fieldset
-						class="fieldset w-full rounded-box border border-base-300 bg-base-100 p-4">
-						<legend class="fieldset-legend">Quick Options</legend>
-						<label class="label">
-							<button
-								class="animate btn btn-ghost btn-sm"
-								onclick={async () => {
-									await apiClient.api.v1SurveyToggleFavoriteCreate(
-										editingSurvey!.surveyId
-									);
-									if (editingSurvey) {
-										editingSurvey.isFavorite = !editingSurvey.isFavorite;
-									}
-									await invalidateAll();
-								}}>
-								{#if editingSurvey.isFavorite}
-									<Heart
-										size={20}
-										class="mr-2 text-primary"
-										fill="currentColor"
-										strokeWidth="2" /> Favorite
-								{:else}
-									<Heart size={20} class="mr-2 text-primary" strokeWidth="2" /> Favorite
-								{/if}
-							</button>
-						</label>
-						<label class="label">
-							<button
-								class="btn btn-ghost btn-sm"
-								onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}>
-								<Cog size={20} class="mr-2 text-gray-700" /> Settings
-							</button>
-						</label>
 
-						<label class="label">
-							<button
-								class="btn btn-ghost btn-sm"
-								onclick={() => deleteSurvey(editingSurvey!.surveyId)}>
-								<Trash size={20} class="mr-2 text-red-700" /> Delete
-							</button>
-						</label>
-					</fieldset>
+					<div class="divider my-0"></div>
+
+					<button class="btn justify-start btn-sm" onclick={favoriteCurrentSurvey}>
+						<Heart
+							size={20}
+							class="text-primary"
+							strokeWidth="2"
+							fill={editingSurvey.isFavorite ? 'currentColor' : 'transparent'} />
+						Favorite
+					</button>
+
+					<button
+						class="btn justify-start btn-sm"
+						onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}>
+						<Cog size={20} class="text-base-content" /> Settings
+					</button>
+
+					<button
+						class="btn justify-start btn-sm"
+						onclick={() => deleteSurvey(editingSurvey!.surveyId)}>
+						<Trash size={20} class="text-error" /> Delete
+					</button>
+
+					<div class="divider my-0"></div>
 				</div>
 
 				<div class="card-actions flex-col">
@@ -188,13 +204,10 @@
 	{/if}
 </div>
 
-<NewSurveyDialog
-	bind:ref={newSurveyDialogRef}
-	onClose={async () => {
-		await invalidateAll();
-	}} />
+<NewSurveyDialog bind:ref={newSurveyDialogRef} />
 <NewFolderDialog
 	bind:ref={newFolderRef}
-	onClose={async () => {
-		await invalidateAll();
+	onCreate={(el) => {
+		folders.push(el);
+		folders.sort((a, b) => a.name!.localeCompare(b.name!));
 	}} />

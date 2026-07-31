@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitalCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -253,7 +253,7 @@ namespace Backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     OrderNumber = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: false),
+                    Description = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     QuestionTemplateId = table.Column<Guid>(type: "char(36)", nullable: false),
                     IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
