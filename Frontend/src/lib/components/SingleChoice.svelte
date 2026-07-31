@@ -25,7 +25,7 @@
 	{#each options as option, index}
 		<label
 			class={[
-				'flex w-full cursor-pointer gap-2 rounded-box bg-base-100 p-2',
+				'flex w-full cursor-pointer gap-2 rounded-box bg-base-100 p-2 text-balance wrap-anywhere',
 				option.checked && 'outline outline-primary',
 			]}>
 			<input

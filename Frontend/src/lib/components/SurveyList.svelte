@@ -1,37 +1,94 @@
 <script lang="ts">
-	import type { GetFolderResponseDto, GetSurveyResponseDto } from '$lib/api';
+	import type {
+		GetSurveyResponseDto,
+		PaginatedFolderListDto,
+		PaginatedSurveyListDto,
+	} from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
-	import { ChevronRight, Folder, Scroll } from '@lucide/svelte';
+	import { ChevronRight, Folder, Heart, Scroll } from '@lucide/svelte';
+	import Pagination from './Pagination.svelte';
+	import { addToast } from './Toast/Toast.svelte';
 
 	type Props = {
-		surveys: GetSurveyResponseDto[];
-		folder: GetFolderResponseDto[];
+		surveys: PaginatedSurveyListDto;
+		folders: PaginatedFolderListDto;
 		editingSurvey?: GetSurveyResponseDto | null;
 	};
 
 	let {
-		surveys: initialSurveys,
-		folder: initialFolder,
+		surveys = $bindable(),
+		folders = $bindable(),
 		editingSurvey = $bindable(null),
 	}: Props = $props();
 
-	let surveys = $state<GetSurveyResponseDto[]>([]);
-	let folder = $state<GetFolderResponseDto[]>([]);
+	let surveyList = $derived(surveys.surveyListInfo ?? []);
+	let folderList = $derived(folders.folderListInfo ?? []);
+
+	const pageSize = 15;
+	let currentPage = $state(1);
+
+	// Hacky solution: partition pagination into folders and surveys in such a way that only the number of items specifier in pageSize is displayed
+	let numFolderPages = $derived(Math.ceil(folders.folderCount / pageSize));
+
+	let currentSurveyPage = $derived(currentPage - numFolderPages);
+
+	let firstSurveyPage = $derived(numFolderPages);
+	let numSurveysOnFirstPage = $derived(pageSize - (folders.folderCount % pageSize));
+
+	// Update surveys and folders when currentPage changes
+	let isInitalLoad = true;
+	$effect(() => {
+		currentPage;
+
+		if (isInitalLoad) {
+			isInitalLoad = false;
+
+			surveys.surveyListInfo = surveys.surveyListInfo?.slice(
+				0,
+				folders.folderListInfo?.length ?? pageSize
+			);
+			return;
+		}
+
+		apiClient.api
+			.v1SurveyFoldersList({ pageSize, currentPage })
+			.then((res) => {
+				if (res.status === 200) {
+					folders = res.data;
+				}
+			})
+			.catch((e) => {
+				addToast({ label: 'Error loading folder: ' + e, type: 'error', icon: Folder });
+			});
+
+		if (currentPage >= firstSurveyPage) {
+			apiClient.api
+				.v1SurveyList({
+					pageSize: currentSurveyPage === 0 ? numSurveysOnFirstPage : pageSize,
+					currentPage: currentSurveyPage === 0 ? 1 : currentSurveyPage,
+					skip: currentPage === firstSurveyPage ? 0 : numSurveysOnFirstPage,
+				})
+				.then((res) => {
+					if (res.status === 200) {
+						surveys = res.data;
+					}
+				})
+				.catch((e) => {
+					addToast({ label: 'Error loading folder: ' + e, type: 'error', icon: Folder });
+				});
+		} else {
+			surveys.surveyListInfo = [];
+		}
+	});
+
 	let draggedSurveyId = $state<string | null>(null);
 	let hoveredFolderId = $state<string | null>(null);
-
-	$effect(() => {
-		surveys = initialSurveys.map((survey) => ({ ...survey }));
-		folder = initialFolder.map((item) => ({
-			...item,
-			surveys: (item.surveys ?? []).map((survey) => ({ ...survey })),
-		}));
-	});
+	let hoveredRootArea = $state(false);
 
 	function snapshotLibraryState() {
 		return {
-			surveys: surveys.map((survey) => ({ ...survey })),
-			folder: folder.map((item) => ({
+			surveys: surveyList.map((survey) => ({ ...survey })),
+			folder: folderList.map((item) => ({
 				...item,
 				surveys: (item.surveys ?? []).map((survey) => ({ ...survey })),
 			})),
@@ -39,13 +96,13 @@
 	}
 
 	function takeSurveyFromLibrary(surveyId: string) {
-		const rootIndex = surveys.findIndex((survey) => survey.surveyId === surveyId);
+		const rootIndex = surveyList.findIndex((survey) => survey.surveyId === surveyId);
 		if (rootIndex !== -1) {
-			const [survey] = surveys.splice(rootIndex, 1);
+			const [survey] = surveyList.splice(rootIndex, 1);
 			return survey;
 		}
 
-		for (const item of folder) {
+		for (const item of folders.folderListInfo ?? []) {
 			const nestedSurveys = item.surveys ?? [];
 			const nestedIndex = nestedSurveys.findIndex((survey) => survey.surveyId === surveyId);
 			if (nestedIndex !== -1) {
@@ -59,7 +116,7 @@
 	}
 
 	function insertSurveyIntoFolder(folderId: string, survey: GetSurveyResponseDto) {
-		const targetFolder = folder.find((item) => item.folderId === folderId);
+		const targetFolder = folderList.find((item) => item.folderId === folderId);
 		if (!targetFolder) return false;
 
 		targetFolder.surveys = [...(targetFolder.surveys ?? []), { ...survey, folderId }].sort(
@@ -79,6 +136,7 @@
 	function handleDragEnd() {
 		draggedSurveyId = null;
 		hoveredFolderId = null;
+		hoveredRootArea = false;
 	}
 
 	function handleFolderDragOver(event: DragEvent, folderId: string) {
@@ -91,6 +149,50 @@
 		if (hoveredFolderId === folderId) hoveredFolderId = null;
 	}
 
+	function handleRootDragOver(event: DragEvent) {
+		event.preventDefault();
+		hoveredRootArea = true;
+		if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+	}
+
+	function handleRootDragLeave() {
+		hoveredRootArea = false;
+	}
+
+	async function handleRootDrop(event: DragEvent) {
+		event.preventDefault();
+		const surveyId = draggedSurveyId ?? event.dataTransfer?.getData('application/x-survey-id');
+		hoveredRootArea = false;
+		draggedSurveyId = null;
+
+		if (!surveyId) return;
+
+		const existingSurvey =
+			surveyList.find((s) => s.surveyId === surveyId) ??
+			folderList.flatMap((item) => item.surveys ?? []).find((s) => s.surveyId === surveyId);
+		if (!existingSurvey || existingSurvey.folderId == null) return;
+
+		const previousState = snapshotLibraryState();
+		const removedSurvey = takeSurveyFromLibrary(surveyId);
+		if (!removedSurvey) return;
+
+		surveyList = [...surveyList, { ...removedSurvey, folderId: null }].sort((a, b) =>
+			(a.title ?? '').localeCompare(b.title ?? '')
+		);
+
+		try {
+			await apiClient.api.v1SurveyPartialUpdate(surveyId, {
+				title: removedSurvey.title,
+				description: removedSurvey.description ?? null,
+				removeFromFolder: true,
+			});
+		} catch (error) {
+			console.error('Error removing survey from folder:', error);
+			surveyList = previousState.surveys;
+			folderList = previousState.folder;
+		}
+	}
+
 	async function handleFolderDrop(event: DragEvent, folderId: string) {
 		event.preventDefault();
 		const surveyId = draggedSurveyId ?? event.dataTransfer?.getData('application/x-survey-id');
@@ -100,8 +202,8 @@
 		if (!surveyId) return;
 
 		const existingSurvey =
-			surveys.find((survey) => survey.surveyId === surveyId) ??
-			folder
+			surveyList.find((survey) => survey.surveyId === surveyId) ??
+			folderList
 				.flatMap((item) => item.surveys ?? [])
 				.find((survey) => survey.surveyId === surveyId);
 		if (!existingSurvey || existingSurvey.folderId === folderId) return;
@@ -112,8 +214,8 @@
 
 		const inserted = insertSurveyIntoFolder(folderId, removedSurvey);
 		if (!inserted) {
-			surveys = previousState.surveys;
-			folder = previousState.folder;
+			surveyList = previousState.surveys;
+			folderList = previousState.folder;
 			return;
 		}
 
@@ -125,72 +227,109 @@
 			});
 		} catch (error) {
 			console.error('Error moving survey to folder:', error);
-			surveys = previousState.surveys;
-			folder = previousState.folder;
+			surveyList = previousState.surveys;
+			folderList = previousState.folder;
 		}
 	}
 </script>
 
-<ul class="menu w-full gap-2 rounded-box">
-	{#each folder as f, index (f.folderId)}
-		<li>
-			<details>
-				<summary
-					class={[
-						'text-accent',
-						'text-info',
-						'text-success',
-						'text-warning',
-						'text-error',
-					][index % 5]}
-					ondragover={(event) => handleFolderDragOver(event, f.folderId)}
-					ondragleave={() => handleFolderDragLeave(f.folderId)}
-					ondrop={(event) => handleFolderDrop(event, f.folderId)}>
-					<Folder size={16} />
-					<span class="min-w-0 truncate">{f.name}</span>
-					<span class="badge badge-sm">Items: {f.surveys?.length ?? 0}</span>
-				</summary>
-				<ul>
-					{#each f.surveys ?? [] as survey (survey.surveyId)}
-						<li>
-							<button
-								draggable="true"
-								ondragstart={(event) => handleDragStart(event, survey.surveyId)}
-								ondragend={handleDragEnd}
-								onclick={() => (editingSurvey = survey)}
-								class={[
-									editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
-									draggedSurveyId === survey.surveyId && 'opacity-100',
-								]}>
-								<Scroll size={16} />
-								<span class="min-w-0 truncate">
+{#if surveys.surveyCount === 0 && folders.folderCount === 0}
+	<span class="font-bold text-base-content/60">No surveys yet</span>
+{:else}
+	<ul class="menu w-full rounded-box bg-base-200">
+		{#each folderList as f, index (f.folderId)}
+			<li>
+				<details>
+					<summary
+						class={[
+							[
+								'text-accent',
+								'text-info',
+								'text-success',
+								'text-warning',
+								'text-error',
+							][index % 5],
+							hoveredFolderId === f.folderId &&
+								'rounded-box ring-2 ring-base-content',
+						]}
+						ondragover={(event) => handleFolderDragOver(event, f.folderId)}
+						ondragleave={() => handleFolderDragLeave(f.folderId)}
+						ondrop={(event) => handleFolderDrop(event, f.folderId)}>
+						<Folder size={16} />
+						{f.name}
+						<span class="ml-auto badge badge-sm">Items: {f.surveys?.length ?? 0}</span>
+					</summary>
+					<ul>
+						{#each f.surveys ?? [] as survey (survey.surveyId)}
+							<li>
+								<button
+									draggable="true"
+									ondragstart={(event) => handleDragStart(event, survey.surveyId)}
+									ondragend={handleDragEnd}
+									onclick={() => (editingSurvey = survey)}
+									class={[
+										editingSurvey?.surveyId === survey.surveyId &&
+											'bg-base-300',
+										draggedSurveyId === survey.surveyId && 'opacity-100',
+									]}>
+									{#if survey.isFavorite}
+										<Heart
+											size={16}
+											class="text-primary"
+											fill="currentColor"
+											strokeWidth="2" />
+									{:else}
+										<Scroll size={16} />
+									{/if}
 									{survey.title}
-								</span>
-								<ChevronRight size={16} />
-							</button>
-						</li>
-					{/each}
-				</ul>
-			</details>
-		</li>
-	{/each}
-	{#each surveys as survey (survey.surveyId)}
-		<li>
-			<button
-				draggable="true"
-				ondragstart={(event) => handleDragStart(event, survey.surveyId)}
-				ondragend={handleDragEnd}
-				onclick={() => (editingSurvey = survey)}
-				class={[
-					editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
-					draggedSurveyId === survey.surveyId && 'opacity-60',
-				]}>
-				<Scroll size={16} />
-				<span class="min-w-0 truncate">
-					{survey.title}
-				</span>
-				<ChevronRight size={16} />
-			</button>
-		</li>
-	{/each}
-</ul>
+									<ChevronRight size={16} />
+								</button>
+							</li>
+						{/each}
+					</ul>
+				</details>
+			</li>
+		{/each}
+		<ul
+			class={[
+				'rounded-box transition-all',
+				hoveredRootArea && draggedSurveyId != null && 'ring-2 ring-base-content',
+			]}
+			ondragover={handleRootDragOver}
+			ondragleave={handleRootDragLeave}
+			ondrop={handleRootDrop}>
+			{#each surveyList as survey (survey.surveyId)}
+				<li>
+					<button
+						draggable="true"
+						ondragstart={(event) => handleDragStart(event, survey.surveyId)}
+						ondragend={handleDragEnd}
+						onclick={() => (editingSurvey = survey)}
+						class={[
+							editingSurvey?.surveyId === survey.surveyId && 'bg-base-300',
+							draggedSurveyId === survey.surveyId && 'opacity-60',
+						]}>
+						{#if survey.isFavorite}
+							<Heart
+								size={16}
+								class="text-primary"
+								fill="currentColor"
+								strokeWidth="2" />
+						{:else}
+							<Scroll size={16} />
+						{/if}
+						{survey.title}
+						<ChevronRight size={16} />
+					</button>
+				</li>
+			{/each}
+		</ul>
+	</ul>
+
+	<ul>
+		<div class="divider"></div>
+		<Pagination
+			numPages={Math.ceil((surveys.surveyCount + folders.folderCount) / pageSize)}
+			bind:currentPage />
+	</ul>
+{/if}

@@ -17,7 +17,6 @@ public class SessionController : ControllerBase
 {
     private readonly StimmtiDbContext _context;
     private readonly UserManager<User> _userManager;
-    private readonly ILogger<UserController> _logger;
     private readonly IApiMapper _mapper;
     private readonly IHubContext<DefaultHub, ISessionHubClient> _hubContext;
     private readonly IAnswerService _answerService;
@@ -25,7 +24,6 @@ public class SessionController : ControllerBase
     public SessionController(
         StimmtiDbContext context,
         UserManager<User> userManager,
-        ILogger<UserController> logger,
         IApiMapper mapper,
         IHubContext<DefaultHub, ISessionHubClient> hubContext,
         IAnswerService answerService
@@ -33,7 +31,6 @@ public class SessionController : ControllerBase
     {
         _context = context;
         _userManager = userManager;
-        _logger = logger;
         _mapper = mapper;
         _hubContext = hubContext;
         _answerService = answerService;
@@ -52,7 +49,7 @@ public class SessionController : ControllerBase
         if (user == null) return Unauthorized();
 
         var survey = await _context.Surveys
-            .Include(x => x.QuestionTemplates)
+            .Include(x => x.QuestionTemplates.Where(y => y.IsArchived == false))
             .FirstOrDefaultAsync(x => x.Id == data.SurveyId);
 
         if (survey == null)

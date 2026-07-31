@@ -9,7 +9,7 @@ public class AnswerOption
 
     public required int OrderNumber { get; set; }
 
-    [MaxLength(2048)]
+    [MaxLength(255)]
     public required string Description { get; set; }
 
     public required Guid QuestionTemplateId { get; set; }

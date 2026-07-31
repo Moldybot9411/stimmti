@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { GetOpenSessionsDto } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
-	import { DoorOpen, SquareKanban, X } from '@lucide/svelte';
+	import { SquareKanban, X } from '@lucide/svelte';
 	import { addToast } from './Toast/Toast.svelte';
-	import { goto, invalidateAll } from '$app/navigation';
 
 	type Props = {
 		openSessions?: GetOpenSessionsDto[];
@@ -13,7 +12,7 @@
 	// svelte-ignore state_referenced_locally
 	var localSessions = $state(openSessions);
 
-	let fixDialog: HTMLDialogElement | undefined;
+	let fixDialog: HTMLDialogElement | undefined = $state();
 	let loading = $state(false);
 	let openSessionSelect = $state<{ checked: boolean; data: GetOpenSessionsDto }[]>([]);
 
