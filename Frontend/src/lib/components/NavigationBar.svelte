@@ -97,7 +97,7 @@
 <div class="navbar rounded-b-box bg-base-100 shadow-sm">
 	<div class="mx-auto navbar-start flex-col gap-2 md:flex-row">
 		<div class="mr-0 flex md:mr-2">
-			<a href="/app" class="btn btn-ghost px-0" aria-label="Go to homepage">
+			<a href="/" class="btn btn-ghost px-2" aria-label="Go to homepage">
 				<img src={logoSrc} alt="Stimmti Logo" class="h-10 w-auto object-contain" />
 			</a>
 

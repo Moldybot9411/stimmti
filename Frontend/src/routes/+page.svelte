@@ -16,6 +16,7 @@
 	import wordcloud from '$lib/assets/WordCloud.svg';
 	import numberscale from '$lib/assets/NumberScale.svg';
 	import freetext from '$lib/assets/FreeText.svg';
+	import { themeManager } from '$lib/Theme.svelte';
 
 	const features = [
 		{
@@ -70,11 +71,17 @@
 			description: 'Participants submit text providing detailed feedback',
 		},
 	];
+
+	const logoSrc = $derived(
+		themeManager.theme === 'light'
+			? '/stimmti-logo-notagline.svg'
+			: '/stimmti-logo-notagline-light.svg'
+	);
 </script>
 
-<div class="navbar bg-base-100 shadow-sm">
-	<div class="flex-1">
-		<span class="px-2 text-xl font-extrabold">Stimmti</span>
+<div class="navbar flex-col bg-base-100 shadow-sm md:flex-row">
+	<div class="w-fit flex-1">
+		<img src={logoSrc} alt="Stimmti Logo" class="w-autoobject-contain h-10" />
 	</div>
 	<div class="flex items-center">
 		<ThemeToggle />

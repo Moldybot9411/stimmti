@@ -89,7 +89,7 @@
 					<div class="timeline-end mb-4">
 						<div class="flex min-h-10 items-center font-bold">Question {index + 1}</div>
 						<div
-							class="grid w-fit grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-lg border border-base-300 bg-base-100 p-4 shadow-sm">
+							class="grid w-fit grid-cols-[1fr_auto_auto] items-start gap-4 timeline-box rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
 							<div class="align-center flex items-center justify-center opacity-40">
 								<GripVertical class="cursor-grab text-base-content/40" />
 							</div>
@@ -121,7 +121,8 @@
 											</div>
 										{/if}
 										{#each question.answers as answer}
-											<div class="flex justify-center rounded bg-accent p-2">
+											<div
+												class="flex justify-center rounded-box bg-accent p-2">
 												{answer}
 											</div>
 										{/each}
@@ -129,12 +130,12 @@
 								{/if}
 							</div>
 							<!-- Middle: Buttons (top-right) -->
-							<div class="flex gap-2">
+							<div class="flex gap-1">
 								<button
 									class="btn btn-ghost btn-error btn-xs"
 									onclick={() => deleteQuestion(question.id!)}
 									aria-label="Delete Question">
-									<Trash size={20} />
+									<Trash size={16} />
 								</button>
 
 								<button
@@ -144,7 +145,7 @@
 										patchQuestionDialogRef?.showModal();
 									}}
 									aria-label="Question Settings">
-									<Cog size={20} />
+									<Cog size={16} />
 								</button>
 							</div>
 						</div>
