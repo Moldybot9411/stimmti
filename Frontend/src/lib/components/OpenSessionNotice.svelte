@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { GetOpenSessionsDto } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
-	import { DoorOpen, SquareKanban, X } from '@lucide/svelte';
+	import { SquareKanban, X } from '@lucide/svelte';
 	import { addToast } from './Toast/Toast.svelte';
-	import { goto, invalidateAll } from '$app/navigation';
 
 	type Props = {
 		openSessions?: GetOpenSessionsDto[];

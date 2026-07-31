@@ -4,6 +4,7 @@ using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
@@ -74,17 +75,23 @@ public class SurveyController : ControllerBase
     [HttpGet]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(IEnumerable<GetSurveyResponseDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetSurveys()
+    [ProducesResponseType(typeof(PaginatedSurveyListDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSurveys([FromQuery] int pageSize = 10, [FromQuery] int currentPage = 1, [FromQuery] int skip = 0)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var surveys = await _dbContext.Surveys
+        var query = _dbContext.Surveys
             .AsNoTracking()
-            .Where(x => x.OwnerId == user.Id && x.FolderId == null && !x.IsArchived)
+            .Where(x => x.OwnerId == user.Id && x.FolderId == null && !x.IsArchived);
+
+        var surveyCount = await query.CountAsync();
+
+        var surveyListInfo = await query
             .OrderByDescending(x => x.IsFavorite)
             .ThenBy(x => x.Title)
+            .Skip((currentPage - 1) * pageSize + skip)
+            .Take(pageSize)
             .Select(x => new GetSurveyResponseDto
             {
                 SurveyId = x.Id,
@@ -96,7 +103,13 @@ public class SurveyController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(surveys);
+        var response = new PaginatedSurveyListDto
+        {
+            SurveyCount = surveyCount,
+            SurveyListInfo = surveyListInfo
+        };
+
+        return Ok(response);
     }
 
     [HttpPatch("{surveyId}")]
@@ -160,16 +173,22 @@ public class SurveyController : ControllerBase
     [HttpGet("folders")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(IEnumerable<GetFolderResponseDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<GetFolderResponseDto>>> GetFolders()
+    [ProducesResponseType(typeof(PaginatedFolderListDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFolders([FromQuery] int pageSize = 10, [FromQuery] int currentPage = 1)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var folders = await _dbContext.Folders
+        var query = _dbContext.Folders
             .AsNoTracking()
-            .Where(x => x.OwnerId == user.Id)
+            .Where(x => x.OwnerId == user.Id);
+
+        var folderCount = await query.CountAsync();
+
+        var folderListInfo = await query
             .OrderBy(x => x.Name)
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new GetFolderResponseDto
             {
                 FolderId = x.Id,
@@ -191,7 +210,13 @@ public class SurveyController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(folders);
+        var response = new PaginatedFolderListDto
+        {
+            FolderCount = folderCount,
+            folderListInfo = folderListInfo
+        };
+
+        return Ok(response);
     }
 
     [HttpPatch("folders/{folderId}")]

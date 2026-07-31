@@ -1,11 +1,12 @@
 <script lang="ts">
 	import StartSessionButton from '$lib/components/startSessionButton.svelte';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { scrollIntoViewOnMount } from '$lib/actions/scrollaction.js';
 	import type {
-		GetFolderResponseDto,
 		GetSurveyResponseDto,
+		PaginatedFolderListDto,
 		PaginatedSessionListDto,
+		PaginatedSurveyListDto,
 	} from '$lib/api';
 	import NewSurveyDialog from '$lib/components/NewSurveyDialog.svelte';
 	import {
@@ -24,16 +25,15 @@
 	import { page } from '$app/state';
 	import NewFolderDialog from '$lib/components/NewFolderDialog.svelte';
 	import { apiClient } from '$lib/apiClient.js';
-	import { onMount } from 'svelte';
 
 	let { data } = $props();
-	let surveys: GetSurveyResponseDto[] = $state([]);
-	let folders: GetFolderResponseDto[] = $state([]);
+	let surveys: PaginatedSurveyListDto = $state({ surveyCount: 0, surveyListInfo: [] });
+	let folders: PaginatedFolderListDto = $state({ folderCount: 0, folderListInfo: [] });
 	let sessions: PaginatedSessionListDto = $state({ sessionCount: 0, sessionListInfo: [] });
 
 	let isLoading = $state(false);
 
-	onMount(() => {
+	$effect(() => {
 		isLoading = true;
 		Promise.all([data.surveys, data.folder, data.sessions])
 			.then((res) => {
@@ -62,8 +62,35 @@
 		activeViewId = viewId;
 	}
 
+	function removeSurveyFromLibrary(surveyId: string) {
+		if (surveys.surveyListInfo) {
+			const rootIndex = surveys.surveyListInfo.findIndex(
+				(survey) => survey.surveyId === surveyId
+			);
+			if (rootIndex !== -1) {
+				return surveys.surveyListInfo.splice(rootIndex, 1)[0];
+			}
+		}
+
+		if (folders.folderListInfo) {
+			for (const folder of folders.folderListInfo) {
+				const nestedSurveys = folder.surveys ?? [];
+				const nestedIndex = nestedSurveys.findIndex(
+					(survey) => survey.surveyId === surveyId
+				);
+				if (nestedIndex !== -1) {
+					const [survey] = nestedSurveys.splice(nestedIndex, 1);
+					folder.surveys = nestedSurveys;
+					return survey;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	async function deleteSurvey(surveyId: string) {
-		surveys = surveys.filter((x) => x.surveyId !== surveyId);
+		removeSurveyFromLibrary(surveyId);
 
 		await apiClient.api.v1SurveyDelete(surveyId);
 		if (editingSurvey?.surveyId === surveyId) {
@@ -76,19 +103,6 @@
 
 		const newFavoriteState = !editingSurvey.isFavorite;
 		editingSurvey.isFavorite = newFavoriteState;
-
-		surveys = surveys.map((survey) =>
-			survey.surveyId === editingSurvey?.surveyId
-				? { ...survey, isFavorite: newFavoriteState }
-				: survey
-		);
-
-		folders = folders.map((folder) => ({
-			...folder,
-			surveys: (folder.surveys ?? []).map((survey) => ({
-				...survey,
-			})),
-		}));
 
 		await apiClient.api.v1SurveyToggleFavoriteCreate(editingSurvey.surveyId);
 	}
@@ -135,7 +149,7 @@
 					</li>
 				</ul>
 			{:else if activeViewId === 'surveys'}
-				<SurveyList {surveys} {folders} bind:editingSurvey />
+				<SurveyList bind:surveys bind:folders bind:editingSurvey />
 			{:else if activeViewId === 'sessions'}
 				<SessionList sessionData={sessions} />
 			{/if}
@@ -208,6 +222,6 @@
 <NewFolderDialog
 	bind:ref={newFolderRef}
 	onCreate={(el) => {
-		folders.push(el);
-		folders.sort((a, b) => a.name!.localeCompare(b.name!));
+		folders.folderListInfo?.push(el);
+		folders.folderListInfo?.sort((a, b) => a.name!.localeCompare(b.name!));
 	}} />

@@ -13,13 +13,7 @@
 	let patchQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let editingQuestionId: string | null = $state(null);
 
-	let questions: GetQuestionTemplateResponseDto[] = $state([]);
-	$effect(() => {
-		questions = data.questions;
-	});
-
-	let draggedIndex = $state<number | null>(null);
-	let dragOverIndex = $state<number | null>(null);
+	let questions: GetQuestionTemplateResponseDto[] = $derived(data.questions);
 
 	function deleteQuestion(questionId: string) {
 		questions = questions.filter((q) => q.id !== questionId);
@@ -78,16 +72,18 @@
 				flipDurationMs: 300,
 				delayTouchStart: 300,
 				dropTargetStyle: {},
+				dropAnimationDisabled: true,
 			}}
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}>
 			{#each questions as question, index (question.id)}
 				<li class="w-fit transition-opacity outline-none">
 					{#if index > 0}
-						<hr />
+						<hr class="bg-base-content/40" />
 					{/if}
 
-					<div class="timeline-middle min-h-8 rounded-full border-4 border-base-300 p-1">
+					<div
+						class="timeline-middle min-h-8 rounded-full border-4 border-base-content/40 p-1">
 					</div>
 
 					<div class="timeline-end mb-4">
@@ -154,16 +150,17 @@
 						</div>
 					</div>
 
-					<hr />
+					<hr class="bg-base-content/40" />
 				</li>
 			{/each}
 		</ul>
 
 		<ul class="timeline timeline-vertical timeline-compact">
 			<li>
-				<hr />
+				<hr class="bg-base-content/40" />
 
-				<div class="timeline-middle min-h-8 rounded-full border-4 border-base-300 p-1">
+				<div
+					class="timeline-middle min-h-8 rounded-full border-4 border-base-content/40 p-1">
 				</div>
 
 				<div class="timeline-end mt-2">

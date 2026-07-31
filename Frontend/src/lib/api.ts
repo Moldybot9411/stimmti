@@ -222,10 +222,22 @@ export interface NumberResultDto {
   count: number;
 }
 
+export interface PaginatedFolderListDto {
+  /** @format int32 */
+  folderCount: number;
+  folderListInfo?: GetFolderResponseDto[] | null;
+}
+
 export interface PaginatedSessionListDto {
   /** @format int32 */
   sessionCount: number;
   sessionListInfo?: SessionListInfoDto[] | null;
+}
+
+export interface PaginatedSurveyListDto {
+  /** @format int32 */
+  surveyCount: number;
+  surveyListInfo?: GetSurveyResponseDto[] | null;
 }
 
 export interface PatchQuestionTemplateOrderDto {
@@ -849,10 +861,30 @@ export class Api<
      * @name V1SurveyList
      * @request GET:/api/v1/Survey
      */
-    v1SurveyList: (params: RequestParams = {}) =>
-      this.request<GetSurveyResponseDto[], ProblemDetails>({
+    v1SurveyList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 10
+         */
+        pageSize?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentPage?: number;
+        /**
+         * @format int32
+         * @default 0
+         */
+        skip?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedSurveyListDto, ProblemDetails>({
         path: `/api/v1/Survey`,
         method: "GET",
+        query: query,
         format: "json",
         ...params,
       }),
@@ -918,10 +950,25 @@ export class Api<
      * @name V1SurveyFoldersList
      * @request GET:/api/v1/Survey/folders
      */
-    v1SurveyFoldersList: (params: RequestParams = {}) =>
-      this.request<GetFolderResponseDto[], ProblemDetails>({
+    v1SurveyFoldersList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 10
+         */
+        pageSize?: number;
+        /**
+         * @format int32
+         * @default 1
+         */
+        currentPage?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PaginatedFolderListDto, ProblemDetails>({
         path: `/api/v1/Survey/folders`,
         method: "GET",
+        query: query,
         format: "json",
         ...params,
       }),
