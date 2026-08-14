@@ -6,48 +6,78 @@
 		Activity,
 		ArrowRight,
 		BadgePlus,
-		BadgeQuestionMark,
 		BookDashed,
 		CirclePlus,
 		LoaderCircle,
 		MessagesSquare,
-		X,
 		Zap,
-		type LucideIcon,
 	} from '@lucide/svelte';
-	import { createQuickPollTemplate } from '$lib/templates/quickPollTemplate.js';
-	import { createFeedbackFormTemplate } from '$lib/templates/feedbackFormTemplate.js';
-	import { createTeamPulseTemplate } from '$lib/templates/teamPulseTemplate.js';
-	import { apiClient } from '$lib/apiClient.js';
 	import { goto } from '$app/navigation';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
+	import { TemplateType, type ProblemDetails } from '$lib/api.js';
+	import { apiClient } from '$lib/apiClient.js';
+	import axios from 'axios';
+	import NameDescriptionDialog from '$lib/components/NameDescriptionDialog.svelte';
 
 	let { data } = $props();
 
+	let templateCreateDialogRef: HTMLDialogElement | undefined = $state();
 	let templateLoading = $state(false);
+	let selectedTemplateType: TemplateType | null = $state(null);
+
 	let templates = [
 		{
 			label: 'Quick Poll',
 			description: 'A simple single-question poll to gauge immediate reactions.',
 			icon: Zap,
-			createFunction: createQuickPollTemplate,
+			templateType: TemplateType.QuickPoll,
 		},
 		{
 			label: 'Feedback Form',
 			description:
 				'Collect detailed Feedback after a meeting or an event with 10 insightful questions.',
 			icon: MessagesSquare,
-			createFunction: createFeedbackFormTemplate,
+			templateType: TemplateType.FeedbackForm,
 		},
 		{
 			label: 'Team Pulse',
 			description: 'Check in on team morale, workload, and project confidence',
 			icon: Activity,
-			createFunction: createTeamPulseTemplate,
+			templateType: TemplateType.TeamPulse,
 		},
 	];
 
 	let newSurveyDialogRef: HTMLDialogElement | undefined = $state();
+
+	function spawnTemplate(title: string, description: string, type: TemplateType) {
+		templateLoading = true;
+
+		apiClient.api
+			.v1TemplateCreate({
+				title,
+				description,
+				templateType: type,
+			})
+			.then((res) => {
+				if (res.status === 200) {
+					goto(`/app/surveys/${res.data}`);
+				}
+			})
+			.catch((e) => {
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					let title = e.response?.data.detail ?? 'Unknown Error';
+
+					addToast({
+						label: 'Error creating template: ' + title,
+						type: 'error',
+						icon: BookDashed,
+					});
+				}
+			})
+			.finally(() => {
+				templateLoading = false;
+			});
+	}
 </script>
 
 <div
@@ -87,21 +117,9 @@
 						disabled={templateLoading}
 						class="btn btn-block btn-outline btn-accent"
 						onclick={() => {
-							templateLoading = true;
+							selectedTemplateType = template.templateType;
 
-							template
-								.createFunction()
-								.then((res) => {
-									goto(`/app/surveys/${res}`);
-								})
-								.catch((e) => {
-									addToast({
-										label: 'Error instancing template: ' + e,
-										type: 'error',
-										icon: BookDashed,
-									});
-								})
-								.finally(() => (templateLoading = false));
+							templateCreateDialogRef?.showModal();
 						}}>
 						{#if templateLoading}
 							<LoaderCircle class="animate-spin" />
@@ -148,3 +166,14 @@
 </div>
 
 <NewSurveyDialog bind:ref={newSurveyDialogRef} />
+
+<NameDescriptionDialog
+	title="New Template"
+	buttonText="Create Survey"
+	bind:loading={templateLoading}
+	bind:ref={templateCreateDialogRef}
+	onSubmit={(title, description) => {
+		if (selectedTemplateType === null) return;
+
+		spawnTemplate(title, description, selectedTemplateType);
+	}} />

@@ -10,6 +10,12 @@
  * ---------------------------------------------------------------
  */
 
+export enum TemplateType {
+  QuickPoll = "QuickPoll",
+  FeedbackForm = "FeedbackForm",
+  TeamPulse = "TeamPulse",
+}
+
 export enum QuestionTypeEnum {
   SingleChoice = "SingleChoice",
   MultipleChoice = "MultipleChoice",
@@ -117,7 +123,7 @@ export interface CreateSessionResponseDto {
 
 export interface CreateSurveyDto {
   /** @maxLength 255 */
-  title?: string | null;
+  title: string | null;
   /** @maxLength 2048 */
   description?: string | null;
   /** @format uuid */
@@ -299,6 +305,14 @@ export interface SessionStatisticsDto {
   openedAt: string;
 }
 
+export interface SpawnTemplateDto {
+  /** @maxLength 255 */
+  title: string | null;
+  /** @maxLength 2048 */
+  description?: string | null;
+  templateType: TemplateType;
+}
+
 export interface SurveyStatisticsDto {
   name: string | null;
   /** @format int32 */
@@ -307,7 +321,7 @@ export interface SurveyStatisticsDto {
 
 export interface UpdateFolderDto {
   /** @maxLength 255 */
-  name?: string | null;
+  name: string | null;
 }
 
 export interface UpdateQuestionTemplateResponseDto {
@@ -341,7 +355,9 @@ export interface UserAuthDto {
 }
 
 export interface UserLoginDto {
+  /** @maxLength 64 */
   password: string | null;
+  /** @maxLength 20 */
   username: string | null;
   staySignedIn?: boolean;
 }
@@ -354,9 +370,10 @@ export interface UserPasswordDto {
 }
 
 export interface UserRegisterDto {
-  username?: string | null;
-  password?: string | null;
-  email?: string | null;
+  /** @maxLength 20 */
+  username: string | null;
+  /** @maxLength 64 */
+  password: string | null;
 }
 
 export interface UserUsernameAvailabilityResponseDto {
@@ -1022,6 +1039,23 @@ export class Api<
       this.request<any, ProblemDetails>({
         path: `/api/v1/Survey/${surveyId}/toggle-favorite`,
         method: "POST",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Template
+     * @name V1TemplateCreate
+     * @request POST:/api/v1/Template
+     */
+    v1TemplateCreate: (data: SpawnTemplateDto, params: RequestParams = {}) =>
+      this.request<string, ProblemDetails>({
+        path: `/api/v1/Template`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
