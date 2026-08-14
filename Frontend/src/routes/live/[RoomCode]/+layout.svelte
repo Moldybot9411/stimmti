@@ -134,7 +134,9 @@
 						aria-label={hub.connected ? 'success' : 'error'}
 						class={['status', hub.connected ? 'status-success' : 'status-error']}>
 					</div>
-					{hub.connected ? 'Connected' : 'Disconnected'}
+					<span class="hidden md:inline">
+						{hub.connected ? 'Connected' : 'Disconnected'}
+					</span>
 				</div>
 			</div>
 			<div class="navbar-center font-bold opacity-80">
