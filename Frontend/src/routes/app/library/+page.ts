@@ -1,6 +1,12 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import type { GetFolderResponseDto, GetSurveyResponseDto, PaginatedSessionListDto } from '$lib/api';
+import type {
+	GetFolderResponseDto,
+	GetSurveyResponseDto,
+	PaginatedFolderListDto,
+	PaginatedSessionListDto,
+	PaginatedSurveyListDto,
+} from '$lib/api';
 import { apiClient } from '$lib/apiClient';
 
 const validViews = ['surveys', 'sessions'] as const;
@@ -21,23 +27,23 @@ export const load: PageLoad = async ({ url }) => {
 	};
 };
 
-async function getfolders(): Promise<GetFolderResponseDto[]> {
+async function getfolders(): Promise<PaginatedFolderListDto> {
 	try {
-		const response = await apiClient.api.v1SurveyFoldersList();
-		return response.data ?? [];
+		const response = await apiClient.api.v1SurveyFoldersList({ pageSize: 15, currentPage: 1 });
+		return response.data;
 	} catch (error) {
 		console.error('Error fetching folders:', error);
-		return [];
+		return { folderCount: 0, folderListInfo: [] };
 	}
 }
 
-async function getsurveys(): Promise<GetSurveyResponseDto[]> {
+async function getsurveys(): Promise<PaginatedSurveyListDto> {
 	try {
-		const response = await apiClient.api.v1SurveyList();
-		return response.data ?? [];
+		const response = await apiClient.api.v1SurveyList({ pageSize: 15, currentPage: 1 });
+		return response.data;
 	} catch (error) {
 		console.error('Error fetching surveys:', error);
-		return [];
+		return { surveyCount: 0, surveyListInfo: [] };
 	}
 }
 

@@ -26,7 +26,7 @@
 		<div>
 			<div class="mb-2 flex items-center justify-between gap-2">
 				<div>
-					<span class="text-lg font-bold">
+					<span class="text-lg font-bold text-balance wrap-anywhere">
 						{item.answerOption.description}
 					</span>
 

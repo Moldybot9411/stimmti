@@ -4,6 +4,7 @@ namespace Backend.Models;
 
 public class Survey
 {
+
     [Key]
     public Guid Id { get; set; }
 
@@ -23,4 +24,6 @@ public class Survey
 
     public List<Session> Sessions { get; } = new List<Session>();
     public List<QuestionTemplate> QuestionTemplates { get; } = new List<QuestionTemplate>();
+    public bool IsArchived { get; set; } = false;
+    public bool IsFavorite { get; set; } = false;
 }

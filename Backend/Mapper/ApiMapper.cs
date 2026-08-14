@@ -54,6 +54,28 @@ public partial class ApiMapper : IApiMapper
         return dto;
     }
 
+    public GetQuestionTemplateResponseDto MapToGetQuestionTemplateResponseDto(QuestionTemplate source)
+    {
+        var dto = new GetQuestionTemplateResponseDto
+        {
+            Id = source.Id,
+            Name = source.Name,
+            Description = source.Description,
+            SurveyId = source.SurveyId,
+            OrderNumber = source.OrderNumber,
+            IsArchived = source.IsArchived,
+            QuestionType = source.QuestionType,
+            MinValue = source is NumberScaleQuestionTemplate numberScale ? numberScale.MinValue : 0,
+            MaxValue = source is NumberScaleQuestionTemplate numberScaleForMax ? numberScaleForMax.MaxValue : 0,
+            MaxWords = source is WordCloudQuestionTemplate wordCloud ? wordCloud.MaxWords : 0,
+            Answers = source is ChoiceQuestionTemplate choice
+                ? choice.AnswerOptions.OrderBy(x => x.OrderNumber).Select(x => x.Description).ToArray()
+                : Array.Empty<string>()
+        };
+
+        return dto;
+    }
+
     public partial List<ParticipantDto> MapToParticipantDtoList(IEnumerable<AnonymousUser> source);
 
     [MapProperty(

@@ -159,6 +159,7 @@
 						placeholder="Username"
 						bind:value={username}
 						oninput={handleUsernameInput}
+						maxlength={20}
 						required />
 				</label>
 
@@ -186,6 +187,7 @@
 								minlength="8"
 								pattern={'^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$'}
 								title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+								maxlength={64}
 								bind:value={password}
 								required />
 						</label>

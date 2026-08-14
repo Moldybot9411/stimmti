@@ -62,15 +62,17 @@ public class AnswerService : IAnswerService
                 var multiChoiceTemplate = (ChoiceQuestionTemplate)template;
                 var validOptionIds = multiChoiceTemplate.AnswerOptions.Select(x => x.Id).ToList();
 
-                foreach (var opt in data.AnswerOptions)
+                var distinctOptionIds = data.AnswerOptions.Select(x => x.Id).Distinct();
+
+                foreach (var optionId in distinctOptionIds)
                 {
-                    if (!validOptionIds.Contains(opt.Id)) return null;
+                    if (!validOptionIds.Contains(optionId)) return null;
 
                     _context.Add(new MultipleChoiceAnswer
                     {
                         AnonymousUserId = userId,
                         QuestionId = questionId,
-                        AnswerOptionId = opt.Id
+                        AnswerOptionId = optionId
                     });
                 }
 

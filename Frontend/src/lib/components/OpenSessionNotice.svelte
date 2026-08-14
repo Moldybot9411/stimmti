@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { GetOpenSessionsDto } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
-	import { DoorOpen, SquareKanban, X } from '@lucide/svelte';
+	import { SquareKanban, X } from '@lucide/svelte';
 	import { addToast } from './Toast/Toast.svelte';
-	import { goto, invalidateAll } from '$app/navigation';
 
 	type Props = {
 		openSessions?: GetOpenSessionsDto[];
@@ -79,7 +78,7 @@
 </script>
 
 {#if localSessions.length > 0}
-	<div role="alert" class="alert flex gap-2 text-balance alert-warning">
+	<div role="alert" class="mt-2 alert flex gap-2 text-balance alert-warning">
 		<SquareKanban class="shrink-0" />
 		<span>
 			Warning: You still have
@@ -87,8 +86,7 @@
 			open sessions. Open sessions aren't shown in your library and are not represented in statistics.
 		</span>
 
-		<button class="btn btn-outline btn-neutral" onclick={() => fixDialog?.showModal()}
-			>Fix</button>
+		<button class="btn btn-neutral" onclick={() => fixDialog?.showModal()}> Fix </button>
 	</div>
 
 	<dialog class="modal" bind:this={fixDialog}>
@@ -120,7 +118,7 @@
 						<div class="flex flex-col gap-2 text-base-content/60">
 							<span>
 								Opened:
-								<span class="badge badge-outline badge-neutral">
+								<span class="badge badge-outline badge-secondary">
 									{Intl.DateTimeFormat(undefined, {
 										dateStyle: 'medium',
 										timeStyle: 'short',

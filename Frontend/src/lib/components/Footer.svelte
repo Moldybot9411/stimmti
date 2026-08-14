@@ -12,7 +12,7 @@
 
 <footer
 	class={[
-		'flex w-full flex-col items-center justify-center border-t text-center text-base-content sm:flex-row sm:justify-between',
+		'flex w-full flex-col items-center justify-center rounded-t-box border-t text-center text-base-content sm:flex-row sm:justify-between',
 		isSmall
 			? 'gap-3 border-base-300 bg-base-100 p-4 sm:items-center'
 			: 'gap-8 border-base-100 bg-base-200 p-10 sm:items-start sm:text-left',

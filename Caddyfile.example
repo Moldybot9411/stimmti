@@ -1,3 +1,13 @@
+{
+    servers {
+        metrics
+    }
+}
+
+:9091 {
+    metrics
+}
+
 {$DOMAIN} { # Will be read from env variable
     handle /api/* {
         reverse_proxy backend:8080
@@ -18,4 +28,12 @@ db.{$DOMAIN} {
     }
 
     reverse_proxy phpmyadmin:80
+}
+
+top.{$DOMAIN} {
+    basic_auth /* {
+        YourAdminUsername $2a$14... # Generate hash using 'caddy hash-password'
+    }
+
+    reverse_proxy grafana:3000
 }

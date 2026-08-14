@@ -107,8 +107,8 @@ namespace Backend.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("varchar(2048)");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<bool>("IsArchived")
                         .HasColumnType("tinyint(1)");
@@ -265,6 +265,12 @@ namespace Backend.Migrations
 
                     b.Property<Guid?>("FolderId")
                         .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsFavorite")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("char(36)");

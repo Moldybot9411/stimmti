@@ -90,12 +90,12 @@
 	}
 </script>
 
-<h1 class="mx-auto mt-8 w-fit px-4 text-center text-5xl font-bold text-balance">
+<h1 class="mx-auto mt-8 w-fit px-4 text-center text-5xl font-bold text-balance wrap-anywhere">
 	{questionName}
 </h1>
 
 {#if questionDescription}
-	<p class="mx-auto mt-4 w-fit px-4 text-center text-3xl opacity-80">
+	<p class="mx-auto mt-4 w-fit px-4 text-center text-3xl text-balance wrap-anywhere opacity-80">
 		{questionDescription}
 	</p>
 {/if}

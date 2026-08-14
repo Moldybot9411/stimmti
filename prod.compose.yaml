@@ -5,8 +5,10 @@ services:
     container_name: stimmti_mysql
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=StimmtiDB
+      - MYSQL_USER=${MYSQL_APP_USER}
+      - MYSQL_PASSWORD=${MYSQL_APP_PASSWORD}
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       start_period: 5s
@@ -29,7 +31,7 @@ services:
       - db
     environment:
       PMA_HOST: db
-      PMA_ARBITRARY: 1
+      PMA_ARBITRARY: 0
     logging:
       driver: "json-file"
       options:
@@ -63,7 +65,7 @@ services:
     container_name: stimmti_backend
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=StimmtiDB;User=root;Password=${MYSQL_PASSWORD};
+      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=StimmtiDB;User=${MYSQL_APP_USER};Password=${MYSQL_APP_PASSWORD};
       - CorsSettings__AllowedOrigins=${CORS_ORIGINS}
     volumes:
       - data_protection_keys:/root/.aspnet/DataProtection-Keys
@@ -107,3 +109,8 @@ volumes:
   data_protection_keys:
   caddy_data:
   caddy_config:
+
+networks:
+  default:
+    external: true
+    name: stimmti_default

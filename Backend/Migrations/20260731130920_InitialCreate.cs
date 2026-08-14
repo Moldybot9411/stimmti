@@ -198,7 +198,9 @@ namespace Backend.Migrations
                     Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetime", nullable: false),
                     FolderId = table.Column<Guid>(type: "char(36)", nullable: true),
-                    OwnerId = table.Column<Guid>(type: "char(36)", nullable: false)
+                    OwnerId = table.Column<Guid>(type: "char(36)", nullable: false),
+                    IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsFavorite = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -251,7 +253,7 @@ namespace Backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false),
                     OrderNumber = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "varchar(2048)", maxLength: 2048, nullable: false),
+                    Description = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     QuestionTemplateId = table.Column<Guid>(type: "char(36)", nullable: false),
                     IsArchived = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
