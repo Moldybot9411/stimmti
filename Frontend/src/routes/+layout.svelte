@@ -9,7 +9,10 @@
 
 	let { children, data } = $props();
 	const isMinimalFooter = $derived(
-		page.url.pathname.startsWith('/app') || page.url.pathname.startsWith('/live')
+		page.url.pathname.startsWith('/app') ||
+			page.url.pathname.startsWith('/live') ||
+			page.url.pathname.startsWith('/login') ||
+			page.url.pathname.startsWith('/register')
 	);
 
 	onMount(() => {

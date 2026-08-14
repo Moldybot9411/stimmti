@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { ProblemDetails } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
+	import HideScrollbar from '$lib/components/HideScrollbar.svelte';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
 	import { SessionConnection } from '$lib/signalr.svelte';
 	import { ChevronLeft, GitMergeConflict, QrCode } from '@lucide/svelte';
@@ -42,6 +43,8 @@
 		}
 	}
 </script>
+
+<HideScrollbar />
 
 <button
 	class="btn absolute top-4 left-4 z-10 btn-ghost"

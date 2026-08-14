@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll, replaceState } from '$app/navigation';
+	import HideScrollbar from '$lib/components/HideScrollbar.svelte';
 	import Register from '$lib/components/Register.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { ChevronLeft, CircleCheckBig } from '@lucide/svelte';
@@ -24,6 +25,8 @@
 		return () => clearInterval(interval);
 	});
 </script>
+
+<HideScrollbar />
 
 <ThemeToggle class="fixed top-4 right-4" />
 

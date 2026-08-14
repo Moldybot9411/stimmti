@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import HideScrollbar from '$lib/components/HideScrollbar.svelte';
 	import Login from '$lib/components/Login.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { ChevronLeft } from '@lucide/svelte';
 </script>
+
+<HideScrollbar />
 
 <ThemeToggle class="fixed top-4 right-4" />
 

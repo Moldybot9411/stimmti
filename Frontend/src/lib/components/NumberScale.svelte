@@ -21,7 +21,7 @@
 		value = minValue;
 	});
 
-	let percent = $derived((value ?? minValue - minValue) / (maxValue - minValue));
+	let percent = $derived(((value ?? minValue) - minValue) / (maxValue - minValue));
 </script>
 
 <div class={['flex w-full flex-col items-center gap-4', classes]}>
