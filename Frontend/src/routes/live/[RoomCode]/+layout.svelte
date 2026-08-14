@@ -5,7 +5,7 @@
 </script>
 
 <script lang="ts">
-	import { onDestroy, onMount, setContext } from 'svelte';
+	import { onDestroy, setContext } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { ParticipantRole, SessionState } from '$lib/wsClient/Backend.Models.Enums.js';
 	import { Trophy, User } from '@lucide/svelte';
@@ -15,6 +15,7 @@
 	import QuestionDisplay from '$lib/components/QuestionDisplay.svelte';
 	import type { AnswerOptionDto } from '$lib/wsClient/Backend.Dto.js';
 	import LoadingScreen from '$lib/components/LoadingScreen.svelte';
+	import HideScrollbar from '$lib/components/HideScrollbar.svelte';
 
 	let { children, data } = $props();
 	let hub = $derived(data.hub);
@@ -116,6 +117,8 @@
 	setContext<SessionContext>('session', { startSession });
 </script>
 
+<HideScrollbar />
+
 <div class="h-screen">
 	{#if phase !== SessionState.Lobby}
 		<div class="navbar border-b border-base-300 bg-base-100 px-4">
@@ -131,7 +134,9 @@
 						aria-label={hub.connected ? 'success' : 'error'}
 						class={['status', hub.connected ? 'status-success' : 'status-error']}>
 					</div>
-					{hub.connected ? 'Connected' : 'Disconnected'}
+					<span class="hidden md:inline">
+						{hub.connected ? 'Connected' : 'Disconnected'}
+					</span>
 				</div>
 			</div>
 			<div class="navbar-center font-bold opacity-80">

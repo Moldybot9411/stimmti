@@ -15,6 +15,7 @@
 	<input
 		type="checkbox"
 		class="theme-controller"
+		aria-label="Switch Theme"
 		checked={themeManager.theme === 'dark'}
 		onchange={() => themeManager.toggle()} />
 

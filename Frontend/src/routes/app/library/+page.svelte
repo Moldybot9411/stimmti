@@ -1,5 +1,5 @@
 <script lang="ts">
-	import StartSessionButton from '$lib/components/startSessionButton.svelte';
+	import StartSessionDialog from '$lib/components/StartSessionDialog.svelte';
 	import { goto } from '$app/navigation';
 	import { scrollIntoViewOnMount } from '$lib/actions/scrollaction.js';
 	import type {
@@ -15,6 +15,7 @@
 		Cog,
 		Form,
 		Heart,
+		Play,
 		Scroll,
 		Trash,
 		X,
@@ -54,6 +55,8 @@
 	let editingSurvey = $state<GetSurveyResponseDto | null>(null);
 	let newSurveyDialogRef: HTMLDialogElement | undefined = $state();
 	let newFolderRef: HTMLDialogElement | undefined = $state();
+
+	let startSessionDialogRef: HTMLDialogElement | undefined = $state();
 
 	function switchView(viewId: View) {
 		const url = new URL(page.url);
@@ -215,7 +218,11 @@
 				</div>
 
 				<div class="card-actions flex-col">
-					<StartSessionButton survey={editingSurvey} />
+					<button
+						class={'btn btn-block max-w-full btn-primary '}
+						onclick={() => startSessionDialogRef?.showModal()}>
+						<Play size={20} /> Start Session
+					</button>
 				</div>
 			</div>
 		</div>
@@ -229,3 +236,10 @@
 		folders.folderListInfo?.push(el);
 		folders.folderListInfo?.sort((a, b) => a.name!.localeCompare(b.name!));
 	}} />
+
+{#if editingSurvey}
+	<StartSessionDialog
+		bind:ref={startSessionDialogRef}
+		survey={editingSurvey}
+		onCreated={(roomCode) => goto(`/live/${roomCode}`)} />
+{/if}

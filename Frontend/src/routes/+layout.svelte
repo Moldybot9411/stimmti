@@ -9,7 +9,10 @@
 
 	let { children, data } = $props();
 	const isMinimalFooter = $derived(
-		page.url.pathname.startsWith('/app') || page.url.pathname.startsWith('/live')
+		page.url.pathname.startsWith('/app') ||
+			page.url.pathname.startsWith('/live') ||
+			page.url.pathname.startsWith('/login') ||
+			page.url.pathname.startsWith('/register')
 	);
 
 	onMount(() => {
@@ -23,14 +26,10 @@
 	});
 </script>
 
-<svelte:head>
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-</svelte:head>
-
 <div class="flex min-h-screen flex-col">
-	<div class="flex-1">
+	<main class="flex-1">
 		{@render children()}
-	</div>
+	</main>
 
 	<Footer size={isMinimalFooter ? 'small' : 'default'} />
 </div>

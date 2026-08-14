@@ -13,7 +13,11 @@
 	let patchQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let editingQuestionId: string | null = $state(null);
 
-	let questions: GetQuestionTemplateResponseDto[] = $derived(data.questions);
+	// svelte-ignore state_referenced_locally
+	let questions: GetQuestionTemplateResponseDto[] = $state(data.questions);
+	$effect(() => {
+		questions = data.questions;
+	});
 
 	function deleteQuestion(questionId: string) {
 		questions = questions.filter((q) => q.id !== questionId);
