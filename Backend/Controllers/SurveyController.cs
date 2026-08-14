@@ -4,7 +4,6 @@ using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 [ApiController]
@@ -15,7 +14,7 @@ public class SurveyController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly IApiMapper _mapper;
 
-    public SurveyController(StimmtiDbContext dbContext, UserManager<User> userManager, ILogger<SurveyController> logger, IApiMapper mapper)
+    public SurveyController(StimmtiDbContext dbContext, UserManager<User> userManager, IApiMapper mapper)
     {
         _dbContext = dbContext;
         _userManager = userManager;

@@ -3,44 +3,81 @@
 	import NewSurveyDialog from '$lib/components/NewSurveyDialog.svelte';
 	import SessionCard from '$lib/components/SessionCard.svelte';
 	import {
+		Activity,
 		ArrowRight,
 		BadgePlus,
-		BadgeQuestionMark,
+		BookDashed,
 		CirclePlus,
+		LoaderCircle,
 		MessagesSquare,
-		X,
 		Zap,
 	} from '@lucide/svelte';
+	import { goto } from '$app/navigation';
+	import { addToast } from '$lib/components/Toast/Toast.svelte';
+	import { TemplateType, type ProblemDetails } from '$lib/api.js';
+	import { apiClient } from '$lib/apiClient.js';
+	import axios from 'axios';
+	import NameDescriptionDialog from '$lib/components/NameDescriptionDialog.svelte';
 
 	let { data } = $props();
+
+	let templateCreateDialogRef: HTMLDialogElement | undefined = $state();
+	let templateLoading = $state(false);
+	let selectedTemplateType: TemplateType | null = $state(null);
 
 	let templates = [
 		{
 			label: 'Quick Poll',
 			description: 'A simple single-question poll to gauge immediate reactions.',
 			icon: Zap,
+			templateType: TemplateType.QuickPoll,
 		},
 		{
 			label: 'Feedback Form',
-			description: 'Collect detailed Feedback after a meeting or an event.',
+			description:
+				'Collect detailed Feedback after a meeting or an event with 10 insightful questions.',
 			icon: MessagesSquare,
+			templateType: TemplateType.FeedbackForm,
 		},
 		{
-			label: 'AnotherTemplate',
-			description: "We are not sure what to put here, but we'll figure it out!",
-			icon: BadgeQuestionMark,
+			label: 'Team Pulse',
+			description: 'Check in on team morale, workload, and project confidence',
+			icon: Activity,
+			templateType: TemplateType.TeamPulse,
 		},
 	];
 
-	let templateModal: HTMLDialogElement | null = $state(null);
-	let templateTitle = $state('');
-	function openTemplateModal(title: string) {
-		templateTitle = title;
-
-		templateModal?.showModal();
-	}
-
 	let newSurveyDialogRef: HTMLDialogElement | undefined = $state();
+
+	function spawnTemplate(title: string, description: string, type: TemplateType) {
+		templateLoading = true;
+
+		apiClient.api
+			.v1TemplateCreate({
+				title,
+				description,
+				templateType: type,
+			})
+			.then((res) => {
+				if (res.status === 200) {
+					goto(`/app/surveys/${res.data}`);
+				}
+			})
+			.catch((e) => {
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					let title = e.response?.data.detail ?? 'Unknown Error';
+
+					addToast({
+						label: 'Error creating template: ' + title,
+						type: 'error',
+						icon: BookDashed,
+					});
+				}
+			})
+			.finally(() => {
+				templateLoading = false;
+			});
+	}
 </script>
 
 <div
@@ -66,7 +103,7 @@
 	{#each templates as template}
 		{@const Icon = template.icon}
 
-		<div class="card min-w-70 bg-base-100 shadow-sm card-md md:min-w-96">
+		<div class="card max-w-70 min-w-70 bg-base-100 shadow-sm card-md md:max-w-96 md:min-w-96">
 			<div class="card-body">
 				<div class="w-fit rounded-sm bg-accent p-2 text-accent-content">
 					<Icon />
@@ -75,11 +112,20 @@
 				<p>
 					{template.description}
 				</p>
-				<div class="card-actions">
+				<div class="mt-auto card-actions">
 					<button
+						disabled={templateLoading}
 						class="btn btn-block btn-outline btn-accent"
-						onclick={() => openTemplateModal(template.label)}>
-						<CirclePlus />
+						onclick={() => {
+							selectedTemplateType = template.templateType;
+
+							templateCreateDialogRef?.showModal();
+						}}>
+						{#if templateLoading}
+							<LoaderCircle class="animate-spin" />
+						{:else}
+							<CirclePlus />
+						{/if}
 						Create
 					</button>
 				</div>
@@ -119,16 +165,15 @@
 	{/await}
 </div>
 
-<dialog class="modal" bind:this={templateModal}>
-	<div class="modal-box">
-		<form method="dialog">
-			<button class="btn absolute top-2 right-2 btn-ghost btn-sm"><X /></button>
-		</form>
-		<h3 class="text-lg font-bold">{templateTitle}</h3>
-		<p class="py-4">
-			Here will be a quick Survey Form with an option to instantly start a session.
-		</p>
-	</div>
-</dialog>
-
 <NewSurveyDialog bind:ref={newSurveyDialogRef} />
+
+<NameDescriptionDialog
+	title="New Template"
+	buttonText="Create Survey"
+	bind:loading={templateLoading}
+	bind:ref={templateCreateDialogRef}
+	onSubmit={(title, description) => {
+		if (selectedTemplateType === null) return;
+
+		spawnTemplate(title, description, selectedTemplateType);
+	}} />

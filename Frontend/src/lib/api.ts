@@ -10,6 +10,12 @@
  * ---------------------------------------------------------------
  */
 
+export enum TemplateType {
+  QuickPoll = "QuickPoll",
+  FeedbackForm = "FeedbackForm",
+  TeamPulse = "TeamPulse",
+}
+
 export enum QuestionTypeEnum {
   SingleChoice = "SingleChoice",
   MultipleChoice = "MultipleChoice",
@@ -298,6 +304,14 @@ export interface SessionStatisticsDto {
   participantCount: number;
   /** @format date-time */
   openedAt: string;
+}
+
+export interface SpawnTemplateDto {
+  /** @maxLength 255 */
+  title: string | null;
+  /** @maxLength 2048 */
+  description?: string | null;
+  templateType: TemplateType;
 }
 
 export interface SurveyStatisticsDto {
@@ -1026,6 +1040,23 @@ export class Api<
       this.request<any, ProblemDetails>({
         path: `/api/v1/Survey/${surveyId}/toggle-favorite`,
         method: "POST",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Template
+     * @name V1TemplateCreate
+     * @request POST:/api/v1/Template
+     */
+    v1TemplateCreate: (data: SpawnTemplateDto, params: RequestParams = {}) =>
+      this.request<string, ProblemDetails>({
+        path: `/api/v1/Template`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
