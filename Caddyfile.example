@@ -1,0 +1,39 @@
+{
+    servers {
+        metrics
+    }
+}
+
+:9091 {
+    metrics
+}
+
+{$DOMAIN} { # Will be read from env variable
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+
+    handle /uploads/* {
+        reverse_proxy backend:8080
+    }
+
+    handle {
+        reverse_proxy frontend:3000
+    }
+}
+
+db.{$DOMAIN} {
+    basic_auth /* {
+        YourAdminUsername $2a$14... # Generate hash using 'caddy hash-password'
+    }
+
+    reverse_proxy phpmyadmin:80
+}
+
+top.{$DOMAIN} {
+    basic_auth /* {
+        YourAdminUsername $2a$14... # Generate hash using 'caddy hash-password'
+    }
+
+    reverse_proxy grafana:3000
+}

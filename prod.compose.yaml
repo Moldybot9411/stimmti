@@ -1,0 +1,116 @@
+services:
+  # MySQL
+  db:
+    image: mysql:8.0
+    container_name: stimmti_mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=StimmtiDB
+      - MYSQL_USER=${MYSQL_APP_USER}
+      - MYSQL_PASSWORD=${MYSQL_APP_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      start_period: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - mysql_data:/var/lib/mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: stimmti_phpmyadmin
+    restart: always
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_ARBITRARY: 0
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Reverse Proxy
+  caddy:
+    image: caddy:2-alpine
+    container_name: stimmti_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN}
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=localhost,127.0.0.1,backend,frontend,db,phpmyadmin
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+  # ASP.NET Backend
+  backend:
+    image: ghcr.io/moldybot9411/stimmti-backend:latest
+    restart: unless-stopped
+    container_name: stimmti_backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db;Port=3306;Database=StimmtiDB;User=${MYSQL_APP_USER};Password=${MYSQL_APP_PASSWORD};
+      - CorsSettings__AllowedOrigins=${CORS_ORIGINS}
+    volumes:
+      - data_protection_keys:/root/.aspnet/DataProtection-Keys
+      - ./uploads:/app/wwwroot/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Svelte Frontend
+  frontend:
+    image: ghcr.io/moldybot9411/stimmti-frontend:latest
+    restart: unless-stopped
+    container_name: stimmti_frontend
+    environment:
+      - PUBLIC_DOMAIN=https://${DOMAIN}
+      - PUBLIC_API_URL=${PUBLIC_API_URL}
+      - PUBLIC_LEGAL_NAME=${PUBLIC_LEGAL_NAME}
+      - PUBLIC_LEGAL_STREET=${PUBLIC_LEGAL_STREET}
+      - PUBLIC_LEGAL_CITY=${PUBLIC_LEGAL_CITY}
+      - PUBLIC_LEGAL_COUNTRY=${PUBLIC_LEGAL_COUNTRY}
+      - PUBLIC_LEGAL_EMAIL=${PUBLIC_LEGAL_EMAIL}
+      - PUBLIC_LEGAL_RESPONSIBLE_PERSON=${PUBLIC_LEGAL_RESPONSIBLE_PERSON}
+      - PUBLIC_LEGAL_RESPONSIBLE_ADDRESS=${PUBLIC_LEGAL_RESPONSIBLE_ADDRESS}
+      - PUBLIC_LEGAL_SUPERVISING_INSTITUTION=${PUBLIC_LEGAL_SUPERVISING_INSTITUTION}
+      - PUBLIC_LEGAL_SUPERVISING_REPRESENTATIVE=${PUBLIC_LEGAL_SUPERVISING_REPRESENTATIVE}
+    depends_on:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  mysql_data:
+  data_protection_keys:
+  caddy_data:
+  caddy_config:
+
+networks:
+  default:
+    external: true
+    name: stimmti_default

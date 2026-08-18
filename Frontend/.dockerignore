@@ -1,0 +1,8 @@
+.svelte-kit/
+.vscode
+node_modules/
+.dockerignore
+.gitignore
+.prettierignore
+.prettierrc
+Dockerfile

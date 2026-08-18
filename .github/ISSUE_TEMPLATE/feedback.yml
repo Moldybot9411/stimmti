@@ -1,0 +1,64 @@
+name: Feedback / feature request
+description: Share ideas, improvements, or wishes for Stimmti
+title: "[Feedback]: "
+labels:
+  - feedback
+  - from_user
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your feedback. Clear use-cases help us prioritize improvements.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Short summary
+      placeholder: Add ranking question type
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Feedback type
+      options:
+        - Feature request
+        - UX improvement
+        - Performance improvement
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the current pain point.
+      placeholder: We cannot compare preferences in a ranking format.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should be added or changed?
+      placeholder: Add a ranking question where participants can drag answers.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected impact
+      description: Who benefits and how?
+      placeholder: Better decision making in workshops and classes.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      placeholder: Manual ordering via free text, external tools, ...
+
+# Keep the trailing newline at the end of this file.

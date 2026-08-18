@@ -1,0 +1,6 @@
+{
+    "prettier.configPath": "./Frontend/.prettierrc",
+    "[csharp]": {
+        "editor.defaultFormatter": "ms-dotnettools.csharp"
+    }
+}
