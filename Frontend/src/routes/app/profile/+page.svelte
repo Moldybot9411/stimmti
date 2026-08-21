@@ -215,7 +215,7 @@
 						}}
 						type="file"
 						class="file-input"
-						accept="image/jpg, image/jpeg, image/png, image/webp"
+						accept="image/jpg, image/jpeg, image/png, image/webp, image/gif"
 						bind:files />
 				</fieldset>
 				<button

@@ -232,7 +232,7 @@ public class UserController : ControllerBase
             return BadRequest(new ProblemDetails { Title = "Invalid file", Detail = "File is too big (max. 2MB)" });
         }
 
-        var allowedExtension = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var allowedExtension = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!allowedExtension.Contains(extension))
         {

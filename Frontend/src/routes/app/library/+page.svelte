@@ -7,6 +7,7 @@
 		PaginatedFolderListDto,
 		PaginatedSessionListDto,
 		PaginatedSurveyListDto,
+		ProblemDetails,
 	} from '$lib/api';
 	import NewSurveyDialog from '$lib/components/NewSurveyDialog.svelte';
 	import {
@@ -15,6 +16,7 @@
 		Cog,
 		Form,
 		Heart,
+		Pen,
 		Play,
 		Scroll,
 		Trash,
@@ -26,6 +28,10 @@
 	import { page } from '$app/state';
 	import NewFolderDialog from '$lib/components/NewFolderDialog.svelte';
 	import { apiClient } from '$lib/apiClient.js';
+	import RenameDialog from '$lib/components/RenameDialog.svelte';
+	import { addToast } from '$lib/components/Toast/Toast.svelte';
+	import axios from 'axios';
+	import DiscardDialog from '$lib/components/DiscardDialog.svelte';
 
 	let { data } = $props();
 	let surveys: PaginatedSurveyListDto = $state({ surveyCount: 0, surveyListInfo: [] });
@@ -33,6 +39,7 @@
 	let sessions: PaginatedSessionListDto = $state({ sessionCount: 0, sessionListInfo: [] });
 
 	let isLoading = $state(false);
+	let isDeleting = $state(false);
 
 	$effect(() => {
 		isLoading = true;
@@ -57,6 +64,8 @@
 	let newFolderRef: HTMLDialogElement | undefined = $state();
 
 	let startSessionDialogRef: HTMLDialogElement | undefined = $state();
+	let renameDialogRef: HTMLDialogElement | undefined = $state();
+	let discardDialogRef: HTMLDialogElement | undefined = $state();
 
 	function switchView(viewId: View) {
 		const url = new URL(page.url);
@@ -92,13 +101,57 @@
 		return null;
 	}
 
-	async function deleteSurvey(surveyId: string) {
-		removeSurveyFromLibrary(surveyId);
+	function renameSurveyLocally(name: string, surveyId: string) {
+		if (surveys.surveyListInfo) {
+			let renamingSurvey = surveys.surveyListInfo.find((e) => e.surveyId === surveyId);
+			if (renamingSurvey) renamingSurvey.title = name;
+		}
+		if (folders.folderListInfo) {
+			for (const folder of folders.folderListInfo) {
+				var nestedSurveys = folder.surveys ?? [];
+				var renamingSurvey = nestedSurveys.find((e) => e.surveyId === surveyId);
+				if (renamingSurvey) renamingSurvey.title = name;
+			}
+		}
+	}
 
-		await apiClient.api.v1SurveyDelete(surveyId);
+	function deleteSurvey(surveyId: string) {
+		isDeleting = true;
+
 		if (editingSurvey?.surveyId === surveyId) {
 			editingSurvey = null;
 		}
+
+		apiClient.api
+			.v1SurveyDelete(surveyId)
+			.then((res) => {
+				if (res.status === 200) {
+					removeSurveyFromLibrary(surveyId);
+
+					addToast({
+						label: 'Survey deleted successfully',
+						type: 'success',
+						icon: Scroll,
+					});
+
+					isDeleting = false;
+					discardDialogRef?.close();
+				}
+			})
+			.catch((e) => {
+				isDeleting = false;
+				discardDialogRef?.close();
+
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					var message = e.response?.data.detail ?? 'Unknown Error';
+
+					addToast({
+						label: 'Error deleting Survey: ' + message,
+						type: 'error',
+						icon: Scroll,
+					});
+				}
+			});
 	}
 
 	async function favoriteCurrentSurvey() {
@@ -108,6 +161,32 @@
 		editingSurvey.isFavorite = newFavoriteState;
 
 		await apiClient.api.v1SurveyToggleFavoriteCreate(editingSurvey.surveyId);
+	}
+
+	function renameSurvey(newName: string, oldName: string, surveyId: string) {
+		renameSurveyLocally(newName, surveyId);
+
+		apiClient.api
+			.v1SurveyPartialUpdate(surveyId, { title: newName })
+			.then((res) => {
+				console.log(res);
+				if (res.status === 200) {
+					addToast({ label: 'Survey updated', type: 'success', icon: Pen });
+				}
+			})
+			.catch((e) => {
+				renameSurveyLocally(oldName, surveyId);
+
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					let message = e.response?.data.detail ?? 'Unknown Error';
+
+					addToast({
+						label: 'Error updating Survey: ' + message,
+						type: 'error',
+						icon: Pen,
+					});
+				}
+			});
 	}
 </script>
 
@@ -204,13 +283,20 @@
 
 					<button
 						class="btn justify-start btn-sm"
+						onclick={() => renameDialogRef?.showModal()}>
+						<Pen size={20} class="text-warning" stroke-width="2" />
+						Rename
+					</button>
+
+					<button
+						class="btn justify-start btn-sm"
 						onclick={() => goto(`/app/surveys/${editingSurvey!.surveyId}`)}>
 						<Cog size={20} class="text-base-content" /> Settings
 					</button>
 
 					<button
 						class="btn justify-start btn-sm"
-						onclick={() => deleteSurvey(editingSurvey!.surveyId)}>
+						onclick={() => discardDialogRef?.showModal()}>
 						<Trash size={20} class="text-error" /> Delete
 					</button>
 
@@ -233,13 +319,33 @@
 <NewFolderDialog
 	bind:ref={newFolderRef}
 	onCreate={(el) => {
-		folders.folderListInfo?.push(el);
-		folders.folderListInfo?.sort((a, b) => a.name!.localeCompare(b.name!));
+		if (!folders.folderListInfo) folders.folderListInfo = [];
+
+		folders.folderListInfo.push(el);
+		folders.folderCount++;
+		folders.folderListInfo.sort((a, b) => a.name!.localeCompare(b.name!));
 	}} />
 
 {#if editingSurvey}
+	{@const survey = editingSurvey}
+
 	<StartSessionDialog
 		bind:ref={startSessionDialogRef}
-		survey={editingSurvey}
+		{survey}
 		onCreated={(roomCode) => goto(`/live/${roomCode}`)} />
+
+	<RenameDialog
+		bind:ref={renameDialogRef}
+		initialName={editingSurvey.title!}
+		onRename={(newName: string) => {
+			renameSurvey(newName, survey.title!, survey.surveyId);
+			renameDialogRef?.close();
+		}} />
+
+	<DiscardDialog
+		bind:ref={discardDialogRef}
+		title={`Are you sure you want to delete the Survey "${survey.title}"?`}
+		description="The survey will be permanently deleted, but existing Sessions of this Survey stay untouched."
+		onDeleteConfirm={() => deleteSurvey(survey.surveyId)}
+		{isDeleting} />
 {/if}

@@ -1,23 +1,33 @@
 <script lang="ts">
 	import { QuestionTypeEnum, type GetQuestionTemplateResponseDto } from '$lib/api.js';
 	import { apiClient } from '$lib/apiClient.js';
-	import { Trash, Cog, GripVertical, Plus } from '@lucide/svelte';
+	import { Trash, Cog, GripVertical, Plus, Play } from '@lucide/svelte';
 	import NewQuestionDialog from '$lib/components/NewQuestionDialog.svelte';
 	import PatchQuestion from '$lib/components/PatchQuestion.svelte';
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
+	import DiscardDialog from '$lib/components/DiscardDialog.svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import StartSessionDialog from '$lib/components/StartSessionDialog.svelte';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 	const id = $derived(data.surveyId);
 
 	let newQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let patchQuestionDialogRef: HTMLDialogElement | undefined = $state();
+	let discardDialogRef: HTMLDialogElement | undefined = $state();
 	let editingQuestionId: string | null = $state(null);
+	let deletingQuestionId: string | null = $state(null);
 
 	// svelte-ignore state_referenced_locally
-	let questions: GetQuestionTemplateResponseDto[] = $state(data.questions);
+	let questions: GetQuestionTemplateResponseDto[] = $state([]);
 	$effect(() => {
-		questions = data.questions;
+		data.streamed.questions.then((res) => {
+			questions = res.data;
+		});
 	});
+
+	let startSessionDialogRef: HTMLDialogElement | undefined = $state();
 
 	function deleteQuestion(questionId: string) {
 		questions = questions.filter((q) => q.id !== questionId);
@@ -52,10 +62,24 @@
 	}
 </script>
 
-<div class="mb-8 flex w-full flex-col items-center gap-2">
-	<h1 class="text-center text-4xl font-bold">Survey Questions</h1>
-	<p class="text-center opacity-80">{questions.length} question(s)</p>
+<div class="mb-8 flex w-full items-start justify-between gap-2">
+	<BackButton />
+
+	<div class="flex w-full flex-col items-center gap-2 text-balance wrap-anywhere">
+		<h1 class="text-center text-4xl font-bold">{data.survey.title}</h1>
+		<p class="text-center opacity-80">{questions.length} question(s)</p>
+	</div>
+
+	<button
+		class="btn btn-lg btn-primary"
+		aria-label="Start Session"
+		title="Start Session"
+		onclick={() => startSessionDialogRef?.showModal()}>
+		<Play />
+	</button>
 </div>
+
+<div class="divider"></div>
 
 {#if questions.length == 0}
 	<div class="text-center text-lg opacity-80">Add your first question</div>
@@ -110,7 +134,14 @@
 
 								{#if question.questionType === QuestionTypeEnum.NumberScale}
 									<div class="text-left">
-										Scale: {question.minValue ?? 1} - {question.maxValue ?? 10}
+										Scale:
+										<div class="badge badge-xs font-bold badge-accent">
+											{question.minValue ?? 1}
+										</div>
+										-
+										<div class="badge badge-xs font-bold badge-accent">
+											{question.maxValue ?? 10}
+										</div>
 									</div>
 								{:else if question.questionType === QuestionTypeEnum.WordCloud}
 									<div class="text-left">
@@ -137,7 +168,10 @@
 							<div class="flex gap-1">
 								<button
 									class="btn btn-ghost btn-error btn-xs"
-									onclick={() => deleteQuestion(question.id!)}
+									onclick={() => {
+										deletingQuestionId = question.id;
+										discardDialogRef?.showModal();
+									}}
 									aria-label="Delete Question">
 									<Trash size={16} />
 								</button>
@@ -200,3 +234,19 @@
 	onCancel={() => {
 		editingQuestionId = null;
 	}} />
+
+<DiscardDialog
+	bind:ref={discardDialogRef}
+	title="Are you sure you want to delete this question?"
+	description="This will *permanently* delete this question. Existing Sessions of this Survey will stay untouched."
+	onDeleteConfirm={() => {
+		if (!deletingQuestionId) return;
+
+		deleteQuestion(deletingQuestionId);
+		discardDialogRef?.close();
+	}} />
+
+<StartSessionDialog
+	bind:ref={startSessionDialogRef}
+	survey={data.survey}
+	onCreated={(roomCode) => goto(`/live/${roomCode}`)} />

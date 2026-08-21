@@ -1,14 +1,27 @@
 <script lang="ts">
-	import type {
-		GetSurveyResponseDto,
-		PaginatedFolderListDto,
-		PaginatedSurveyListDto,
+	import {
+		type ProblemDetails,
+		type GetSurveyResponseDto,
+		type PaginatedFolderListDto,
+		type PaginatedSurveyListDto,
 	} from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
-	import { ChevronRight, Folder, Heart, Scroll } from '@lucide/svelte';
+	import {
+		ChevronRight,
+		EllipsisVertical,
+		File,
+		Folder,
+		Heart,
+		Pen,
+		Scroll,
+		Trash,
+	} from '@lucide/svelte';
 	import Pagination from './Pagination.svelte';
 	import { addToast } from './Toast/Toast.svelte';
 	import { untrack } from 'svelte';
+	import RenameDialog from './RenameDialog.svelte';
+	import axios from 'axios';
+	import DiscardDialog from './DiscardDialog.svelte';
 
 	type Props = {
 		surveys: PaginatedSurveyListDto;
@@ -35,6 +48,12 @@
 
 	let firstSurveyPage = $derived(numFolderPages);
 	let numSurveysOnFirstPage = $derived(pageSize - (folders.folderCount % pageSize));
+
+	let renameDialogRef: HTMLDialogElement | undefined = $state();
+	let editingFolderId: string | null = $state(null);
+	let editingFolderName: string | null = $state(null);
+
+	let discardDialogRef: HTMLDialogElement | undefined = $state();
 
 	// Update surveys and folders when currentPage changes
 	let isInitalLoad = true;
@@ -241,6 +260,73 @@
 			folderList = previousState.folder;
 		}
 	}
+
+	function renameFolder(newName: string, oldName: string, folderId: string) {
+		let renamingFolder = folderList.find((e) => e.folderId === folderId);
+		if (renamingFolder) renamingFolder.name = newName;
+		folderList.sort((a, b) => a.name?.localeCompare(b.name ?? '') ?? 0);
+
+		apiClient.api
+			.v1SurveyFoldersPartialUpdate(folderId, { name: newName })
+			.then((res) => {
+				if (res.status === 200) {
+					if (renamingFolder) renamingFolder.name = res.data;
+					console.log(res.data);
+
+					addToast({
+						label: 'Folder renamed successfully',
+						type: 'success',
+						icon: Folder,
+					});
+				}
+			})
+			.catch((e) => {
+				if (renamingFolder) renamingFolder.name = oldName;
+
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					let message = e.response?.data.detail ?? 'Unkown Error';
+
+					addToast({
+						label: 'Error renaming folder: ' + message,
+						type: 'error',
+						icon: Folder,
+					});
+				}
+			});
+	}
+
+	function deleteFolder(folderId: string) {
+		let folderBackup = folderList.find((e) => e.folderId === folderId);
+		if (!folderBackup) return;
+
+		folderList = folderList.filter((e) => e.folderId !== folderId);
+
+		apiClient.api
+			.v1SurveyFoldersDelete(folderId)
+			.then((res) => {
+				if (res.status === 200) {
+					addToast({
+						label: 'Folder deleted successfully',
+						icon: Folder,
+						type: 'success',
+					});
+				}
+			})
+			.catch((e) => {
+				folderList = [...folderList, folderBackup];
+				folderList.sort((a, b) => a.name?.localeCompare(b.name ?? '') ?? 0);
+
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					let message = e.response?.data.detail ?? 'Unkown error';
+
+					addToast({
+						label: 'Error deleting folder: ' + message,
+						type: 'error',
+						icon: File,
+					});
+				}
+			});
+	}
 </script>
 
 {#if surveys.surveyCount === 0 && folders.folderCount === 0}
@@ -267,7 +353,52 @@
 						ondrop={(event) => handleFolderDrop(event, f.folderId)}>
 						<Folder size={16} />
 						{f.name}
-						<span class="ml-auto badge badge-sm">Items: {f.surveys?.length ?? 0}</span>
+						<div class="flex items-center gap-1">
+							<button
+								class="btn btn-xs"
+								aria-label="Options"
+								popovertarget={`folder-popover-${index}`}
+								style={`anchor-name:--folder-popover-${index}`}
+								onclick={() => {
+									editingFolderId = f.folderId;
+									editingFolderName = f.name;
+								}}>
+								<EllipsisVertical size={10} />
+							</button>
+
+							<ul
+								class="menu dropdown dropdown-end w-52 rounded-box bg-base-100 shadow-sm before:hidden"
+								popover
+								id={`folder-popover-${index}`}
+								style={`position-anchor:--folder-popover-${index}`}>
+								<li>
+									<button
+										class="btn justify-start btn-sm"
+										aria-label="Options"
+										onclick={() => {
+											renameDialogRef?.showModal();
+										}}>
+										<Pen size={16} class="text-warning" />
+										Rename
+									</button>
+								</li>
+								<li class="mt-1">
+									<button
+										class="btn justify-start btn-sm"
+										aria-label="Options"
+										onclick={() => {
+											discardDialogRef?.showModal();
+										}}>
+										<Trash size={16} class="text-error" />
+										Delete
+									</button>
+								</li>
+							</ul>
+
+							<span class="ml-auto badge hidden badge-sm md:block">
+								Items: {f.surveys?.length ?? 0}
+							</span>
+						</div>
 					</summary>
 					<ul>
 						{#each f.surveys ?? [] as survey (survey.surveyId)}
@@ -343,3 +474,20 @@
 			bind:currentPage />
 	</ul>
 {/if}
+
+<RenameDialog
+	bind:ref={renameDialogRef}
+	initialName={editingFolderName ?? ''}
+	onRename={(newName) => {
+		renameFolder(newName, editingFolderName ?? '', editingFolderId ?? '');
+		renameDialogRef?.close();
+	}} />
+
+<DiscardDialog
+	bind:ref={discardDialogRef}
+	title={`Are you sure you want to delete the folder "${editingFolderName}"`}
+	description="The folder, including every survey inside it, will be *permanently* deleted"
+	onDeleteConfirm={() => {
+		deleteFolder(editingFolderId ?? '');
+		discardDialogRef?.close();
+	}} />

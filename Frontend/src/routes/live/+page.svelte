@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { ProblemDetails } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import HideScrollbar from '$lib/components/HideScrollbar.svelte';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
 	import { SessionConnection } from '$lib/signalr.svelte';
@@ -46,12 +47,7 @@
 
 <HideScrollbar />
 
-<button
-	class="btn absolute top-4 left-4 z-10 btn-ghost"
-	aria-label="Navigate Back"
-	onclick={() => history.back()}>
-	<ChevronLeft />
-</button>
+<BackButton class="fixed m-4" />
 
 <div class="flex h-screen w-full items-center justify-center">
 	<div class="flex w-fit min-w-96 flex-col items-center justify-center gap-4">

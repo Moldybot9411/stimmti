@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import type { GetSurveyResponseDto, ProblemDetails } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
-	import { Play, SquareKanban, X } from '@lucide/svelte';
+	import { LoaderCircle, Play, SquareKanban, X } from '@lucide/svelte';
 	import axios from 'axios';
 	import type { ClassValue } from 'clsx';
 
@@ -18,13 +17,16 @@
 	let { class: classes, style, ref = $bindable(), survey, onCreated }: Props = $props();
 
 	let isLoading = $state(false);
-	let formRef: HTMLFormElement | null = $state(null);
 
 	let name = $state('');
 	let description = $state('');
+	$effect(() => {
+		name = survey.title!;
+	});
 
 	function reset() {
-		formRef?.reset();
+		name = survey.title!;
+		description = '';
 	}
 
 	function startSession() {
@@ -66,7 +68,7 @@
 		</form>
 		<h3 class="text-lg font-bold">Start Session</h3>
 		<div class="p-4">
-			<form bind:this={formRef} onsubmit={startSession}>
+			<form onsubmit={startSession}>
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Name</legend>
 					<input
@@ -94,7 +96,12 @@
 					type="submit"
 					class={'btn btn-block w-full btn-primary'}
 					disabled={isLoading}>
-					<Play size={20} /> Start Session
+					{#if isLoading}
+						<LoaderCircle class="animate-spin" />
+					{:else}
+						<Play size={20} />
+					{/if}
+					Start Session
 				</button>
 			</form>
 		</div>

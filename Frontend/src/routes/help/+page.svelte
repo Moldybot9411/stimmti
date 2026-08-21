@@ -1,4 +1,5 @@
 <script lang="ts">
+	import BackButton from '$lib/components/BackButton.svelte';
 	import {
 		Bug,
 		ChevronLeft,
@@ -198,34 +199,36 @@
 	</div>
 {/snippet}
 
-<button class="btn mt-4 mb-4 ml-4 btn-lg" aria-label="Navigate Back" onclick={() => history.back()}>
-	<ChevronLeft />
-</button>
-
-<h1 class="mx-auto mb-6 w-fit text-3xl font-bold">Frequently asked questions</h1>
-
-<div role="tablist" class="tabs-box mx-auto tabs w-fit">
-	<button
-		role="tab"
-		onclick={() => (tabs = 'general')}
-		class={['tab', tabs === 'general' && 'tab-active']}>General</button>
-	<button
-		role="tab"
-		onclick={() => (tabs = 'participant')}
-		class={['tab', tabs === 'participant' && 'tab-active']}>Participants</button>
-	<button
-		onclick={() => (tabs = 'creator')}
-		role="tab"
-		class={['tab', tabs === 'creator' && 'tab-active']}>Survey Creators</button>
-	<button
-		onclick={() => (tabs = 'privacy')}
-		role="tab"
-		class={['tab', tabs === 'privacy' && 'tab-active']}>Privacy & Security</button>
+<div class="mx-auto w-full md:max-w-200">
+	<BackButton class="mt-4 mb-4 ml-4" />
 </div>
 
+<h1 class="mx-auto mb-6 w-fit px-4 text-center text-3xl font-bold text-balance">
+	Frequently asked questions
+</h1>
+
 <div class="mx-auto flex w-full flex-col gap-4 p-4 md:w-200">
+	<div role="tablist" class="tabs-box mx-auto tabs w-full flex-col md:w-fit md:flex-row">
+		<button
+			role="tab"
+			onclick={() => (tabs = 'general')}
+			class={['tab', tabs === 'general' && 'tab-active']}>General</button>
+		<button
+			role="tab"
+			onclick={() => (tabs = 'participant')}
+			class={['tab', tabs === 'participant' && 'tab-active']}>Participants</button>
+		<button
+			onclick={() => (tabs = 'creator')}
+			role="tab"
+			class={['tab', tabs === 'creator' && 'tab-active']}>Survey Creators</button>
+		<button
+			onclick={() => (tabs = 'privacy')}
+			role="tab"
+			class={['tab', tabs === 'privacy' && 'tab-active']}>Privacy & Security</button>
+	</div>
+
 	<div class="join h-fit w-full join-vertical rounded-box bg-base-100">
-		{#each faq[tabs] as item}
+		{#each faq[tabs] as item (item.title)}
 			{@render tile(item.icon, item.title, item.description, item.linkText, item.linkHref)}
 		{/each}
 	</div>

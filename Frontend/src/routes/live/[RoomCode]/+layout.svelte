@@ -119,7 +119,7 @@
 
 <HideScrollbar />
 
-<div class="h-screen">
+<div class="min-h-screen">
 	{#if phase !== SessionState.Lobby}
 		<div class="navbar border-b border-base-300 bg-base-100 px-4">
 			<div class="navbar-start gap-2">

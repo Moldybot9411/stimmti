@@ -106,12 +106,8 @@
 {/snippet}
 
 <div class="navbar border-b border-base-300 bg-base-100 px-4">
-	<div class="navbar-start gap-2">
-		<span class="text-lg font-bold">Stimmti</span>
-		<div class="divider mx-1 divider-horizontal h-5 self-center"></div>
-		<span class="text-sm opacity-50">Session Lobby</span>
-	</div>
-	<div class="navbar-center font-bold opacity-80">
+	<div class="navbar-start text-lg font-bold">Stimmti</div>
+	<div class="navbar-center font-bold text-balance wrap-anywhere opacity-80">
 		{hub.state?.sessionName}
 	</div>
 	<div class="navbar-end">

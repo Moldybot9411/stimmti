@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ChevronLeft, ShieldAlert } from '@lucide/svelte';
 	import { env } from '$env/dynamic/public';
+	import BackButton from '$lib/components/BackButton.svelte';
 
 	const legalName = env.PUBLIC_LEGAL_NAME ?? 'Your organization name';
 	const legalStreet = env.PUBLIC_LEGAL_STREET ?? 'Street and house number';
@@ -67,7 +68,9 @@
 			},
 			{
 				title: '6. Contact',
-				paragraphs: ['If you have any questions about this Privacy Policy or data handling, contact us at:'],
+				paragraphs: [
+					'If you have any questions about this Privacy Policy or data handling, contact us at:',
+				],
 				lines: [{ text: legalEmail, strong: true }],
 			},
 			{
@@ -80,13 +83,8 @@
 	};
 </script>
 
-<div class="mx-auto flex w-full items-center justify-between md:w-200">
-	<button
-		class="btn mt-4 mb-4 ml-4 btn-lg"
-		aria-label="Navigate Back"
-		onclick={() => history.back()}>
-		<ChevronLeft />
-	</button>
+<div class="mx-auto w-full md:w-200">
+	<BackButton class="mt-4 mb-4 ml-4" />
 </div>
 
 <h1 class="mx-auto mb-6 w-fit text-3xl font-bold">{content.title}</h1>

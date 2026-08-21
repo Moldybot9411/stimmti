@@ -911,6 +911,21 @@ export class Api<
      * No description
      *
      * @tags Survey
+     * @name V1SurveyDetail
+     * @request GET:/api/v1/Survey/{surveyId}
+     */
+    v1SurveyDetail: (surveyId: string, params: RequestParams = {}) =>
+      this.request<GetSurveyResponseDto, ProblemDetails>({
+        path: `/api/v1/Survey/${surveyId}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
      * @name V1SurveyPartialUpdate
      * @request PATCH:/api/v1/Survey/{surveyId}
      */
@@ -919,7 +934,7 @@ export class Api<
       data: UpdateSurveyDto,
       params: RequestParams = {},
     ) =>
-      this.request<any, ProblemDetails>({
+      this.request<void, ProblemDetails>({
         path: `/api/v1/Survey/${surveyId}`,
         method: "PATCH",
         body: data,
@@ -935,7 +950,7 @@ export class Api<
      * @request DELETE:/api/v1/Survey/{surveyId}
      */
     v1SurveyDelete: (surveyId: string, params: RequestParams = {}) =>
-      this.request<any, ProblemDetails>({
+      this.request<void, ProblemDetails>({
         path: `/api/v1/Survey/${surveyId}`,
         method: "DELETE",
         ...params,
@@ -1003,11 +1018,26 @@ export class Api<
       data: UpdateFolderDto,
       params: RequestParams = {},
     ) =>
-      this.request<any, ProblemDetails>({
+      this.request<string, ProblemDetails>({
         path: `/api/v1/Survey/folders/${folderId}`,
         method: "PATCH",
         body: data,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name V1SurveyFoldersDelete
+     * @request DELETE:/api/v1/Survey/folders/{folderId}
+     */
+    v1SurveyFoldersDelete: (folderId: string, params: RequestParams = {}) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/v1/Survey/folders/${folderId}`,
+        method: "DELETE",
         ...params,
       }),
 
@@ -1234,7 +1264,7 @@ export class Api<
      * @request DELETE:/surveys/{surveyId}
      */
     surveysDelete: (surveyId: string, params: RequestParams = {}) =>
-      this.request<any, ProblemDetails>({
+      this.request<void, ProblemDetails>({
         path: `/surveys/${surveyId}`,
         method: "DELETE",
         ...params,
