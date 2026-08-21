@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ChevronLeft, ShieldAlert } from '@lucide/svelte';
 	import { env } from '$env/dynamic/public';
+	import BackButton from '$lib/components/BackButton.svelte';
 
 	const legalName = env.PUBLIC_LEGAL_NAME ?? 'Your organization name';
 	const legalStreet = env.PUBLIC_LEGAL_STREET ?? 'Street and house number';
@@ -52,7 +53,9 @@
 			{
 				title: 'Responsible for content',
 				paragraphs: ['According to Section 18 (2) MStV:'],
-				lines: [{ text: `${legalResponsiblePerson}, ${legalResponsibleAddress}`, strong: true }],
+				lines: [
+					{ text: `${legalResponsiblePerson}, ${legalResponsibleAddress}`, strong: true },
+				],
 			},
 			{
 				title: 'School project context',
@@ -81,13 +84,8 @@
 	};
 </script>
 
-<div class="mx-auto flex w-full items-center justify-between md:w-200">
-	<button
-		class="btn mt-4 mb-4 ml-4 btn-lg"
-		aria-label="Navigate Back"
-		onclick={() => history.back()}>
-		<ChevronLeft />
-	</button>
+<div class="mx-auto w-full md:w-200">
+	<BackButton class="mt-4 mb-4 ml-4" />
 </div>
 
 <div class="mx-auto mb-8 w-fit text-center">
