@@ -3,11 +3,12 @@
 	import { QuestionTypeEnum, type ProblemDetails } from '$lib/api.js';
 	import { apiClient } from '$lib/apiClient';
 	import ChoiceVisualizer from '$lib/components/ChoiceVisualizer.svelte';
+	import DiscardDialog from '$lib/components/DiscardDialog.svelte';
 	import type { Option } from '$lib/components/MultipleChoice.svelte';
 	import NumberScaleVisualizer from '$lib/components/NumberScaleVisualizer.svelte';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
 	import WordCloud from '$lib/components/WordCloud.svelte';
-	import { LoaderCircle, Quote, SquareKanban, Trash, X } from '@lucide/svelte';
+	import { Quote, SquareKanban, Trash } from '@lucide/svelte';
 	import axios from 'axios';
 
 	let { data, params } = $props();
@@ -107,36 +108,9 @@
 	{/each}
 </div>
 
-<dialog class="modal" bind:this={discardDialog}>
-	<div class="modal-box">
-		<form method="dialog">
-			<button class="btn absolute top-2 right-2 btn-ghost btn-sm" disabled={isDeleting}>
-				<X />
-			</button>
-		</form>
-		<h3 class="mb-4 text-lg font-bold">Are you sure you want to delete this session?</h3>
-
-		<span>
-			All data about the session will be
-			<b> permanently </b>
-			deleted. Do you want to proceed?
-		</span>
-
-		<div class="flex items-center justify-end gap-2">
-			<button
-				class="btn btn-outline btn-secondary"
-				onclick={() => discardDialog?.close()}
-				disabled={isDeleting}>
-				Cancel
-			</button>
-			<button class="btn btn-error" onclick={deleteSession} disabled={isDeleting}>
-				{#if isDeleting}
-					<LoaderCircle class="animate-spin" />
-				{:else}
-					<Trash />
-				{/if}
-				Permanently Delete
-			</button>
-		</div>
-	</div>
-</dialog>
+<DiscardDialog
+	title="Are your sure you want to delete this session?"
+	description="All data about this session will be *permanently* deleted."
+	bind:ref={discardDialog}
+	onDeleteConfirm={() => deleteSession()}
+	{isDeleting} />

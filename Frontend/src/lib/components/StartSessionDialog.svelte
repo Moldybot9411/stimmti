@@ -18,13 +18,16 @@
 	let { class: classes, style, ref = $bindable(), survey, onCreated }: Props = $props();
 
 	let isLoading = $state(false);
-	let formRef: HTMLFormElement | null = $state(null);
 
 	let name = $state('');
 	let description = $state('');
+	$effect(() => {
+		name = survey.title!;
+	});
 
 	function reset() {
-		formRef?.reset();
+		name = survey.title!;
+		description = '';
 	}
 
 	function startSession() {
@@ -66,7 +69,7 @@
 		</form>
 		<h3 class="text-lg font-bold">Start Session</h3>
 		<div class="p-4">
-			<form bind:this={formRef} onsubmit={startSession}>
+			<form onsubmit={startSession}>
 				<fieldset class="fieldset">
 					<legend class="fieldset-legend">Name</legend>
 					<input

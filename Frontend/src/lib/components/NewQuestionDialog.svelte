@@ -1,9 +1,14 @@
 <script lang="ts">
-	import { HeartCrack, LoaderCircle, X } from '@lucide/svelte';
+	import { File, HeartCrack, LoaderCircle, X } from '@lucide/svelte';
 	import type { ClassValue } from 'svelte/elements';
 	import { addToast } from './Toast/Toast.svelte';
 	import { apiClient } from '$lib/apiClient';
-	import { QuestionTypeEnum, type GetQuestionTemplateResponseDto } from '$lib/api';
+	import {
+		QuestionTypeEnum,
+		type GetQuestionTemplateResponseDto,
+		type ProblemDetails,
+	} from '$lib/api';
+	import axios from 'axios';
 
 	const maxChoiceAnswers = 8;
 
@@ -74,16 +79,28 @@
 			addToast({
 				type: 'error',
 				label: 'Please provide at least 2 answers for choice questions',
-				icon: HeartCrack,
+				icon: File,
 			});
 			return;
 		}
 
+		if (
+			(questionType === QuestionTypeEnum.SingleChoice ||
+				questionType === QuestionTypeEnum.MultipleChoice) &&
+			new Set(parsedAnswers).size !== parsedAnswers.length
+		) {
+			addToast({
+				type: 'error',
+				label: 'Please only use distinct answer options',
+				icon: File,
+			});
+			return;
+		}
 		if (questionType === QuestionTypeEnum.NumberScale && minValue >= maxValue) {
 			addToast({
 				type: 'error',
 				label: 'Min value must be smaller than max value',
-				icon: HeartCrack,
+				icon: File,
 			});
 			return;
 		}
@@ -92,7 +109,7 @@
 			addToast({
 				type: 'error',
 				label: 'Max words must be greater than 0',
-				icon: HeartCrack,
+				icon: File,
 			});
 			return;
 		}
@@ -125,12 +142,16 @@
 					ref?.close();
 				}
 			})
-			.catch((error) => {
-				addToast({
-					type: 'error',
-					label: `Survey Creation ran Into an error: ${error.message}`,
-					icon: HeartCrack,
-				});
+			.catch((e) => {
+				if (axios.isAxiosError<ProblemDetails>(e)) {
+					let message = e.response?.data.detail ?? 'Unkown Error';
+
+					addToast({
+						type: 'error',
+						label: `Survey Creation ran Into an error: ${message}`,
+						icon: File,
+					});
+				}
 			})
 			.finally(() => {
 				isLoading = false;

@@ -113,28 +113,37 @@ public class SurveyController : ControllerBase
 
     [HttpPatch("{surveyId}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateSurvey(Guid surveyId, [FromBody] UpdateSurveyDto data)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var survey = await _dbContext.Surveys.FirstOrDefaultAsync(x => x.Id == surveyId);
+        var survey = await _dbContext.Surveys.FirstOrDefaultAsync(x => x.Id == surveyId && x.OwnerId == user.Id);
         if (survey == null) return NotFound();
-
-        if (survey.OwnerId != user.Id) return Forbid();
 
         if (!string.IsNullOrWhiteSpace(data.Title)) survey.Title = data.Title.Trim();
         if (!string.IsNullOrWhiteSpace(data.Description)) survey.Description = data.Description.Trim();
 
         if (data.RemoveFromFolder.HasValue && data.RemoveFromFolder.Value) survey.FolderId = null;
-        else if (data.FolderId.HasValue) survey.FolderId = data.FolderId.Value;
-        else return BadRequest(new ProblemDetails { Title = "Invalid request", Detail = "You must either provide a FolderId or set RemoveFromFolder to true" });
+        else if (data.FolderId.HasValue)
+        {
+            var folder = await _dbContext.Folders.FirstOrDefaultAsync(x => x.Id == data.FolderId);
+
+            if (folder != null) survey.FolderId = data.FolderId.Value;
+            else return BadRequest(new ProblemDetails
+            {
+                Title = "Invaldig Folder ID",
+                Detail = "The Folder with the provided ID doesn't exist"
+            });
+        }
 
         await _dbContext.SaveChangesAsync();
 
-        return NoContent();
+        return Ok();
     }
 
 
@@ -278,21 +287,16 @@ public class SurveyController : ControllerBase
     [HttpDelete("{surveyId:guid}")]
     [HttpDelete("/surveys/{surveyId:guid}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteSurvey(Guid surveyId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var survey = await _dbContext.Surveys.FirstOrDefaultAsync(x => x.Id == surveyId);
+        var survey = await _dbContext.Surveys.FirstOrDefaultAsync(x => x.Id == surveyId && x.OwnerId == user.Id);
         if (survey == null) return NotFound();
-
-        if (survey.OwnerId != user.Id)
-        {
-            return Forbid();
-        }
 
 
         var hasLinkedSession = await _dbContext.Questions
@@ -322,7 +326,7 @@ public class SurveyController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
 
-        return NoContent();
+        return Ok();
     }
 
     [HttpPost("{surveyId:guid}/toggle-favorite")]

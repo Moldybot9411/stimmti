@@ -5,13 +5,16 @@
 	import NewQuestionDialog from '$lib/components/NewQuestionDialog.svelte';
 	import PatchQuestion from '$lib/components/PatchQuestion.svelte';
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
+	import DiscardDialog from '$lib/components/DiscardDialog.svelte';
 
 	let { data } = $props();
 	const id = $derived(data.surveyId);
 
 	let newQuestionDialogRef: HTMLDialogElement | undefined = $state();
 	let patchQuestionDialogRef: HTMLDialogElement | undefined = $state();
+	let discardDialogRef: HTMLDialogElement | undefined = $state();
 	let editingQuestionId: string | null = $state(null);
+	let deletingQuestionId: string | null = $state(null);
 
 	// svelte-ignore state_referenced_locally
 	let questions: GetQuestionTemplateResponseDto[] = $state(data.questions);
@@ -110,7 +113,14 @@
 
 								{#if question.questionType === QuestionTypeEnum.NumberScale}
 									<div class="text-left">
-										Scale: {question.minValue ?? 1} - {question.maxValue ?? 10}
+										Scale:
+										<div class="badge badge-xs font-bold badge-accent">
+											{question.minValue ?? 1}
+										</div>
+										-
+										<div class="badge badge-xs font-bold badge-accent">
+											{question.maxValue ?? 10}
+										</div>
 									</div>
 								{:else if question.questionType === QuestionTypeEnum.WordCloud}
 									<div class="text-left">
@@ -137,7 +147,10 @@
 							<div class="flex gap-1">
 								<button
 									class="btn btn-ghost btn-error btn-xs"
-									onclick={() => deleteQuestion(question.id!)}
+									onclick={() => {
+										deletingQuestionId = question.id;
+										discardDialogRef?.showModal();
+									}}
 									aria-label="Delete Question">
 									<Trash size={16} />
 								</button>
@@ -199,4 +212,15 @@
 	}}
 	onCancel={() => {
 		editingQuestionId = null;
+	}} />
+
+<DiscardDialog
+	bind:ref={discardDialogRef}
+	title="Are you sure you want to delete this question?"
+	description="This will *permanently* delete this question. Existing Sessions of this Survey will stay untouched."
+	onDeleteConfirm={() => {
+		if (!deletingQuestionId) return;
+
+		deleteQuestion(deletingQuestionId);
+		discardDialogRef?.close();
 	}} />
