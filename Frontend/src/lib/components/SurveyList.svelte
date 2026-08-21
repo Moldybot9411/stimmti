@@ -367,7 +367,7 @@
 							</button>
 
 							<ul
-								class="menu dropdown dropdown-end w-52 rounded-box bg-base-100 shadow-sm"
+								class="menu dropdown dropdown-end w-52 rounded-box bg-base-100 shadow-sm before:hidden"
 								popover
 								id={`folder-popover-${index}`}
 								style={`position-anchor:--folder-popover-${index}`}>
