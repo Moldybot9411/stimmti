@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { QuestionTypeEnum, type GetQuestionTemplateResponseDto } from '$lib/api.js';
 	import { apiClient } from '$lib/apiClient.js';
-	import { Trash, Cog, GripVertical, Plus } from '@lucide/svelte';
+	import { Trash, Cog, GripVertical, Plus, Play } from '@lucide/svelte';
 	import NewQuestionDialog from '$lib/components/NewQuestionDialog.svelte';
 	import PatchQuestion from '$lib/components/PatchQuestion.svelte';
 	import { dndzone, type DndEvent } from 'svelte-dnd-action';
 	import DiscardDialog from '$lib/components/DiscardDialog.svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import StartSessionDialog from '$lib/components/StartSessionDialog.svelte';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 	const id = $derived(data.surveyId);
@@ -17,10 +20,14 @@
 	let deletingQuestionId: string | null = $state(null);
 
 	// svelte-ignore state_referenced_locally
-	let questions: GetQuestionTemplateResponseDto[] = $state(data.questions);
+	let questions: GetQuestionTemplateResponseDto[] = $state([]);
 	$effect(() => {
-		questions = data.questions;
+		data.streamed.questions.then((res) => {
+			questions = res.data;
+		});
 	});
+
+	let startSessionDialogRef: HTMLDialogElement | undefined = $state();
 
 	function deleteQuestion(questionId: string) {
 		questions = questions.filter((q) => q.id !== questionId);
@@ -55,10 +62,24 @@
 	}
 </script>
 
-<div class="mb-8 flex w-full flex-col items-center gap-2">
-	<h1 class="text-center text-4xl font-bold">Survey Questions</h1>
-	<p class="text-center opacity-80">{questions.length} question(s)</p>
+<div class="mb-8 flex w-full items-start justify-between gap-2">
+	<BackButton />
+
+	<div class="flex w-full flex-col items-center gap-2 text-balance wrap-anywhere">
+		<h1 class="text-center text-4xl font-bold">{data.survey.title}</h1>
+		<p class="text-center opacity-80">{questions.length} question(s)</p>
+	</div>
+
+	<button
+		class="btn btn-lg btn-primary"
+		aria-label="Start Session"
+		title="Start Session"
+		onclick={() => startSessionDialogRef?.showModal()}>
+		<Play />
+	</button>
 </div>
+
+<div class="divider"></div>
 
 {#if questions.length == 0}
 	<div class="text-center text-lg opacity-80">Add your first question</div>
@@ -224,3 +245,8 @@
 		deleteQuestion(deletingQuestionId);
 		discardDialogRef?.close();
 	}} />
+
+<StartSessionDialog
+	bind:ref={startSessionDialogRef}
+	survey={data.survey}
+	onCreated={(roomCode) => goto(`/live/${roomCode}`)} />

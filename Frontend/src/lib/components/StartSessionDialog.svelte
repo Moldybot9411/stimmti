@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import type { GetSurveyResponseDto, ProblemDetails } from '$lib/api';
 	import { apiClient } from '$lib/apiClient';
 	import { addToast } from '$lib/components/Toast/Toast.svelte';
-	import { Play, SquareKanban, X } from '@lucide/svelte';
+	import { LoaderCircle, Play, SquareKanban, X } from '@lucide/svelte';
 	import axios from 'axios';
 	import type { ClassValue } from 'clsx';
 
@@ -97,7 +96,12 @@
 					type="submit"
 					class={'btn btn-block w-full btn-primary'}
 					disabled={isLoading}>
-					<Play size={20} /> Start Session
+					{#if isLoading}
+						<LoaderCircle class="animate-spin" />
+					{:else}
+						<Play size={20} />
+					{/if}
+					Start Session
 				</button>
 			</form>
 		</div>

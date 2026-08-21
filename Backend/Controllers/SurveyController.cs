@@ -71,6 +71,35 @@ public class SurveyController : ControllerBase
         });
     }
 
+    [HttpGet("{surveyId:guid}")]
+    [Authorize]
+    [ProducesResponseType(typeof(GetSurveyResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSurvey(Guid surveyId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var survey = await _dbContext.Surveys
+            .AsNoTracking()
+            .Include(x => x.QuestionTemplates.Where(y => !y.IsArchived))
+            .FirstOrDefaultAsync(x => x.Id == surveyId && x.OwnerId == user.Id);
+        if (survey == null) return NotFound();
+
+        var response = new GetSurveyResponseDto
+        {
+            SurveyId = survey.Id,
+            Title = survey.Title,
+            Description = survey.Description,
+            FolderId = survey.FolderId,
+            IsFavorite = survey.IsFavorite,
+            QuestionAmount = survey.QuestionTemplates.Count
+        };
+
+        return Ok(response);
+    }
+
     [HttpGet]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
