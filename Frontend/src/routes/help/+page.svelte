@@ -225,7 +225,7 @@
 
 <div class="mx-auto flex w-full flex-col gap-4 p-4 md:w-200">
 	<div class="join h-fit w-full join-vertical rounded-box bg-base-100">
-		{#each faq[tabs] as item}
+		{#each faq[tabs] as item (item.title)}
 			{@render tile(item.icon, item.title, item.description, item.linkText, item.linkHref)}
 		{/each}
 	</div>
