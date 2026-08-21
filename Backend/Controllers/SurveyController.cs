@@ -258,25 +258,53 @@ public class SurveyController : ControllerBase
 
     [HttpPatch("folders/{folderId}")]
     [Authorize]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateFolder(Guid folderId, [FromBody] UpdateFolderDto data)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
-        var folder = await _dbContext.Folders.FirstOrDefaultAsync(x => x.Id == folderId);
+        var folder = await _dbContext.Folders.FirstOrDefaultAsync(x => x.Id == folderId && x.OwnerId == user.Id);
         if (folder == null) return NotFound();
 
-        if (folder.OwnerId != user.Id)
+        data.Name = data.Name.Trim();
+        if (string.IsNullOrWhiteSpace(data.Name)) return BadRequest(new ProblemDetails
         {
-            return Forbid();
-        }
+            Title = "Invalid Name",
+            Detail = "Invalid Folder Name provided"
+        });
 
-        folder.Name = data.Name?.Trim() ?? folder.Name;
+        folder.Name = data.Name;
 
         await _dbContext.SaveChangesAsync();
 
-        return NoContent();
+        return Ok(data.Name);
+    }
+
+    [HttpDelete("folders/{folderId:guid}")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteFolder(Guid folderId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var folder = await _dbContext.Folders
+            .Include(x => x.Surveys)
+            .FirstOrDefaultAsync(x => x.Id == folderId && x.OwnerId == user.Id);
+        if (folder == null) return NotFound();
+
+        _dbContext.RemoveRange(folder.Surveys);
+        _dbContext.Remove(folder);
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok();
     }
 
     [HttpGet("{surveyId:guid}/questions")]

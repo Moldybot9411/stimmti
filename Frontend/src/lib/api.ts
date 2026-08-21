@@ -1018,11 +1018,26 @@ export class Api<
       data: UpdateFolderDto,
       params: RequestParams = {},
     ) =>
-      this.request<any, ProblemDetails>({
+      this.request<string, ProblemDetails>({
         path: `/api/v1/Survey/folders/${folderId}`,
         method: "PATCH",
         body: data,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Survey
+     * @name V1SurveyFoldersDelete
+     * @request DELETE:/api/v1/Survey/folders/{folderId}
+     */
+    v1SurveyFoldersDelete: (folderId: string, params: RequestParams = {}) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/v1/Survey/folders/${folderId}`,
+        method: "DELETE",
         ...params,
       }),
 

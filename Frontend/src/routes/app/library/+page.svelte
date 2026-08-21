@@ -319,8 +319,11 @@
 <NewFolderDialog
 	bind:ref={newFolderRef}
 	onCreate={(el) => {
-		folders.folderListInfo?.push(el);
-		folders.folderListInfo?.sort((a, b) => a.name!.localeCompare(b.name!));
+		if (!folders.folderListInfo) folders.folderListInfo = [];
+
+		folders.folderListInfo.push(el);
+		folders.folderCount++;
+		folders.folderListInfo.sort((a, b) => a.name!.localeCompare(b.name!));
 	}} />
 
 {#if editingSurvey}
