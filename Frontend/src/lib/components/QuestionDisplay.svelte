@@ -18,7 +18,7 @@
 		numWordCloudInputs?: number;
 		scaleMinValue?: number;
 		scaleMaxValue?: number;
-		finishedAnsering?: boolean;
+		finishedAnswering?: boolean;
 		participantCount?: number;
 
 		answers?: AnswerDisplayDto;
@@ -41,7 +41,7 @@
 		numWordCloudInputs,
 		scaleMinValue,
 		scaleMaxValue,
-		finishedAnsering,
+		finishedAnswering,
 		participantCount,
 		answers,
 		onNextQuestion,
@@ -103,7 +103,7 @@
 <div class="divider"></div>
 
 {#if role === ParticipantRole.Participant}
-	{#if finishedAnsering}
+	{#if finishedAnswering}
 		<LoadingScreen text="Waiting for host to continue" />
 	{:else}
 		{#if questionType === QuestionTypeEnum.MultipleChoice}
