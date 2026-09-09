@@ -35,7 +35,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
-builder.Services.AddSignalR()
+builder.Services.AddSignalR(options =>
+    {
+        options.StatefulReconnectBufferSize = 1000;
+    })
     .AddJsonProtocol(options =>
     {
         options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());

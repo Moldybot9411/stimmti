@@ -33,14 +33,36 @@ export class SessionConnection {
 		this.connection = new signalR.HubConnectionBuilder()
 			.withUrl(this.hubUrl, { withCredentials: true })
 			.withAutomaticReconnect()
+			.withStatefulReconnect()
 			.build();
 
 		this.sessionHub = getHubProxyFactory('ISessionHub').createHubProxy(this.connection);
 
-		this.connection.onreconnected(() => {
-			if (!this.currentRoomCode) return;
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'visible' && this.currentRoomCode) {
+				if (this.connection.state === signalR.HubConnectionState.Connected) {
+					this.joinSession(this.currentRoomCode);
+				}
+			}
+		});
 
-			this.joinSession(this.currentRoomCode);
+		this.connection.onreconnected(async () => {
+			if (!this.currentRoomCode) return;
+			this.connected = true;
+
+			const success = await this.joinSession(this.currentRoomCode);
+
+			if (!success) {
+				goto('/live');
+			}
+		});
+
+		this.connection.onreconnecting(() => {
+			this.connected = false;
+		});
+
+		this.connection.onclose(() => {
+			this.connected = false;
 		});
 
 		const receiver: ISessionHubClient = {
