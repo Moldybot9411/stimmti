@@ -30,9 +30,17 @@ export class SessionConnection {
 	participantAnswers: AnswerDisplayDto | undefined = $state();
 
 	constructor() {
+		const retryPolicy: signalR.IRetryPolicy = {
+			nextRetryDelayInMilliseconds(retryContext: signalR.RetryContext): number | null {
+				if (retryContext.previousRetryCount === 0) return 0;
+				if (retryContext.previousRetryCount < 6) return 2000;
+				return 4000;
+			},
+		};
+
 		this.connection = new signalR.HubConnectionBuilder()
 			.withUrl(this.hubUrl, { withCredentials: true })
-			.withAutomaticReconnect()
+			.withAutomaticReconnect(retryPolicy)
 			.withStatefulReconnect()
 			.build();
 
