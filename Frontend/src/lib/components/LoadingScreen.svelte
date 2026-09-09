@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { themeManager } from '$lib/Theme.svelte';
 	import { LoaderCircle } from '@lucide/svelte';
 	import type { ClassValue } from 'svelte/elements';
 	import { fade, fly, slide } from 'svelte/transition';
@@ -10,18 +11,28 @@
 	};
 
 	let { text = 'Loading', class: classes, style }: Props = $props();
+
+	const logoSrc = $derived(
+		themeManager.theme === 'light'
+			? '/stimmti-logo-notagline.svg'
+			: '/stimmti-logo-notagline-light.svg'
+	);
 </script>
 
 <div
-	class={['fixed inset-0 z-50 flex flex-col items-center justify-center bg-primary', classes]}
+	class={[
+		'fixed inset-0 z-50 flex flex-col items-center justify-center bg-base-100 px-4',
+		classes,
+	]}
 	{style}
 	in:slide={{
 		axis: 'x',
 	}}
 	out:slide={{ axis: 'x' }}>
-	<div class="text-6xl font-bold text-white md:text-[10rem]">Stimmti</div>
-	<div class="mt-4 flex gap-2 text-xl font-bold text-white">
-		<LoaderCircle class="animate-spin" />
-		{text}
+	<img src={logoSrc} alt="Logo" class="w-70 md:w-150" />
+	<div
+		class="mt-4 flex max-w-full flex-wrap items-center justify-center gap-2 text-center text-xl font-bold">
+		<LoaderCircle class="shrink-0 animate-spin" />
+		<span>{text}</span>
 	</div>
 </div>

@@ -199,7 +199,8 @@
 				</div>
 			</div>
 		{:else}
-			<div class="flex h-screen w-full flex-col items-center justify-center gap-2">
+			<div
+				class="flex h-screen w-full flex-col items-center justify-center gap-2 px-4 text-center text-balance">
 				<span class="text-4xl font-bold">Thanks for participating!</span>
 				<span class="text-2xl opacity-80">You can close this tab now</span>
 			</div>
