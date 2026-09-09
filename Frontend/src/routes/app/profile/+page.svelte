@@ -241,7 +241,7 @@
 
 		<form class="p-4" onsubmit={handlePasswordSubmit} bind:this={changePasswordForm}>
 			<div class="w-full">
-				<label class="input join-item mb-1 w-full">
+				<label class="input mb-1 w-full">
 					<Key class="opacity-50" />
 					<input
 						type="password"
