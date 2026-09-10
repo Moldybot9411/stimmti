@@ -1,7 +1,11 @@
 <div align="center">
 
-<p align="center" style="background-color: white; border-radius: 10px">
-  <img src="Frontend/static/stimmti-logo.svg" alt="Stimmti Logo" width="300" />
+<p align="center" style="background-color: white;">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="Frontend/static/stimmti-logo-light.svg">
+    <source media="(prefers-color-scheme: light)" srcset="Frontend/static/stimmti-logo.svg">
+    <img alt="Stimmti Logo" src="Frontend/static/stimmti-logo.svg" width="320">
+  </picture>
 </p>
 
 **Interactive live polling and instant audience feedback for presentations, lectures, and workshops.**
@@ -55,8 +59,8 @@
 ### 1. Participant Experience (Mobile First)
 
 <div style="display: flex; gap: 0.5rem; width: 100%; justify-content: center;">
-    <img style="border-radius: 10px; max-width: 25rem;" src="images/mobile-lobby-screen.png" alt="Mobile Lobby View">
-    <img style="border-radius: 10px; max-width: 25rem;" src="images/mobile-session-screen.png" alt="Mobile Session View">
+    <img style="max-width: 25rem;" src="images/mobile-lobby-screen.png" alt="Mobile Lobby View">
+    <img style="max-width: 25rem;" src="images/mobile-session-screen.png" alt="Mobile Session View">
 </div>
 
 ---
@@ -64,7 +68,7 @@
 ### 2. Presenter Live Stage & Real-Time Results
 
 <div style="display: flex; width: 100%; justify-content: center;">
-    <img style="border-radius: 10px; max-width: 100rem;" src="images/presenter-live-view.png" alt="Presenter Live View">
+    <img style="max-width: 100rem;" src="images/presenter-live-view.png" alt="Presenter Live View">
 </div>
 
 ---
@@ -72,8 +76,8 @@
 ### 3. Survey Builder & Folder Organization
 
 <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%; align-items: center;">
-    <img style="border-radius: 10px; max-width: 100rem;" src="images/library-view.png" alt="Library View">
-    <img style="border-radius: 10px; max-width: 100rem;" src="images/editor-view.png" alt="Editor View">
+    <img style="max-width: 100rem;" src="images/library-view.png" alt="Library View">
+    <img style="max-width: 100rem;" src="images/editor-view.png" alt="Editor View">
 </div>
 
 ---
@@ -100,7 +104,7 @@
 Stimmti is designed as a decoupled client-server architecture with an edge reverse proxy and dedicated WebSocket channels for low-latency live polling.
 
 <div style="display: flex; width: 100%; justify-content: center;">
-    <img style="border-radius: 10px; max-width: 100rem;" src="images/StimmtiDiag.png" alt="Architexture Diagram">
+    <img style="max-width: 100rem;" src="images/StimmtiDiag.png" alt="Architexture Diagram">
 </div>
 
 ---
