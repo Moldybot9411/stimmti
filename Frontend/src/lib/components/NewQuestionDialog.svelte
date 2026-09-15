@@ -43,6 +43,12 @@
 		if (minValue >= maxValue) minValue = maxValue - 1;
 	});
 
+	$effect(() => {
+		if (answerInputs.length > 2 && !answerInputs[answerInputs.length - 2]) {
+			answerInputs.pop();
+		}
+	});
+
 	function addAnswerFieldIfNeeded(index: number) {
 		const isLastField = index === answerInputs.length - 1;
 		if (!isLastField) {
