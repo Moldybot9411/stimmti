@@ -83,7 +83,7 @@
 
 {#if questions.length == 0}
 	<div class="text-center text-lg opacity-80">Add your first question</div>
-	<div class="timeline-start mb-10 md:text-end">
+	<div class="mx-auto mt-4 w-fit md:text-end">
 		<button
 			class="btn btn-outline btn-primary btn-sm"
 			onclick={() => newQuestionDialogRef?.showModal()}>

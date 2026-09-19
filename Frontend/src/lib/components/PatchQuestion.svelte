@@ -48,6 +48,17 @@
 		}
 	});
 
+	$effect(() => {
+		if (!currentQuestionData.answers) return;
+
+		if (
+			currentQuestionData.answers.length > 2 &&
+			!currentQuestionData.answers[currentQuestionData.answers.length - 2]
+		) {
+			currentQuestionData.answers.pop();
+		}
+	});
+
 	// Load question data when questionId changes
 	$effect(() => {
 		if (!questionId) return;
